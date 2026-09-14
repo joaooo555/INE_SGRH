@@ -1,0 +1,615 @@
+@{
+    ViewData["Title"] = "Administração de Pessoal";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2>Administração de Pessoal</h2>
+            <p class="text-muted">Assiduidade, workflow de aprovação e gestão administrativa</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" id="btnMapaAssiduidade">
+                <i class="bi bi-calendar3"></i> Mapa Assiduidade
+            </button>
+            <button class="btn btn-primary" id="btnNovoPedido">
+                <i class="bi bi-plus-circle"></i> Novo Pedido
+            </button>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs" id="tabsAdmin" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-tab="workflow">Workflow</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-tab="calendario">Calendário</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-tab="assiduidade">Assiduidade</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-tab="ausencias">Ausências</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+        <!-- Tab: Workflow -->
+        <div class="tab-pane active" id="tab-workflow">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <div class="card text-bg-warning">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Pedidos Pendentes</h5>
+                            <h2>3</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-info">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Em Análise</h5>
+                            <h2>2</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-success">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Aprovados</h5>
+                            <h2>8</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-bg-danger">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Rejeitados</h5>
+                            <h2>1</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Solicitante</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Carlos Machava</td>
+                            <td>Férias</td>
+                            <td><span class="badge bg-warning text-dark">Pendente</span></td>
+                            <td>10/07/2026</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="aprovarPedido($(this))">Aprovar</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejeitarPedido($(this))">Rejeitar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Pedro Cossa</td>
+                            <td>Férias</td>
+                            <td><span class="badge bg-warning text-dark">Pendente</span></td>
+                            <td>11/07/2026</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="aprovarPedido($(this))">Aprovar</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejeitarPedido($(this))">Rejeitar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Rosa Banze</td>
+                            <td>Licença</td>
+                            <td><span class="badge bg-info text-dark">Em análise</span></td>
+                            <td>12/07/2026</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="aprovarPedido($(this))">Aprovar</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejeitarPedido($(this))">Rejeitar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Ana Fernandes</td>
+                            <td>Dispensa</td>
+                            <td><span class="badge bg-warning text-dark">Pendente</span></td>
+                            <td>12/07/2026</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="aprovarPedido($(this))">Aprovar</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejeitarPedido($(this))">Rejeitar</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Fátima Tembe</td>
+                            <td>Assinatura</td>
+                            <td><span class="badge bg-info text-dark">Em análise</span></td>
+                            <td>13/07/2026</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="aprovarPedido($(this))">Aprovar</button>
+                                <button class="btn btn-sm btn-danger" onclick="rejeitarPedido($(this))">Rejeitar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Calendário -->
+        <div class="tab-pane" id="tab-calendario">
+            <div id="calendarAdmin"></div>
+        </div>
+
+        <!-- Tab: Assiduidade -->
+        <div class="tab-pane" id="tab-assiduidade">
+            <h5>Mapa de Assiduidade — Julho 2026</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Funcionário</th>
+                            @for (int d = 1; d <= 31; d++)
+                            {
+                                <th>@d</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-start">Carlos Machava</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Pedro Cossa</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Rosa Banze</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Ana Fernandes</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Fátima Tembe</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">F</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#28a745;color:#fff">P</td>
+                            <td style="background-color:#ffc107">DM</td>
+                            <td style="background-color:#6c757d;color:#fff">—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-2">
+                <span class="badge bg-success">P = Presente</span>
+                <span class="badge bg-warning text-dark">F = Faltou</span>
+                <span class="badge bg-warning text-dark">DM = Dia Médico</span>
+                <span class="badge bg-secondary">— = Fim de semana</span>
+            </div>
+        </div>
+
+        <!-- Tab: Ausências -->
+        <div class="tab-pane" id="tab-ausencias">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Ausências Registadas</h5>
+                <button class="btn btn-primary btn-sm" id="btnNovaAusencia">
+                    <i class="bi bi-plus-circle"></i> Nova Ausência
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="tabelaAusencias">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Tipo</th>
+                            <th>Data Início</th>
+                            <th>Data Fim</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Novo Pedido -->
+<div class="modal fade" id="modalNovoPedido" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNovoPedido">
+                    <div class="mb-3">
+                        <label for="pedidoFuncionario" class="form-label">Funcionário</label>
+                        <select class="form-select" id="pedidoFuncionario" required>
+                            <option value="">Selecionar...</option>
+                            <option>Carlos Machava</option>
+                            <option>Pedro Cossa</option>
+                            <option>Rosa Banze</option>
+                            <option>Ana Fernandes</option>
+                            <option>Fátima Tembe</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pedidoTipo" class="form-label">Tipo de Pedido</label>
+                        <select class="form-select" id="pedidoTipo" required>
+                            <option value="">Selecionar...</option>
+                            <option>Férias</option>
+                            <option>Licença</option>
+                            <option>Dispensa</option>
+                            <option>Assinatura</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pedidoDataInicio" class="form-label">Data Início</label>
+                        <input type="date" class="form-control" id="pedidoDataInicio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pedidoDataFim" class="form-label">Data Fim</label>
+                        <input type="date" class="form-control" id="pedidoDataFim" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pedidoObservacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="pedidoObservacoes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="submitNovoPedido">Submeter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nova Ausência -->
+<div class="modal fade" id="modalNovaAusencia" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Ausência</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNovaAusencia">
+                    <div class="mb-3">
+                        <label for="ausenciaFuncionario" class="form-label">Funcionário</label>
+                        <select class="form-select" id="ausenciaFuncionario" required>
+                            <option value="">Selecionar...</option>
+                            <option>Carlos Machava</option>
+                            <option>Pedro Cossa</option>
+                            <option>Rosa Banze</option>
+                            <option>Ana Fernandes</option>
+                            <option>Fátima Tembe</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ausenciaTipo" class="form-label">Tipo de Ausência</label>
+                        <select class="form-select" id="ausenciaTipo" required>
+                            <option value="">Selecionar...</option>
+                            <option>Falta</option>
+                            <option>Dia Médico</option>
+                            <option>Férias</option>
+                            <option>Licença</option>
+                            <option>Dispensa</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ausenciaDataInicio" class="form-label">Data Início</label>
+                        <input type="date" class="form-control" id="ausenciaDataInicio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ausenciaDataFim" class="form-label">Data Fim</label>
+                        <input type="date" class="form-control" id="ausenciaDataFim" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ausenciaMotivo" class="form-label">Motivo</label>
+                        <textarea class="form-control" id="ausenciaMotivo" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="submitNovaAusencia">Registar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+var ausencias = [
+    { funcionario: "Carlos Machava", tipo: "Férias", dataInicio: "15/07/2026", dataFim: "25/07/2026", motivo: "Férias anuais", estado: "Aprovada" },
+    { funcionario: "Pedro Cossa", tipo: "Dia Médico", dataInicio: "03/07/2026", dataFim: "03/07/2026", motivo: "Consulta médica", estado: "Aprovada" },
+    { funcionario: "Rosa Banze", tipo: "Licença", dataInicio: "14/07/2026", dataFim: "16/07/2026", motivo: "Assuntos pessoais", estado: "Pendente" },
+    { funcionario: "Ana Fernandes", tipo: "Dispensa", dataInicio: "05/07/2026", dataFim: "05/07/2026", motivo: "Assentamento de contas", estado: "Aprovada" },
+    { funcionario: "Fátima Tembe", tipo: "Férias", dataInicio: "20/07/2026", dataFim: "24/07/2026", motivo: "Recesso familiar", estado: "Pendente" }
+];
+
+$(document).ready(function () {
+    // Tab switching
+    $('#tabsAdmin .nav-link').on('click', function () {
+        var tab = $(this).data('tab');
+        $('#tabsAdmin .nav-link').removeClass('active');
+        $(this).addClass('active');
+        $('.tab-pane').removeClass('active');
+        $('#tab-' + tab).addClass('active');
+
+        if (tab === 'calendario') {
+            initCalendar();
+        }
+    });
+
+    // Render ausências table
+    renderAusenciasTable();
+
+    // Open modals
+    $('#btnNovoPedido').on('click', function () {
+        var modal = new bootstrap.Modal(document.getElementById('modalNovoPedido'));
+        modal.show();
+    });
+
+    $('#btnNovaAusencia').on('click', function () {
+        var modal = new bootstrap.Modal(document.getElementById('modalNovaAusencia'));
+        modal.show();
+    });
+
+    $('#btnMapaAssiduidade').on('click', function () {
+        $('#tabsAdmin .nav-link').removeClass('active');
+        $('#tabsAdmin .nav-link[data-tab="assiduidade"]').addClass('active');
+        $('.tab-pane').removeClass('active');
+        $('#tab-assiduidade').addClass('active');
+    });
+
+    // Submit handlers
+    $('#submitNovoPedido').on('click', function () {
+        var form = $('#formNovoPedido')[0];
+        if (form.checkValidity()) {
+            alert('Pedido submetido com sucesso!');
+            bootstrap.Modal.getInstance(document.getElementById('modalNovoPedido')).hide();
+            form.reset();
+        } else {
+            form.reportValidity();
+        }
+    });
+
+    $('#submitNovaAusencia').on('click', function () {
+        var form = $('#formNovaAusencia')[0];
+        if (form.checkValidity()) {
+            var novaAusencia = {
+                funcionario: $('#ausenciaFuncionario').val(),
+                tipo: $('#ausenciaTipo').val(),
+                dataInicio: $('#ausenciaDataInicio').val(),
+                dataFim: $('#ausenciaDataFim').val(),
+                motivo: $('#ausenciaMotivo').val(),
+                estado: "Pendente"
+            };
+            ausencias.push(novaAusencia);
+            renderAusenciasTable();
+            bootstrap.Modal.getInstance(document.getElementById('modalNovaAusencia')).hide();
+            form.reset();
+            alert('Ausência registada com sucesso!');
+        } else {
+            form.reportValidity();
+        }
+    });
+});
+
+// Calendar initialization
+var calendarInitialized = false;
+function initCalendar() {
+    if (calendarInitialized) return;
+    if (typeof FullCalendar === 'undefined') {
+        console.warn('FullCalendar not loaded');
+        return;
+    }
+    var calendarEl = document.getElementById('calendarAdmin');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        initialDate: '2026-07-01',
+        locale: 'pt',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        events: [
+            { title: 'Carlos Machava - Férias', start: '2026-07-15', end: '2026-07-26', color: '#28a745' },
+            { title: 'Pedro Cossa - Dia Médico', start: '2026-07-03', color: '#ffc107' },
+            { title: 'Rosa Banze - Licença', start: '2026-07-14', end: '2026-07-17', color: '#17a2b8' },
+            { title: 'Ana Fernandes - Dispensa', start: '2026-07-05', color: '#fd7e14' },
+            { title: 'Fátima Tembe - Férias', start: '2026-07-20', end: '2026-07-25', color: '#28a745' }
+        ]
+    });
+    calendar.render();
+    calendarInitialized = true;
+}
+
+function renderAusenciasTable() {
+    var $tbody = $('#tabelaAusencias tbody');
+    $tbody.empty();
+    $.each(ausencias, function (i, a) {
+        var estadoClass = a.estado === 'Aprovada' ? 'bg-success' : a.estado === 'Pendente' ? 'bg-warning text-dark' : 'bg-danger';
+        var row = '<tr>' +
+            '<td>' + a.funcionario + '</td>' +
+            '<td>' + a.tipo + '</td>' +
+            '<td>' + a.dataInicio + '</td>' +
+            '<td>' + a.dataFim + '</td>' +
+            '<td>' + a.motivo + '</td>' +
+            '<td><span class="badge ' + estadoClass + '">' + a.estado + '</span></td>' +
+            '</tr>';
+        $tbody.append(row);
+    });
+}
+
+function aprovarPedido($btn) {
+    var $row = $btn.closest('tr');
+    $row.find('td:eq(2)').html('<span class="badge bg-success">Aprovado</span>');
+    $row.find('td:eq(4)').html('<span class="text-success"><i class="bi bi-check-circle"></i> Processado</span>');
+}
+
+function rejeitarPedido($btn) {
+    var $row = $btn.closest('tr');
+    $row.find('td:eq(2)').html('<span class="badge bg-danger">Rejeitado</span>');
+    $row.find('td:eq(4)').html('<span class="text-danger"><i class="bi bi-x-circle"></i> Rejeitado</span>');
+}
+</script>
+}

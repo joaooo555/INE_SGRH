@@ -1,0 +1,66 @@
+@model LoginViewModel
+@{
+    Layout = "_LayoutAuth";
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-tabs">
+    <a href="@Url.Action("Login", "Account")" class="auth-tab active">Entrar</a>
+    <a href="@Url.Action("Register", "Account")" class="auth-tab">Criar Conta</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="auth-alert auth-alert-success">
+        <i class="fi fi-sr-check-circle"></i> @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="auth-alert auth-alert-danger">
+        <i class="fi fi-sr-exclamation-triangle"></i> @TempData["Error"]
+    </div>
+}
+
+<form asp-action="Login" asp-controller="Account" method="post" class="auth-form">
+    @Html.AntiForgeryToken()
+
+    <div class="auth-input-group">
+        <label asp-for="Username">Utilizador</label>
+        <div class="auth-input-wrapper">
+            <i class="fi fi-sr-envelope"></i>
+            <input asp-for="Username" type="text" class="form-input" placeholder="exemplo@email.com" autofocus>
+        </div>
+        <span asp-validation-for="Username" class="auth-validation"></span>
+    </div>
+
+    <div class="auth-input-group">
+        <label asp-for="Password">Password</label>
+        <div class="auth-input-wrapper">
+            <i class="fi fi-sr-lock"></i>
+            <input asp-for="Password" class="form-input" placeholder="A sua password">
+        </div>
+        <span asp-validation-for="Password" class="auth-validation"></span>
+    </div>
+
+    <div class="auth-row">
+        <label class="auth-checkbox">
+            <input asp-for="RememberMe" type="checkbox">
+            <span>Lembrar-me</span>
+        </label>
+        <a href="#" class="auth-link-sm">Esqueceu a password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary auth-btn">
+        <i class="fi fi-sr-arrow-right-to-arc"></i> Entrar
+    </button>
+</form>
+
+<div class="auth-footer-text">
+    Não tem conta? <a href="@Url.Action("Register", "Account")" class="auth-link">Criar conta</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

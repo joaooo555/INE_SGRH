@@ -1,0 +1,617 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    ViewBag.ActivePage = "Dashboard";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Visão geral do Sistema de Gestão de Recursos Humanos</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline" id="btnExportarDash"><i class="fi fi-sr-download"></i> Exportar</button>
+        <button class="btn btn-primary" id="btnNovoColabDash"><i class="fi fi-sr-plus"></i> Novo Colaborador</button>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Total Colaboradores</h3>
+            <div class="stat-value">150</div>
+            <div class="stat-change positive">+5 este mês</div>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-users"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Vagas Abertas</h3>
+            <div class="stat-value">12</div>
+            <div class="stat-change neutral">3 urgentes</div>
+        </div>
+        <div class="stat-icon green"><i class="fi fi-sr-briefcase"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Contratos a Expirar</h3>
+            <div class="stat-value">5</div>
+            <div class="stat-change negative">2 este mês</div>
+        </div>
+        <div class="stat-icon amber"><i class="fi fi-sr-file"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Pedidos Pendentes</h3>
+            <div class="stat-value">8</div>
+            <div class="stat-change negative">+2 novos</div>
+        </div>
+        <div class="stat-icon red"><i class="fi fi-sr-clock"></i></div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Distribuição por Unidade Orgânica</h3>
+        </div>
+        <div class="card-body" style="height:320px;">
+            <canvas id="chartUnidades"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Estrutura Etária</h3>
+        </div>
+        <div class="card-body" style="height:320px;">
+            <canvas id="chartIdade"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Rotatividade Mensal</h3>
+        </div>
+        <div class="card-body" style="height:320px;">
+            <canvas id="chartRotatividade"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Indicadores de Capacitação</h3>
+        </div>
+        <div class="card-body" style="height:320px;">
+            <canvas id="chartCapacitacao"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts + Recent Activity -->
+<div class="grid-2" style="margin-bottom:1.5rem;">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Alertas</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                            <th>Data</th>
+                            <th>Severidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="cursor:pointer;">
+                            <td><span class="badge badge-danger">Contrato</span></td>
+                            <td>Contrato de Rosa Banze expira em 15 dias</td>
+                            <td>14/09/2026</td>
+                            <td><span class="badge badge-danger">Alta</span></td>
+                        </tr>
+                        <tr style="cursor:pointer;">
+                            <td><span class="badge badge-warning">Avaliação</span></td>
+                            <td>Avaliação de desempenho de Carlos Machava pendente</td>
+                            <td>12/09/2026</td>
+                            <td><span class="badge badge-warning">Média</span></td>
+                        </tr>
+                        <tr style="cursor:pointer;">
+                            <td><span class="badge badge-info">Formação</span></td>
+                            <td>Inscrições abertas - Workshop de Liderança</td>
+                            <td>10/09/2026</td>
+                            <td><span class="badge badge-info">Baixa</span></td>
+                        </tr>
+                        <tr style="cursor:pointer;">
+                            <td><span class="badge badge-warning">Estágio</span></td>
+                            <td>Estágio de Adriana Nhantumbo aguarda aprovação</td>
+                            <td>08/09/2026</td>
+                            <td><span class="badge badge-warning">Média</span></td>
+                        </tr>
+                        <tr style="cursor:pointer;">
+                            <td><span class="badge badge-danger">Contrato</span></td>
+                            <td>Contrato de Fátima Tembe expira em 30 dias</td>
+                            <td>05/09/2026</td>
+                            <td><span class="badge badge-danger">Alta</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Actividade Recente</h3>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>Novo colaborador registado</h4>
+                        <p>Adriana Nhantumbo adicionada ao sistema</p>
+                        <span class="timeline-date">14/09/2026 09:30</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot green"></div>
+                    <div class="timeline-content">
+                        <h4>Contrato renovado</h4>
+                        <p>Pedro Cossa - Contrato por Tempo Indeterminado</p>
+                        <span class="timeline-date">13/09/2026 14:15</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot amber"></div>
+                    <div class="timeline-content">
+                        <h4>Pedido de férias submetido</h4>
+                        <p>Pedro Cossa solicitou férias de 10 a 20 de Agosto</p>
+                        <span class="timeline-date">12/09/2026 11:00</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot red"></div>
+                    <div class="timeline-content">
+                        <h4>Alerta de contrato</h4>
+                        <p>Contrato de Rosa Banze expira em breve</p>
+                        <span class="timeline-date">11/09/2026 08:45</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>Formação concluída</h4>
+                        <p>Curso de Informática Básica - 15 participantes</p>
+                        <span class="timeline-date">10/09/2026 16:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Taxa de Assiduidade</h3>
+            <div class="stat-value">94.2%</div>
+            <div class="stat-change positive">+1.3% vs mês anterior</div>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-check-circle"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Horas de Formação</h3>
+            <div class="stat-value">1240</div>
+            <div class="stat-change positive">+180 este trimestre</div>
+        </div>
+        <div class="stat-icon green"><i class="fi fi-sr-graduation-cap"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Estágios Activos</h3>
+            <div class="stat-value">3</div>
+            <div class="stat-change neutral">1 pendente de aprovação</div>
+        </div>
+        <div class="stat-icon amber"><i class="fi fi-sr-briefcase"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Satisfação Geral</h3>
+            <div class="stat-value">87%</div>
+            <div class="stat-change positive">+2% vs inquérito anterior</div>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-heart"></i></div>
+    </div>
+</div>
+
+<!-- Modal: Exportar Dashboard -->
+<div class="modal-overlay" id="modalExportar">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Exportar Dashboard</h3>
+            <button class="modal-close" data-close-modal="modalExportar">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Formato</label>
+                <select class="form-select" id="exportFormato">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Período</label>
+                <div class="form-row">
+                    <input type="date" class="form-input" id="exportInicio">
+                    <input type="date" class="form-input" id="exportFim">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Secções a incluir</label>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+                        <input type="checkbox" checked> KPIs Principais
+                    </label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+                        <input type="checkbox" checked> Gráficos
+                    </label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+                        <input type="checkbox" checked> Alertas
+                    </label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+                        <input type="checkbox" checked> Actividade Recente
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" data-close-modal="modalExportar">Cancelar</button>
+            <button class="btn btn-primary" id="btnConfirmarExportar"><i class="fi fi-sr-download"></i> Exportar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Novo Colaborador Dashboard -->
+<div class="modal-overlay" id="modalNovoColabDash">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">Novo Colaborador</h3>
+            <button class="modal-close" data-close-modal="modalNovoColabDash">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" class="form-input" placeholder="Nome do colaborador">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"> NUIT</label>
+                    <input type="text" class="form-input" placeholder="Número de identificação">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" placeholder="email@sgrh.gov.mz">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contacto</label>
+                    <input type="text" class="form-input" placeholder="+258 8X XXX XXXX">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Unidade Orgânica</label>
+                    <select class="form-select">
+                        <option value="">Selecione...</option>
+                        <option>Direcção Geral</option>
+                        <option>Direcção de Recursos Humanos</option>
+                        <option>Departamento de TI</option>
+                        <option>Departamento de Contabilidade</option>
+                        <option>Divisão de Administração</option>
+                        <option>Divisão de Formação</option>
+                        <option>Divisão de Clima Organizacional</option>
+                        <option>Divisão de Relações Sociais</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select">
+                        <option value="">Selecione...</option>
+                        <option>Quartel General</option>
+                        <option>Quadro Superior</option>
+                        <option>Quadro Intermediário</option>
+                        <option>Quadro Técnico</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Função</label>
+                    <input type="text" class="form-input" placeholder="Cargo/função">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data de Ingresso</label>
+                    <input type="date" class="form-input">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" data-close-modal="modalNovoColabDash">Cancelar</button>
+            <button class="btn btn-primary" id="btnSalvarNovoColab"><i class="fi fi-sr-check"></i> Registar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Detalhe Alerta -->
+<div class="modal-overlay" id="modalAlerta">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="alertaTitulo"></h3>
+            <button class="modal-close" data-close-modal="modalAlerta">&times;</button>
+        </div>
+        <div class="modal-body" id="alertaCorpo"></div>
+        <div class="modal-footer" id="alertaFooter"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+
+    // ===== Charts =====
+
+    // Chart: Distribuição por Unidade Orgânica
+    var ctxUnidades = document.getElementById('chartUnidades');
+    if (ctxUnidades) {
+        new Chart(ctxUnidades, {
+            type: 'bar',
+            data: {
+                labels: ['Direcção Geral', 'Direcção RH', 'Depart. TI', 'Depart. Contab.', 'Divisão Admin.', 'Divisão Formação', 'Divisão Clima', 'Divisão Social', 'Secções'],
+                datasets: [{
+                    label: 'Colaboradores',
+                    data: [8, 22, 18, 15, 20, 12, 10, 14, 31],
+                    backgroundColor: ['#1e3a5f', '#3b82f6', '#60a5fa', '#93c5fd', '#22c55e', '#86efac', '#f59e0b', '#fbbf24', '#a78bfa'],
+                    borderRadius: 6,
+                    barThickness: 32,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }
+                }
+            }
+        });
+    }
+
+    // Chart: Estrutura Etária
+    var ctxIdade = document.getElementById('chartIdade');
+    if (ctxIdade) {
+        new Chart(ctxIdade, {
+            type: 'doughnut',
+            data: {
+                labels: ['20-30', '31-40', '41-50', '51-60', '60+'],
+                datasets: [{
+                    label: 'Colaboradores',
+                    data: [35, 52, 38, 20, 5],
+                    backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a78bfa'],
+                    borderWidth: 0,
+                    hoverOffset: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10, font: { size: 12 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // Chart: Rotatividade Mensal
+    var ctxRotatividade = document.getElementById('chartRotatividade');
+    if (ctxRotatividade) {
+        new Chart(ctxRotatividade, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set'],
+                datasets: [
+                    {
+                        label: 'Admissões',
+                        data: [3, 5, 2, 4, 6, 3, 5, 2, 4],
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34,197,94,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#22c54a',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Desistências',
+                        data: [1, 2, 3, 1, 2, 1, 0, 2, 1],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ef4444',
+                        borderWidth: 2,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { size: 12 } } }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 11 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // Chart: Indicadores de Capacitação
+    var ctxCapacitacao = document.getElementById('chartCapacitacao');
+    if (ctxCapacitacao) {
+        new Chart(ctxCapacitacao, {
+            type: 'radar',
+            data: {
+                labels: ['Formação Técnica', 'Liderança', 'Idiomas', 'Tecnologia', 'Ética', 'Segurança'],
+                datasets: [
+                    {
+                        label: 'Actual',
+                        data: [85, 72, 60, 78, 90, 65],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.15)',
+                        pointBackgroundColor: '#3b82f6',
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Objectivo',
+                        data: [90, 85, 75, 85, 95, 80],
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34,197,94,0.08)',
+                        pointBackgroundColor: '#22c55e',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, padding: 20, font: { size: 12 } } }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { stepSize: 20, font: { size: 10 }, backdropColor: 'transparent' },
+                        grid: { color: '#e2e8f0' },
+                        pointLabels: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // ===== KPI Card Navigation =====
+    $('.stats-grid .stat-card').on('click', function() {
+        var idx = $(this).index();
+        var urls = ['colaboradores', 'recrutamento', 'contratos', 'administracao'];
+        if (idx < urls.length) window.location.href = urls[idx];
+    });
+
+    // ===== Exportar Dashboard =====
+    $('#btnExportarDash').on('click', function() {
+        openModal('modalExportar');
+    });
+
+    $('#btnConfirmarExportar').on('click', function() {
+        var formato = $('#exportFormato').val();
+        showToast('Relatório exportado em formato ' + formato.toUpperCase() + ' com sucesso!', 'success');
+        closeModal('modalExportar');
+    });
+
+    // ===== Novo Colaborador =====
+    $('#btnNovoColabDash').on('click', function() {
+        openModal('modalNovoColabDash');
+    });
+
+    $('#btnSalvarNovoColab').on('click', function() {
+        showToast('Colaborador registado com sucesso!', 'success');
+        closeModal('modalNovoColabDash');
+    });
+
+    // ===== Modal Close Buttons =====
+    $('[data-close-modal]').on('click', function() {
+        var modalId = $(this).data('close-modal');
+        closeModal(modalId);
+    });
+
+    // ===== Alert Click Handlers =====
+    $('.card-body table tbody tr').on('click', function(e) {
+        if ($(e.target).closest('a, button').length) return;
+        var texto = $(this).find('td:eq(1)').text();
+        if (texto.indexOf('Rosa Banze') !== -1) {
+            mostrarAlerta(
+                'Contrato a Expirar',
+                '<p style="margin-bottom:0.75rem;"><strong>Colaborador:</strong> Rosa Amélia Banze</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Unidade:</strong> Divisão de Formação</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Tipo:</strong> Contrato a Termo Certo</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Data de Fim:</strong> 31/03/2025 (expirado)</p>' +
+                '<p style="margin-bottom:0;"><strong>Accão:</strong> Iniciar processo de renovação ou novo contrato.</p>',
+                '<button class="btn btn-outline" data-close-modal="modalAlerta">Fechar</button>' +
+                '<button class="btn btn-primary" onclick="window.location.href=\'contratos\'">Ir para Contratos</button>'
+            );
+        } else if (texto.indexOf('Carlos Machava') !== -1) {
+            mostrarAlerta(
+                'Avaliação de Desempenho Pendente',
+                '<p style="margin-bottom:0.75rem;"><strong>Colaborador:</strong> Carlos Alberto Machava</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Unidade:</strong> Departamento de TI</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Avaliação:</strong> Semestral Q2 2026</p>' +
+                '<p style="margin-bottom:0;"><strong>Accão:</strong> Agendar reunião de avaliação com o colaborador.</p>',
+                '<button class="btn btn-outline" data-close-modal="modalAlerta">Fechar</button>' +
+                '<button class="btn btn-primary" onclick="window.location.href=\'administracao\'">Ir para Administração</button>'
+            );
+        } else if (texto.indexOf('Liderança') !== -1) {
+            mostrarAlerta(
+                'Inscrições Abertas',
+                '<p style="margin-bottom:0.75rem;"><strong>Acção:</strong> Workshop de Liderança</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Data:</strong> 05-06/08/2026</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Local:</strong> Auditório Principal</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Vagas:</strong> 30 (22 preenchidas)</p>' +
+                '<p style="margin-bottom:0;"><strong>Accão:</strong> Divulgar entre os colaboradores interessados.</p>',
+                '<button class="btn btn-outline" data-close-modal="modalAlerta">Fechar</button>' +
+                '<button class="btn btn-primary" onclick="window.location.href=\'formacao\'">Ir para Formação</button>'
+            );
+        } else if (texto.indexOf('Adriana Nhantumbo') !== -1) {
+            mostrarAlerta(
+                'Estágio Pendente de Aprovação',
+                '<p style="margin-bottom:0.75rem;"><strong>Estagiária:</strong> Adriana Nhantumbo</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Instituição:</strong> Universidade Católica de Moçambique</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Tipo:</strong> Institucional</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Unidade:</strong> Divisão de RH</p>' +
+                '<p style="margin-bottom:0;"><strong>Accão:</strong> Rever documentação e aprovar ou solicitar esclarecimentos.</p>',
+                '<button class="btn btn-outline" data-close-modal="modalAlerta">Fechar</button>' +
+                '<button class="btn btn-primary" onclick="window.location.href=\'estagios\'">Ir para Estágios</button>'
+            );
+        } else if (texto.indexOf('Fátima Tembe') !== -1) {
+            mostrarAlerta(
+                'Contrato a Expirar',
+                '<p style="margin-bottom:0.75rem;"><strong>Colaborador:</strong> Fátima Zacarias Tembe</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Unidade:</strong> Divisão de Administração</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Tipo:</strong> Contrato a Termo Certo</p>' +
+                '<p style="margin-bottom:0.75rem;"><strong>Data de Fim:</strong> 28/02/2027</p>' +
+                '<p style="margin-bottom:0;"><strong>Accão:</strong> Avaliar necessidade de renovação antecipada.</p>',
+                '<button class="btn btn-outline" data-close-modal="modalAlerta">Fechar</button>' +
+                '<button class="btn btn-primary" onclick="window.location.href=\'contratos\'">Ir para Contratos</button>'
+            );
+        }
+    });
+
+});
+</script>
+}

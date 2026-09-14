@@ -1,0 +1,358 @@
+@{
+    ViewData["Title"] = "Gestão de Estágios";
+    ViewBag.ActivePage = "Estagios";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gestão de Estágios</h1>
+        <p class="page-subtitle">Programas de integração e acompanhamento de estagiários</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline"><i class="fi fi-sr-document"></i> Relatório</button>
+        <button class="btn btn-primary" onclick="$('#modalNovoEstagio').addClass('active')"><i class="fi fi-sr-plus"></i> Novo Estágio</button>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Estágios Activos</h3>
+            <div class="stat-value">2</div>
+            <span class="stat-change positive"><i class="fi fi-sr-arrow-up"></i> Em curso</span>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-briefcase"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Pendentes Aprovação</h3>
+            <div class="stat-value">1</div>
+            <span class="stat-change neutral"><i class="fi fi-sr-clock"></i> Aguarda decisão</span>
+        </div>
+        <div class="stat-icon amber"><i class="fi fi-sr-hourglass"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Concluídos Ano</h3>
+            <div class="stat-value">1</div>
+            <span class="stat-change positive"><i class="fi fi-sr-check-circle"></i> Finalizados</span>
+        </div>
+        <div class="stat-icon green"><i class="fi fi-sr-badge-check"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Total Ano</h3>
+            <div class="stat-value">4</div>
+            <span class="stat-change neutral"><i class="fi fi-sr-calendar"></i> 2025/2026</span>
+        </div>
+        <div class="stat-icon red"><i class="fi fi-sr-chart-list"></i></div>
+    </div>
+</div>
+
+<div class="tabs" style="margin-bottom:1.25rem;">
+    <button class="tab-item active" data-filtro="todos"><i class="fi fi-sr-list"></i> Todos</button>
+    <button class="tab-item" data-filtro="em-curso"><i class="fi fi-sr-play"></i> Em Curso</button>
+    <button class="tab-item" data-filtro="academico"><i class="fi fi-sr-graduation-cap"></i> Académico</button>
+    <button class="tab-item" data-filtro="profissional"><i class="fi fi-sr-briefcase"></i> Profissional</button>
+    <button class="tab-item" data-filtro="institucional"><i class="fi fi-sr-building"></i> Institucional</button>
+</div>
+
+<div id="listaEstagios" class="grid-2"></div>
+
+<!-- Modal: Novo Estágio -->
+<div class="modal-overlay" id="modalNovoEstagio">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fi fi-sr-plus-circle"></i> Novo Estágio</h3>
+            <button class="modal-close" onclick="$(this).closest('.modal-overlay').removeClass('active')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Nome do Estagiário</label>
+                <input type="text" class="form-input" placeholder="Ex: Maria Silva">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Estágio</label>
+                    <select class="form-select">
+                        <option>Académico</option>
+                        <option>Profissional</option>
+                        <option>Institucional</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Área / Departamento</label>
+                    <select class="form-select">
+                        <option>Recursos Humanos</option>
+                        <option>Tecnologias de Informação</option>
+                        <option>Finanças</option>
+                        <option>Administração Geral</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Fim Prevista</label>
+                    <input type="date" class="form-input">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Instituição de Ensino</label>
+                    <input type="text" class="form-input" placeholder="Ex: Universidade Eduardo Mondlane">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Orientador</label>
+                    <select class="form-select">
+                        <option>Carlos Machel</option>
+                        <option>Ana Tembe</option>
+                        <option>Pedro Nhaca</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Observações</label>
+                <textarea class="form-textarea" rows="3" placeholder="Detalhes adicionais sobre o estágio..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="$(this).closest('.modal-overlay').removeClass('active')">Cancelar</button>
+            <button class="btn btn-primary" onclick="$(this).closest('.modal-overlay').removeClass('active');showToast('success','Estágio registado com sucesso!')"><i class="fi fi-sr-check"></i> Registar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Avaliação -->
+<div class="modal-overlay" id="modalAvaliacao">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fi fi-sr-star"></i> Avaliação de Estágio</h3>
+            <button class="modal-close" onclick="$(this).closest('.modal-overlay').removeClass('active')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="background:var(--bg-body);border-radius:0.5rem;padding:1rem;margin-bottom:1rem;">
+                <div style="font-size:0.85rem;font-weight:600;" id="avaliacaoNome">—</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);" id="avaliacaoTipo">—</div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Desempenho Técnico (1-5)</label>
+                    <select class="form-select" id="avaliacaoDesempenho">
+                        <option value="">Seleccionar...</option>
+                        <option value="5">5 — Excelente</option>
+                        <option value="4">4 — Muito Bom</option>
+                        <option value="3">3 — Bom</option>
+                        <option value="2">2 — Suficiente</option>
+                        <option value="1">1 — Insuficiente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pontualidade (1-5)</label>
+                    <select class="form-select" id="avaliacaoPontualidade">
+                        <option value="">Seleccionar...</option>
+                        <option value="5">5 — Excelente</option>
+                        <option value="4">4 — Muito Bom</option>
+                        <option value="3">3 — Bom</option>
+                        <option value="2">2 — Suficiente</option>
+                        <option value="1">1 — Insuficiente</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Trabalho em Equipa (1-5)</label>
+                    <select class="form-select" id="avaliacaoEquipa">
+                        <option value="">Seleccionar...</option>
+                        <option value="5">5 — Excelente</option>
+                        <option value="4">4 — Muito Bom</option>
+                        <option value="3">3 — Bom</option>
+                        <option value="2">2 — Suficiente</option>
+                        <option value="1">1 — Insuficiente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Iniciativa (1-5)</label>
+                    <select class="form-select" id="avaliacaoIniciativa">
+                        <option value="">Seleccionar...</option>
+                        <option value="5">5 — Excelente</option>
+                        <option value="4">4 — Muito Bom</option>
+                        <option value="3">3 — Bom</option>
+                        <option value="2">2 — Suficiente</option>
+                        <option value="1">1 — Insuficiente</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Comentários</label>
+                <textarea class="form-textarea" rows="4" placeholder="Avaliação detalhada do desempenho do estagiário..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Recomendação</label>
+                <select class="form-select">
+                    <option>Recomendar para contrato</option>
+                    <option>Extensão de estágio</option>
+                    <option>Conclusão regular</option>
+                    <option>Não recomendar</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="$(this).closest('.modal-overlay').removeClass('active')">Cancelar</button>
+            <button class="btn btn-primary" onclick="$(this).closest('.modal-overlay').removeClass('active');showToast('success','Avaliação submetida com sucesso!')"><i class="fi fi-sr-check"></i> Submeter Avaliação</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+var estagios = [
+    {
+        nome: "Ana Tembe",
+        initials: "AT",
+        tipo: "academico",
+        tipoLabel: "Académico",
+        area: "Recursos Humanos",
+        instituicao: "Universidade Eduardo Mondlane",
+        orientador: "Carlos Machel",
+        inicio: "2025-09-01",
+        fim: "2026-02-28",
+        estado: "em-curso",
+        estadoLabel: "Em Curso",
+        badgeClass: "badge-success",
+        progresso: 65,
+        avaliacao: false
+    },
+    {
+        nome: "Pedro Nhaca",
+        initials: "PN",
+        tipo: "profissional",
+        tipoLabel: "Profissional",
+        area: "Tecnologias de Informação",
+        instituicao: "ISCTEM",
+        orientador: "Ana Tembe",
+        inicio: "2025-10-15",
+        fim: "2026-04-15",
+        estado: "em-curso",
+        estadoLabel: "Em Curso",
+        badgeClass: "badge-success",
+        progresso: 40,
+        avaliacao: false
+    },
+    {
+        nome: "Carla Mondlane",
+        initials: "CM",
+        tipo: "institucional",
+        tipoLabel: "Institucional",
+        area: "Finanças",
+        instituicao: "ISCTEM",
+        orientador: "Pedro Nhaca",
+        inicio: "2025-11-01",
+        fim: "2026-05-01",
+        estado: "pendente",
+        estadoLabel: "Pendente",
+        badgeClass: "badge-warning",
+        progresso: 0,
+        avaliacao: false
+    },
+    {
+        nome: "Ricardo Cossa",
+        initials: "RC",
+        tipo: "profissional",
+        tipoLabel: "Profissional",
+        area: "Administração Geral",
+        instituicao: "UDM",
+        orientador: "Carlos Machel",
+        inicio: "2025-03-01",
+        fim: "2025-08-31",
+        estado: "concluido",
+        estadoLabel: "Concluído",
+        badgeClass: "badge-info",
+        progresso: 100,
+        avaliacao: true
+    }
+];
+
+function renderizarEstagios(filtro) {
+    var html = '';
+    var filtrados = estagios;
+
+    if (filtro !== 'todos') {
+        if (filtro === 'em-curso') {
+            filtrados = estagios.filter(function(e) { return e.estado === 'em-curso'; });
+        } else {
+            filtrados = estagios.filter(function(e) { return e.tipo === filtro; });
+        }
+    }
+
+    if (filtrados.length === 0) {
+        html = '<div class="empty-state" style="grid-column:1/-1;"><h3>Nenhum estágio encontrado</h3><p>Não existem estágios para este filtro.</p></div>';
+        $('#listaEstagios').html(html);
+        return;
+    }
+
+    $.each(filtrados, function(i, e) {
+        var podeAvaliar = e.estado !== 'pendente' && !e.avaliacao;
+        var btnAvaliar = podeAvaliar
+            ? '<button class="btn btn-sm btn-primary" onclick="avaliarEstagio(\'' + e.nome.replace(/'/g, "\\'") + '\', \'' + e.tipoLabel + '\')"><i class="fi fi-sr-star"></i> Avaliar</button>'
+            : (e.avaliacao ? '<span class="badge badge-success"><i class="fi fi-sr-check"></i> Avaliado</span>' : '');
+
+        var progressColor = e.progresso >= 80 ? 'var(--success)' : e.progresso >= 40 ? 'var(--primary-light)' : 'var(--text-muted)';
+
+        html += '<div class="card" style="transition:box-shadow 0.2s;">' +
+            '<div class="card-header">' +
+                '<div style="display:flex;align-items:center;gap:0.75rem;">' +
+                    '<div class="table-avatar" style="background:var(--primary);">' + e.initials + '</div>' +
+                    '<div><div style="font-weight:600;font-size:0.9rem;">' + e.nome + '</div>' +
+                    '<div style="font-size:0.75rem;color:var(--text-muted);">' + e.area + '</div></div>' +
+                '</div>' +
+                '<span class="badge ' + e.badgeClass + '">' + e.estadoLabel + '</span>' +
+            '</div>' +
+            '<div class="card-body">' +
+                '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">' +
+                    '<span class="chip"><i class="fi fi-sr-briefcase"></i> ' + e.tipoLabel + '</span>' +
+                    '<span class="chip"><i class="fi fi-sr-building"></i> ' + e.instituicao + '</span>' +
+                    '<span class="chip"><i class="fi fi-sr-user"></i> ' + e.orientador + '</span>' +
+                '</div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-bottom:0.5rem;">' +
+                    '<span><i class="fi fi-sr-calendar"></i> ' + formatarData(e.inicio) + ' — ' + formatarData(e.fim) + '</span>' +
+                    '<span style="font-weight:600;color:var(--text-primary);">' + e.progresso + '%</span>' +
+                '</div>' +
+                '<div style="height:6px;background:var(--bg-body);border-radius:3px;overflow:hidden;margin-bottom:1rem;">' +
+                    '<div style="width:' + e.progresso + '%;height:100%;background:' + progressColor + ';border-radius:3px;transition:width 0.4s;"></div>' +
+                '</div>' +
+                '<div style="display:flex;justify-content:flex-end;gap:0.5rem;">' + btnAvaliar + '</div>' +
+            '</div>' +
+        '</div>';
+    });
+
+    $('#listaEstagios').html(html);
+}
+
+function formatarData(dataStr) {
+    var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    var parts = dataStr.split('-');
+    return parseInt(parts[2]) + ' ' + meses[parseInt(parts[1]) - 1] + ' ' + parts[0];
+}
+
+function avaliarEstagio(nome, tipo) {
+    $('#avaliacaoNome').text(nome);
+    $('#avaliacaoTipo').text('Tipo: ' + tipo);
+    $('#modalAvaliacao').addClass('active');
+}
+
+$(document).ready(function() {
+    renderizarEstagios('todos');
+
+    $('[data-filtro]').on('click', function() {
+        var filtro = $(this).data('filtro');
+        $('[data-filtro]').removeClass('active');
+        $(this).addClass('active');
+        renderizarEstagios(filtro);
+    });
+});
+</script>
+}

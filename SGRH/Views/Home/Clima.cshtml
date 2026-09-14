@@ -1,0 +1,221 @@
+@{
+    ViewData["Title"] = "Clima Organizacional";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Clima Organizacional</h1>
+        <p class="page-subtitle">Inquéritos, indicadores de satisfação e cultura organizacional</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline" id="btnRelatorioClima"><i class="fi fi-sr-download"></i> Relatório</button>
+        <button class="btn btn-primary" id="btnNovoInquerito"><i class="fi fi-sr-plus"></i> Novo Inquérito</button>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="stat-info"><h3>Satisfação Geral</h3><div class="stat-value" style="color:var(--success);">87%</div><span class="stat-change positive">+3% vs 2025</span></div><div class="stat-icon green"><i class="fi fi-sr-smile"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Taxa de Resposta</h3><div class="stat-value">94.7%</div><span class="stat-change positive">142/150</span></div><div class="stat-icon blue"><i class="fi fi-sr-chart-pie"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Inquéritos Concluídos</h3><div class="stat-value">1</div></div><div class="stat-icon green"><i class="fi fi-sr-check-double"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Em Curso</h3><div class="stat-value" style="color:var(--info);">1</div></div><div class="stat-icon blue"><i class="fi fi-sr-spinner"></i></div></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabsClima">
+    <button class="tab-item active" data-tab="inquéritos">Inquéritos</button>
+    <button class="tab-item" data-tab="resultados">Resultados</button>
+    <button class="tab-item" data-tab="preencher">Simular Preenchimento</button>
+</div>
+
+<!-- Lista de Inquéritos -->
+<div id="tab-inquéritos">
+    <div class="card">
+        <div class="card-body" style="padding:0;">
+            <table>
+                <thead><tr><th>Título</th><th>Período</th><th>Respostas</th><th>Progresso</th><th>Estado</th><th>Garantia Anonimato</th><th style="text-align:right;">Ações</th></tr></thead>
+                <tbody id="tabelaInqueritos"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Resultados -->
+<div id="tab-resultados" style="display:none;">
+    <div class="grid-2" style="margin-bottom:1.5rem;">
+        <div class="card">
+            <div class="card-header"><span class="card-title">Nível de Satisfação por Área</span></div>
+            <div class="card-body"><canvas id="chartSatisfacao" height="250"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><span class="card-title">Indicadores de Clima</span></div>
+            <div class="card-body"><canvas id="chartClima" height="250"></canvas></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header"><span class="card-title">Principais Áreas de Melhoria</span></div>
+        <div class="card-body">
+            <div style="display:grid;gap:0.75rem;">
+                <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;background:var(--bg-body);border-radius:0.5rem;">
+                    <span style="color:var(--warning);font-size:1.25rem;"><i class="fi fi-sr-exclamation"></i></span>
+                    <div><strong>Infraestrutura</strong><br><span style="font-size:0.8rem;color:var(--text-muted);">62% de satisfação — necesita melhorias nos equipamentos e espaço de trabalho</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;background:var(--bg-body);border-radius:0.5rem;">
+                    <span style="color:var(--warning);font-size:1.25rem;"><i class="fi fi-sr-exclamation"></i></span>
+                    <div><strong>Remuneração</strong><br><span style="font-size:0.8rem;color:var(--text-muted);">68% de satisfação — expectativa de revisão salarial</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;background:rgba(34,197,94,0.05);border-radius:0.5rem;border-left:3px solid var(--success);">
+                    <span style="color:var(--success);font-size:1.25rem;"><i class="fi fi-sr-check-circle"></i></span>
+                    <div><strong>Liderança</strong><br><span style="font-size:0.8rem;color:var(--text-muted);">91% de satisfação — área com melhor desempenho</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Simular Preenchimento -->
+<div id="tab-preencher" style="display:none;">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="fi fi-sr-lock" style="color:var(--success);margin-right:0.5rem;"></i>Simular: Inquérito de Satisfação</span>
+            <span class="badge badge-success">Anonimato Garantido</span>
+        </div>
+        <div class="card-body" id="formInquerito">
+            <div style="margin-bottom:1.5rem;">
+                <h3 style="font-size:0.95rem;margin-bottom:0.25rem;">1. Como avalia o ambiente de trabalho?</h3>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">Escala de 1 (Muito Insatisfeito) a 5 (Muito Satisfeito)</p>
+                <div style="display:flex;gap:0.5rem;" id="escala1">
+                    <button class="btn btn-outline btn-escala" style="width:48px;height:48px;">1</button>
+                    <button class="btn btn-outline btn-escala" style="width:48px;height:48px;">2</button>
+                    <button class="btn btn-outline btn-escala" style="width:48px;height:48px;">3</button>
+                    <button class="btn btn-outline btn-escala" style="width:48px;height:48px;">4</button>
+                    <button class="btn btn-outline btn-escala" style="width:48px;height:48px;">5</button>
+                </div>
+            </div>
+            <div style="margin-bottom:1.5rem;">
+                <h3 style="font-size:0.95rem;margin-bottom:0.25rem;">2. Sente-se valorizado pela organização?</h3>
+                <div style="display:flex;gap:1rem;">
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="radio" name="q2" value="sim"> Sim</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="radio" name="q2" value="nao"> Não</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;"><input type="radio" name="q2" value="parcialmente"> Parcialmente</label>
+                </div>
+            </div>
+            <div style="margin-bottom:1.5rem;">
+                <h3 style="font-size:0.95rem;margin-bottom:0.25rem;">3. O que melhoraria no seu local de trabalho?</h3>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">Escolha até 3 opções</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Infraestrutura</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Remuneração</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Formação</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Liderança</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Comunicação</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Horário de trabalho</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Benefícios</label>
+                    <label style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg-body);border-radius:0.5rem;cursor:pointer;"><input type="checkbox" class="chk-melhoria"> Reconhecimento</label>
+                </div>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <h3 style="font-size:0.95rem;margin-bottom:0.25rem;">4. Outros comentários (opcional)</h3>
+                <textarea class="form-textarea" placeholder="Escreva os seus comentários aqui..."></textarea>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+                <button class="btn btn-primary" id="btnSubmeterInquerito"><i class="fi fi-sr-paper-plane"></i> Submeter Resposta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Novo Inquérito -->
+<div class="modal-overlay" id="modalNovoInquerito">
+    <div class="modal">
+        <div class="modal-header"><h2 class="modal-title">Criar Novo Inquérito</h2><button class="modal-close" id="closeModalInq">&times;</button></div>
+        <div class="modal-body">
+            <div class="form-group"><label class="form-label">Título *</label><input class="form-input" type="text" placeholder="Ex: Inquérito de Satisfação Q3 2026"></div>
+            <div class="form-group"><label class="form-label">Descrição / Objectivo</label><textarea class="form-textarea" placeholder="Descreva o objectivo do inquérito..."></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Data de Início *</label><input class="form-input" type="date"></div>
+                <div class="form-group"><label class="form-label">Data de Término</label><input class="form-input" type="date"></div>
+            </div>
+            <div style="padding:0.75rem;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:0.5rem;">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.85rem;font-weight:500;">
+                    <input type="checkbox" checked disabled> <i class="fi fi-sr-lock" style="color:var(--success);"></i> Garantir anonimato dos participantes
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelInq">Cancelar</button>
+            <button class="btn btn-primary" id="criarInq">Criar e Publicar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Render inquéritos table
+    var $tbody = $('#tabelaInqueritos');
+    $.each(inqueritos, function(i, item) {
+        var pct = item.total > 0 ? Math.round((item.respostas / item.total) * 100) : 0;
+        $tbody.append(
+            '<tr><td><strong>' + item.titulo + '</strong></td>' +
+            '<td>' + formatarData(item.dataInicio) + ' — ' + formatarData(item.dataFim) + '</td>' +
+            '<td>' + item.respostas + '/' + item.total + '</td>' +
+            '<td><div style="display:flex;align-items:center;gap:0.5rem;">' +
+            '<div style="flex:1;height:6px;background:var(--bg-body);border-radius:3px;overflow:hidden;min-width:60px;">' +
+            '<div style="height:100%;width:' + pct + '%;background:' + (pct >= 100 ? 'var(--success)' : 'var(--primary-light)') + ';border-radius:3px;"></div></div>' +
+            '<span style="font-size:0.75rem;color:var(--text-muted);">' + pct + '%</span></div></td>' +
+            '<td><span class="badge ' + getBadgeEstado(item.estado) + '">' + item.estado + '</span></td>' +
+            '<td><span style="color:var(--success);font-size:0.85rem;"><i class="fi fi-sr-lock"></i> Garantido</span></td>' +
+            '<td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-chart-simple"></i></button></td></tr>'
+        );
+    });
+
+    // Tab switching
+    $('#tabsClima .tab-item').on('click', function() {
+        $('#tabsClima .tab-item').removeClass('active');
+        $(this).addClass('active');
+        var t = $(this).data('tab');
+        $('#tab-inquéritos').toggle(t === 'inquéritos');
+        $('#tab-resultados').toggle(t === 'resultados');
+        $('#tab-preencher').toggle(t === 'preencher');
+        if (t === 'resultados') initChartsClima();
+    });
+
+    // Scale buttons
+    $(document).on('click', '.btn-escala', function() {
+        $(this).siblings('.btn-escala').css({ background: '', color: '', borderColor: '' });
+        $(this).css({ background: 'var(--primary-light)', color: 'white', borderColor: 'var(--primary-light)' });
+    });
+
+    // Charts
+    var chartsInitialized = false;
+    function initChartsClima() {
+        if (chartsInitialized) return;
+        chartsInitialized = true;
+        var ctxS = document.getElementById('chartSatisfacao');
+        if (ctxS) {
+            new Chart(ctxS, {
+                type: 'bar',
+                data: { labels: ['Ambiente','Liderança','Comunicação','Remuneração','Formação','Infraestrutura','Reconhecimento'], datasets: [{ label: '% Satisfação', data: [85,91,78,68,82,62,75], backgroundColor: ['#3b82f6','#22c55e','#60a5fa','#f59e0b','#8b5cf6','#ef4444','#06b6d4'], borderRadius: 6, barThickness: 28 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' }, ticks: { callback: function(v){return v+'%'} } }, y: { grid: { display: false } } } }
+            });
+        }
+        var ctxC = document.getElementById('chartClima');
+        if (ctxC) {
+            new Chart(ctxC, {
+                type: 'radar',
+                data: { labels: ['Satisfação','Engajamento','Colaboração','Inovação','Bem-estar','Confiança'], datasets: [{ label: '2026', data: [87,82,85,72,78,88], backgroundColor: 'rgba(59,130,246,0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6' }, { label: '2025', data: [84,79,81,68,75,85], backgroundColor: 'rgba(148,163,184,0.1)', borderColor: '#94a3b8', borderDash: [5,5], pointBackgroundColor: '#94a3b8' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { size: 11 } } } }, scales: { r: { beginAtZero: true, max: 100, grid: { color: '#e2e8f0' }, ticks: { display: false } } } }
+            });
+        }
+    }
+
+    // Buttons
+    $('#btnRelatorioClima').on('click', function() { showToast('Relatório de clima gerado!', 'success'); });
+    $('#btnNovoInquerito').on('click', function() { openModal('modalNovoInquerito'); });
+    $('#closeModalInq, #cancelInq').on('click', function() { closeModal('modalNovoInquerito'); });
+    $('#criarInq').on('click', function() { closeModal('modalNovoInquerito'); showToast('Inquérito criado e publicado!', 'success'); });
+    $('#btnSubmeterInquerito').on('click', function() { showToast('Resposta submetida com sucesso!', 'success'); });
+});
+</script>
+}

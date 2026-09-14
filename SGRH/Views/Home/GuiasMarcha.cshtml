@@ -1,0 +1,369 @@
+@{
+    ViewData["Title"] = "Guias de Marcha";
+    ViewBag.ActivePage = "GuiasMarcha";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Guias de Marcha</h1>
+        <p class="page-subtitle">Gestão e controlo de deslocações e missões</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline"><i class="fi fi-sr-map"></i> Mapa de Controlo</button>
+        <button class="btn btn-primary" onclick="openModal('modalNovaGuia')"><i class="fi fi-sr-plus"></i> Nova Guia de Marcha</button>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Missões Programadas</h3>
+            <div class="stat-value">3</div>
+            <span class="stat-change neutral"><i class="fi fi-sr-calendar"></i> Aguardam execução</span>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-route"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Em Curso</h3>
+            <div class="stat-value">1</div>
+            <span class="stat-change positive"><i class="fi fi-sr-arrow-up"></i> Em deslocação</span>
+        </div>
+        <div class="stat-icon amber"><i class="fi fi-sr-car"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Concluídas Mês</h3>
+            <div class="stat-value">1</div>
+            <span class="stat-change positive"><i class="fi fi-sr-check-circle"></i> Finalizadas</span>
+        </div>
+        <div class="stat-icon green"><i class="fi fi-sr-badge-check"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Alertas Conflito</h3>
+            <div class="stat-value">0</div>
+            <span class="stat-change positive"><i class="fi fi-sr-shield-check"></i> Sem conflitos</span>
+        </div>
+        <div class="stat-icon red"><i class="fi fi-sr-exclamation-triangle"></i></div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-body" style="padding:1rem 1.25rem;">
+        <div class="form-row" style="grid-template-columns:1fr 1fr 1fr auto;align-items:end;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Funcionário</label>
+                <select class="form-select" id="filtroFuncionario">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Projecto</label>
+                <select class="form-select" id="filtroProjecto">
+                    <option value="">Todos</option>
+                    <option>Censo 2027</option>
+                    <option>Inquérito Demográfico</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="filtroEstado">
+                    <option value="">Todos</option>
+                    <option>Programada</option>
+                    <option>Em curso</option>
+                    <option>Concluída</option>
+                    <option>Cancelada</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="filtrarGuias()" style="height:38px;"><i class="fi fi-sr-filter"></i> Filtrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Guias de Marcha</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Destino</th>
+                    <th>Projecto</th>
+                    <th>Data Partida</th>
+                    <th>Data Chegada</th>
+                    <th>Duração</th>
+                    <th>Missão</th>
+                    <th>Estado</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabelaGuias"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1.25rem;">
+    <div class="card-header">
+        <span class="card-title"><i class="fi fi-sr-timeline" style="margin-right:0.375rem;"></i> Histórico de Deslocações</span>
+    </div>
+    <div class="card-body">
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-dot green"></div>
+                <div class="timeline-content">
+                    <h4>Pedro Henrique Cossa — Nampula</h4>
+                    <p>Supervisão de recolha de dados (Censo 2027)</p>
+                    <span class="timeline-date">10 Jun — 14 Jun 2026</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h4>Carlos Alberto Machava — Tete</h4>
+                    <p>Instalação de equipamento informático (Censo 2027)</p>
+                    <span class="timeline-date">20 Jun — 22 Jun 2026</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h4>José Manuel Sitoe — Maputo</h4>
+                    <p>Participação em conferência de contabilidade (Censo 2027)</p>
+                    <span class="timeline-date">15 Jul — 18 Jul 2026</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot amber"></div>
+                <div class="timeline-content">
+                    <h4>Fátima Zacarias Tembe — Beira</h4>
+                    <p>Capacitação de equipas regionais (Inquérito Demográfico)</p>
+                    <span class="timeline-date">20 Jul — 25 Jul 2026</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nova Guia de Marcha -->
+<div class="modal-overlay" id="modalNovaGuia">
+    <div class="modal" style="max-width:680px;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fi fi-sr-plus-circle"></i> Nova Guia de Marcha</h3>
+            <button class="modal-close" onclick="closeModal('modalNovaGuia')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="alertaConflito" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:0.5rem;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:var(--danger);font-weight:500;">
+                <i class="fi fi-sr-exclamation-triangle" style="margin-right:0.375rem;"></i>
+                <span id="mensagemConflito"></span>
+            </div>
+            <form id="formNovaGuia">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Funcionário</label>
+                        <select class="form-select" id="guiaFuncionario">
+                            <option value="">Selecionar...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Destino</label>
+                        <select class="form-select" id="guiaDestino">
+                            <option value="">Selecionar...</option>
+                            <option>Maputo</option>
+                            <option>Beira</option>
+                            <option>Nampula</option>
+                            <option>Quelimane</option>
+                            <option>Tete</option>
+                            <option>Lichinga</option>
+                            <option>Xai-Xai</option>
+                            <option>Inhambane</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Data Partida</label>
+                        <input type="text" class="form-input" id="guiaDataPartida" placeholder="Selecionar data...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data Chegada</label>
+                        <input type="text" class="form-input" id="guiaDataChegada" placeholder="Selecionar data...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Projecto</label>
+                        <select class="form-select" id="guiaProjecto">
+                            <option value="">Selecionar...</option>
+                            <option>Censo 2027</option>
+                            <option>Inquérito Demográfico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Missão</label>
+                        <select class="form-select" id="guiaTipoMissao">
+                            <option value="">Selecionar...</option>
+                            <option>Conferência</option>
+                            <option>Capacitação</option>
+                            <option>Supervisão</option>
+                            <option>Reunião</option>
+                            <option>Instalação</option>
+                            <option>Outro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição da Missão</label>
+                    <textarea class="form-textarea" id="guiaMissao" rows="3" placeholder="Descreva o objectivo da deslocação..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalNovaGuia')">Cancelar</button>
+            <button class="btn btn-primary" onclick="registrarGuia()"><i class="fi fi-sr-check"></i> Registar Guia</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    var colaboradoresNomes = [];
+    $.each(colaboradores, function(i, c) {
+        colaboradoresNomes.push(c.nome);
+    });
+
+    var $funcSelects = $('#filtroFuncionario, #guiaFuncionario');
+    $.each(colaboradoresNomes, function(i, nome) {
+        $funcSelects.append('<option value="' + nome + '">' + nome + '</option>');
+    });
+
+    flatpickr('#guiaDataPartida', {
+        locale: 'pt',
+        dateFormat: 'Y-m-d',
+        disableMobile: true,
+        onChange: function() { detectarConflito(); }
+    });
+
+    flatpickr('#guiaDataChegada', {
+        locale: 'pt',
+        dateFormat: 'Y-m-d',
+        disableMobile: true,
+        onChange: function() { detectarConflito(); }
+    });
+
+    renderizarGuias(guiasMarcha);
+});
+
+function calcularDuracao(dataPartida, dataChegada) {
+    var inicio = new Date(dataPartida);
+    var fim = new Date(dataChegada);
+    var diff = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+    return diff + ' dia' + (diff !== 1 ? 's' : '');
+}
+
+function renderizarGuias(dados) {
+    var $tbody = $('#corpoTabelaGuias');
+    $tbody.empty();
+    if (dados.length === 0) {
+        $tbody.append('<tr><td colspan="9"><div class="empty-state"><h3>Sem resultados</h3><p>Nenhuma guia de marcha encontrada.</p></div></td></tr>');
+        return;
+    }
+    $.each(dados, function(i, g) {
+        var badgeClass = getBadgeEstado(g.estado);
+        var duracao = calcularDuracao(g.dataPartida, g.dataChegada);
+        var iniciais = g.funcionario.split(' ').map(function(p) { return p[0]; }).join('').substring(0, 2).toUpperCase();
+        var row = '<tr>' +
+            '<td><div class="table-user">' +
+                '<div class="table-avatar">' + iniciais + '</div>' +
+                '<div class="table-user-info"><span class="name">' + g.funcionario + '</span></div>' +
+            '</div></td>' +
+            '<td><i class="fi fi-sr-map-marker" style="color:var(--primary-light);margin-right:0.25rem;"></i>' + g.destino + '</td>' +
+            '<td><span class="chip">' + g.projecto + '</span></td>' +
+            '<td>' + formatarData(g.dataPartida) + '</td>' +
+            '<td>' + formatarData(g.dataChegada) + '</td>' +
+            '<td>' + duracao + '</td>' +
+            '<td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + g.missao + '">' + g.missao + '</td>' +
+            '<td><span class="badge ' + badgeClass + '">' + g.estado + '</span></td>' +
+            '<td>' +
+                '<div style="display:flex;gap:0.25rem;">' +
+                    '<button class="btn btn-icon btn-outline" title="Ver Detalhes"><i class="fi fi-sr-eye"></i></button>' +
+                    '<button class="btn btn-icon btn-outline" title="Imprimir"><i class="fi fi-sr-print"></i></button>' +
+                '</div>' +
+            '</td>' +
+        '</tr>';
+        $tbody.append(row);
+    });
+}
+
+function filtrarGuias() {
+    var func = $('#filtroFuncionario').val();
+    var proj = $('#filtroProjecto').val();
+    var estado = $('#filtroEstado').val();
+    var filtrados = $.grep(guiasMarcha, function(g) {
+        var okFunc = !func || g.funcionario === func;
+        var okProj = !proj || g.projecto === proj;
+        var okEstado = !estado || g.estado === estado;
+        return okFunc && okProj && okEstado;
+    });
+    renderizarGuias(filtrados);
+}
+
+function detectarConflito() {
+    var func = $('#guiaFuncionario').val();
+    var dataPartida = $('#guiaDataPartida').val();
+    var dataChegada = $('#guiaDataChegada').val();
+    if (!func || !dataPartida || !dataChegada) {
+        $('#alertaConflito').hide();
+        return;
+    }
+    var conflitos = $.grep(guiasMarcha, function(g) {
+        if (g.funcionario !== func) return false;
+        if (g.estado === 'Cancelada') return false;
+        var gp = new Date(g.dataPartida);
+        var gc = new Date(g.dataChegada);
+        var np = new Date(dataPartida);
+        var nc = new Date(dataChegada);
+        return np <= gc && nc >= gp;
+    });
+    if (conflitos.length > 0) {
+        var destinos = $.map(conflitos, function(c) { return c.destino; }).join(', ');
+        $('#mensagemConflito').text('Conflito de agendamento detectado! Este funcionário já tem deslocação para ' + destinos + ' nesse período.');
+        $('#alertaConflito').show();
+    } else {
+        $('#alertaConflito').hide();
+    }
+}
+
+function registrarGuia() {
+    var func = $('#guiaFuncionario').val();
+    var destino = $('#guiaDestino').val();
+    var dataPartida = $('#guiaDataPartida').val();
+    var dataChegada = $('#guiaDataChegada').val();
+    var projecto = $('#guiaProjecto').val();
+    var missao = $('#guiaMissao').val();
+    if (!func || !destino || !dataPartida || !dataChegada || !projecto || !missao) {
+        showToast('Preencha todos os campos obrigatórios.', 'warning');
+        return;
+    }
+    var nova = {
+        id: guiasMarcha.length + 1,
+        funcionario: func,
+        destino: destino,
+        dataPartida: dataPartida,
+        dataChegada: dataChegada,
+        missao: missao,
+        projecto: projecto,
+        estado: 'Programada'
+    };
+    guiasMarcha.push(nova);
+    closeModal('modalNovaGuia');
+    $('#formNovaGuia')[0].reset();
+    $('#alertaConflito').hide();
+    renderizarGuias(guiasMarcha);
+    showToast('Guia de Marcha registada com sucesso!');
+}
+</script>
+}

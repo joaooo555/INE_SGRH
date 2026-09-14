@@ -1,0 +1,527 @@
+@{
+    ViewData["Title"] = "Colaboradores";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Colaboradores</h1>
+        <p class="page-subtitle">Gestão do processo individual dos funcionários</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline" onclick="gerarFicha()"><i class="fi fi-sr-file-pdf"></i> Gerar Ficha</button>
+        <button class="btn btn-primary" onclick="openModal('modalNovo')"><i class="fi fi-sr-plus"></i> Novo Colaborador</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="tabs" id="tabsColab" style="border-bottom:none;margin-bottom:0;">
+            <button class="tab-item active" data-tab="lista">Lista</button>
+            <button class="tab-item" data-tab="ativos">Ativos</button>
+            <button class="tab-item" data-tab="inativos">Inativos</button>
+            <button class="tab-item" data-tab="porUnidade">Por Unidade</button>
+        </div>
+        <div class="topbar-search" style="width:auto;">
+            <i class="fi fi-sr-search"></i>
+            <input type="text" id="pesquisarColab" placeholder="Pesquisar colaborador..." style="width:220px;">
+        </div>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Colaborador</th>
+                    <th>NUIT</th>
+                    <th>Unidade Orgânica</th>
+                    <th>Categoria</th>
+                    <th>Função</th>
+                    <th>Estado</th>
+                    <th>Idade</th>
+                    <th>Tempo Serviço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Novo Colaborador -->
+<div class="modal-overlay" id="modalNovo">
+    <div class="modal" style="max-width:720px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Novo Colaborador</h3>
+            <button class="modal-close" onclick="closeModal('modalNovo')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="tabs" id="formTabs" style="margin-bottom:1rem;">
+                <button class="tab-item active" data-formtab="dadosPessoais">Dados Pessoais</button>
+                <button class="tab-item" data-formtab="dadosProfissionais">Dados Profissionais</button>
+                <button class="tab-item" data-formtab="dadosIngresso">Dados de Ingresso</button>
+            </div>
+            <form id="formNovoColab">
+                <div class="form-section" id="secDadosPessoais">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" class="form-input" id="nomeColab" placeholder="Nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">NUIT</label>
+                            <input type="text" class="form-input" id="nuitColab" placeholder="0000000000000A">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-input" id="dataNascCalc">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sexo</label>
+                            <select class="form-select" id="sexoColab">
+                                <option value="">Selecionar...</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Feminino</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Estado Civil</label>
+                            <select class="form-select" id="estadoCivilColab">
+                                <option value="">Selecionar...</option>
+                                <option value="Solteiro">Solteiro(a)</option>
+                                <option value="Casado">Casado(a)</option>
+                                <option value="Divorciado">Divorciado(a)</option>
+                                <option value="Viúvo">Viúvo(a)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nacionalidade</label>
+                            <input type="text" class="form-input" id="nacionalidadeColab" value="Moçambicana">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Contacto</label>
+                            <input type="text" class="form-input" id="contactoColab" placeholder="+258 8X XXX XXXX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="emailColab" placeholder="email@sgrh.gov.mz">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-section" id="secDadosProfissionais" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Unidade Orgânica</label>
+                            <select class="form-select" id="unidadeColab">
+                                <option value="">Selecionar...</option>
+                                <option value="Direcção Geral">Direcção Geral</option>
+                                <option value="Direcção de Recursos Humanos">Direcção de Recursos Humanos</option>
+                                <option value="Departamento de TI">Departamento de TI</option>
+                                <option value="Departamento de Contabilidade">Departamento de Contabilidade</option>
+                                <option value="Divisão de Administração">Divisão de Administração</option>
+                                <option value="Divisão de Formação">Divisão de Formação</option>
+                                <option value="Divisão de Relações Sociais">Divisão de Relações Sociais</option>
+                                <option value="Divisão de Clima Organizacional">Divisão de Clima Organizacional</option>
+                                <option value="Secção de Contabilidade">Secção de Contabilidade</option>
+                                <option value="Secção de Administração de Pessoal">Secção de Administração de Pessoal</option>
+                                <option value="Secção de Recrutamento">Secção de Recrutamento</option>
+                                <option value="Secção de Formação">Secção de Formação</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categoria</label>
+                            <select class="form-select" id="categoriaColab">
+                                <option value="">Selecionar...</option>
+                                <option value="Quartel General">Quartel General</option>
+                                <option value="Quadro Superior">Quadro Superior</option>
+                                <option value="Quadro Intermediário">Quadro Intermediário</option>
+                                <option value="Quadro Técnico">Quadro Técnico</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Carreira</label>
+                            <select class="form-select" id="carreiraColab">
+                                <option value="">Selecionar...</option>
+                                <option value="Carreira de Direcção">Carreira de Direcção</option>
+                                <option value="Carreira Técnica">Carreira Técnica</option>
+                                <option value="Carreira Administrativa">Carreira Administrativa</option>
+                                <option value="Carreira Financeira">Carreira Financeira</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Função</label>
+                            <input type="text" class="form-input" id="funcaoColab" placeholder="Ex: Contabilista">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-section" id="secDadosIngresso" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Data de Ingresso</label>
+                            <input type="date" class="form-input" id="dataIngressoCalc">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Forma de Ingresso</label>
+                            <select class="form-select" id="formaIngressoColab">
+                                <option value="">Selecionar...</option>
+                                <option value="Concurso">Concurso</option>
+                                <option value="Nomeação">Nomeação</option>
+                                <option value="Contratação">Contratação</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="estadoColab">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalNovo')">Cancelar</button>
+            <button class="btn btn-primary" onclick="simularRegisto()">Registar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ficha Individual -->
+<div class="modal-overlay" id="modalFicha">
+    <div class="modal" style="max-width:700px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Ficha Individual do Colaborador</h3>
+            <button class="modal-close" onclick="closeModal('modalFicha')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="conteudoFicha"></div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalFicha')">Fechar</button>
+            <button class="btn btn-primary"><i class="fi fi-sr-print"></i> Imprimir</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Colaborador -->
+<div class="modal-overlay" id="modalEditarColab">
+    <div class="modal" style="max-width:720px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Editar Colaborador</h3>
+            <button class="modal-close" onclick="closeModal('modalEditarColab')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="formEditarColab">
+                <input type="hidden" id="editarId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" class="form-input" id="editarNome">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NUIT</label>
+                        <input type="text" class="form-input" id="editarNuit">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Unidade Orgânica</label>
+                        <select class="form-select" id="editarUnidade">
+                            <option value="Direcção Geral">Direcção Geral</option>
+                            <option value="Direcção de Recursos Humanos">Direcção de Recursos Humanos</option>
+                            <option value="Departamento de TI">Departamento de TI</option>
+                            <option value="Departamento de Contabilidade">Departamento de Contabilidade</option>
+                            <option value="Divisão de Administração">Divisão de Administração</option>
+                            <option value="Divisão de Formação">Divisão de Formação</option>
+                            <option value="Divisão de Relações Sociais">Divisão de Relações Sociais</option>
+                            <option value="Divisão de Clima Organizacional">Divisão de Clima Organizacional</option>
+                            <option value="Secção de Contabilidade">Secção de Contabilidade</option>
+                            <option value="Secção de Administração de Pessoal">Secção de Administração de Pessoal</option>
+                            <option value="Secção de Recrutamento">Secção de Recrutamento</option>
+                            <option value="Secção de Formação">Secção de Formação</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" id="editarCategoria">
+                            <option value="Quartel General">Quartel General</option>
+                            <option value="Quadro Superior">Quadro Superior</option>
+                            <option value="Quadro Intermediário">Quadro Intermediário</option>
+                            <option value="Quadro Técnico">Quadro Técnico</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Função</label>
+                        <input type="text" class="form-input" id="editarFuncao">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" id="editarEstado">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Contacto</label>
+                        <input type="text" class="form-input" id="editarContacto">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="editarEmail">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalEditarColab')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarEdicao()">Guardar Alterações</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmar Eliminação -->
+<div class="modal-overlay" id="modalConfirmarDelete">
+    <div class="modal" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Confirmar Eliminação</h3>
+            <button class="modal-close" onclick="closeModal('modalConfirmarDelete')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:0.9rem;color:var(--text-secondary);">
+                Tem a certeza que deseja eliminar o colaborador <strong id="nomeColabDelete"></strong>?
+                Esta acção não pode ser desfeita.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalConfirmarDelete')">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmarDelete">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function renderizarTabela(dados) {
+    var $tbody = $('#corpoTabela');
+    $tbody.empty();
+    if (dados.length === 0) {
+        $tbody.append('<tr><td colspan="9"><div class="empty-state"><h3>Sem resultados</h3><p>Nenhum colaborador encontrado.</p></div></td></tr>');
+        return;
+    }
+    $.each(dados, function(i, c) {
+        var idade = calcularIdade(c.dataNascimento);
+        var tempoServico = calcularTempoServico(c.dataIngresso);
+        var badgeClass = getBadgeEstado(c.estado);
+        var row = '<tr>' +
+            '<td><div class="table-user">' +
+                '<div class="table-avatar">' + c.foto + '</div>' +
+                '<div class="table-user-info"><span class="name">' + c.nome + '</span><span class="sub">' + c.email + '</span></div>' +
+            '</div></td>' +
+            '<td>' + c.nuit + '</td>' +
+            '<td>' + c.unidade + '</td>' +
+            '<td>' + c.categoria + '</td>' +
+            '<td>' + c.funcao + '</td>' +
+            '<td><span class="badge ' + badgeClass + '">' + c.estado + '</span></td>' +
+            '<td>' + idade + ' anos</td>' +
+            '<td>' + tempoServico + ' anos</td>' +
+            '<td>' +
+                '<div style="display:flex;gap:0.25rem;">' +
+                    '<button class="btn btn-icon btn-outline" title="Ver Ficha" onclick="verFicha(' + c.id + ')"><i class="fi fi-sr-id-card"></i></button>' +
+                    '<button class="btn btn-icon btn-outline" title="Editar" onclick="editarColaborador(' + c.id + ')"><i class="fi fi-sr-pencil"></i></button>' +
+                    '<button class="btn btn-icon btn-outline" title="Eliminar" onclick="eliminarColaborador(' + c.id + ')" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>' +
+                '</div>' +
+            '</td>' +
+        '</tr>';
+        $tbody.append(row);
+    });
+}
+
+$(document).ready(function() {
+    var tabActual = 'lista';
+
+    renderizarTabela(colaboradores);
+
+    $('#tabsColab .tab-item').on('click', function() {
+        $('#tabsColab .tab-item').removeClass('active');
+        $(this).addClass('active');
+        tabActual = $(this).data('tab');
+        var filtrados = [];
+        if (tabActual === 'lista' || tabActual === 'ativos') {
+            filtrados = $.grep(colaboradores, function(c) { return c.estado === 'Ativo'; });
+        } else if (tabActual === 'inativos') {
+            filtrados = $.grep(colaboradores, function(c) { return c.estado === 'Inativo'; });
+        } else if (tabActual === 'porUnidade') {
+            filtrados = colaboradores.slice().sort(function(a, b) {
+                return a.unidade.localeCompare(b.unidade);
+            });
+        }
+        renderizarTabela(filtrados);
+    });
+
+    $('#pesquisarColab').on('input', function() {
+        var termo = $(this).val().toLowerCase();
+        var filtrados = $.grep(colaboradores, function(c) {
+            return c.nome.toLowerCase().indexOf(termo) > -1 ||
+                   c.nuit.toLowerCase().indexOf(termo) > -1 ||
+                   c.unidade.toLowerCase().indexOf(termo) > -1 ||
+                   c.funcao.toLowerCase().indexOf(termo) > -1;
+        });
+        renderizarTabela(filtrados);
+    });
+
+    $('#formTabs .tab-item').on('click', function() {
+        $('#formTabs .tab-item').removeClass('active');
+        $(this).addClass('active');
+        var tab = $(this).data('formtab');
+        $('.form-section').hide();
+        if (tab === 'dadosPessoais') $('#secDadosPessoais').show();
+        else if (tab === 'dadosProfissionais') $('#secDadosProfissionais').show();
+        else if (tab === 'dadosIngresso') $('#secDadosIngresso').show();
+    });
+
+    $('#dataNascCalc').on('change', function() {
+        var val = $(this).val();
+        if (val) {
+            var idade = calcularIdade(val);
+            showToast('Idade calculada: ' + idade + ' anos', 'info');
+        }
+    });
+
+    $('#dataIngressoCalc').on('change', function() {
+        var val = $(this).val();
+        if (val) {
+            var anos = calcularTempoServico(val);
+            showToast('Tempo de serviço: ' + anos + ' anos', 'info');
+        }
+    });
+});
+
+function verFicha(id) {
+    var c = $.grep(colaboradores, function(col) { return col.id === id; })[0];
+    if (!c) return;
+    var idade = calcularIdade(c.dataNascimento);
+    var tempoServico = calcularTempoServico(c.dataIngresso);
+    var html = '<div style="display:flex;gap:1.5rem;align-items:flex-start;margin-bottom:1.25rem;">' +
+        '<div class="table-avatar" style="width:64px;height:64px;font-size:1.5rem;">' + c.foto + '</div>' +
+        '<div><h3 style="font-size:1.1rem;font-weight:700;">' + c.nome + '</h3>' +
+        '<p style="font-size:0.85rem;color:var(--text-secondary);">' + c.funcao + ' — ' + c.unidade + '</p>' +
+        '<span class="badge ' + getBadgeEstado(c.estado) + '">' + c.estado + '</span></div></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.85rem;">' +
+        '<div><strong>NUIT:</strong> ' + c.nuit + '</div>' +
+        '<div><strong>Sexo:</strong> ' + (c.sexo === 'M' ? 'Masculino' : 'Feminino') + '</div>' +
+        '<div><strong>Estado Civil:</strong> ' + c.estadoCivil + '</div>' +
+        '<div><strong>Nacionalidade:</strong> ' + c.nacionalidade + '</div>' +
+        '<div><strong>Contacto:</strong> ' + c.contacto + '</div>' +
+        '<div><strong>Email:</strong> ' + c.email + '</div>' +
+        '<div><strong>Data de Nascimento:</strong> ' + formatarData(c.dataNascimento) + ' (' + idade + ' anos)</div>' +
+        '<div><strong>Categoria:</strong> ' + c.categoria + '</div>' +
+        '<div><strong>Carreira:</strong> ' + c.carreira + '</div>' +
+        '<div><strong>Unidade:</strong> ' + c.unidade + '</div>' +
+        '<div><strong>Data de Ingresso:</strong> ' + formatarData(c.dataIngresso) + '</div>' +
+        '<div><strong>Tempo de Serviço:</strong> ' + tempoServico + ' anos</div>' +
+        '<div><strong>Forma de Ingresso:</strong> ' + c.formaIngresso + '</div>' +
+        '</div>';
+    $('#conteudoFicha').html(html);
+    openModal('modalFicha');
+}
+
+function editarColaborador(id) {
+    var c = $.grep(colaboradores, function(col) { return col.id === id; })[0];
+    if (!c) return;
+    $('#editarId').val(c.id);
+    $('#editarNome').val(c.nome);
+    $('#editarNuit').val(c.nuit);
+    $('#editarUnidade').val(c.unidade);
+    $('#editarCategoria').val(c.categoria);
+    $('#editarFuncao').val(c.funcao);
+    $('#editarEstado').val(c.estado);
+    $('#editarContacto').val(c.contacto);
+    $('#editarEmail').val(c.email);
+    openModal('modalEditarColab');
+}
+
+function guardarEdicao() {
+    var id = parseInt($('#editarId').val());
+    var c = $.grep(colaboradores, function(col) { return col.id === id; })[0];
+    if (!c) return;
+    c.nome = $('#editarNome').val();
+    c.nuit = $('#editarNuit').val();
+    c.unidade = $('#editarUnidade').val();
+    c.categoria = $('#editarCategoria').val();
+    c.funcao = $('#editarFuncao').val();
+    c.estado = $('#editarEstado').val();
+    c.contacto = $('#editarContacto').val();
+    c.email = $('#editarEmail').val();
+    closeModal('modalEditarColab');
+    renderizarTabela(colaboradores);
+    showToast('Colaborador atualizado com sucesso!');
+}
+
+function eliminarColaborador(id) {
+    var c = $.grep(colaboradores, function(col) { return col.id === id; })[0];
+    if (!c) return;
+    $('#nomeColabDelete').text(c.nome);
+    $('#btnConfirmarDelete').off('click').on('click', function() {
+        colaboradores = $.grep(colaboradores, function(col) { return col.id !== id; });
+        closeModal('modalConfirmarDelete');
+        renderizarTabela(colaboradores);
+        showToast('Colaborador eliminado com sucesso!', 'danger');
+    });
+    openModal('modalConfirmarDelete');
+}
+
+function simularRegisto() {
+    var nome = $('#nomeColab').val();
+    var nuit = $('#nuitColab').val();
+    var unidade = $('#unidadeColab').val();
+    if (!nome || !nuit || !unidade) {
+        showToast('Preencha os campos obrigatórios.', 'warning');
+        return;
+    }
+    var iniciais = nome.split(' ').map(function(p) { return p[0]; }).join('').substring(0, 2).toUpperCase();
+    var novo = {
+        id: colaboradores.length + 1,
+        nome: nome,
+        nuit: nuit,
+        dataNascimento: $('#dataNascCalc').val() || '1990-01-01',
+        sexo: $('#sexoColab').val() || 'M',
+        estadoCivil: $('#estadoCivilColab').val() || 'Solteiro',
+        nacionalidade: $('#nacionalidadeColab').val() || 'Moçambicana',
+        contacto: $('#contactoColab').val() || '',
+        email: $('#emailColab').val() || '',
+        unidade: unidade,
+        categoria: $('#categoriaColab').val() || 'Quadro Técnico',
+        carreira: $('#carreiraColab').val() || 'Carreira Técnica',
+        funcao: $('#funcaoColab').val() || 'Técnico',
+        dataIngresso: $('#dataIngressoCalc').val() || new Date().toISOString().split('T')[0],
+        formaIngresso: $('#formaIngressoColab').val() || 'Contratação',
+        estado: $('#estadoColab').val() || 'Ativo',
+        foto: iniciais
+    };
+    colaboradores.push(novo);
+    closeModal('modalNovo');
+    $('#formNovoColab')[0].reset();
+    $('#formTabs .tab-item').removeClass('active').first().addClass('active');
+    $('.form-section').hide().first().show();
+    renderizarTabela(colaboradores);
+    showToast('Colaborador registado com sucesso!');
+}
+
+function gerarFicha() {
+    if (colaboradores.length === 0) {
+        showToast('Não há colaboradores para gerar ficha.', 'warning');
+        return;
+    }
+    verFicha(colaboradores[0].id);
+}
+</script>
+}

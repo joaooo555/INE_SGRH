@@ -1,0 +1,206 @@
+@{
+    ViewData["Title"] = "Recrutamento";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Recrutamento e Selecção</h1>
+        <p class="page-subtitle">Gestão de anúncios, candidaturas e processos seletivos</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline" id="btnRelatorioRecrut"><i class="fi fi-sr-download"></i> Relatório</button>
+        <button class="btn btn-primary" id="btnNovoAnuncio"><i class="fi fi-sr-plus"></i> Novo Anúncio</button>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabsRecrut">
+    <button class="tab-item active" data-tab="kanban">Kanban</button>
+    <button class="tab-item" data-tab="anuncios">Anúncios</button>
+    <button class="tab-item" data-tab="criterios">Critérios</button>
+</div>
+
+<!-- Kanban Board -->
+<div id="tab-kanban">
+    <div class="kanban-board" id="kanbanBoard">
+        <div class="kanban-column">
+            <div class="kanban-header">
+                <span class="kanban-title">Submetida</span>
+                <span class="kanban-count" id="count-submetida">0</span>
+            </div>
+            <div class="kanban-cards" id="col-submetida"></div>
+        </div>
+        <div class="kanban-column">
+            <div class="kanban-header">
+                <span class="kanban-title">Em Análise</span>
+                <span class="kanban-count" id="count-analise">0</span>
+            </div>
+            <div class="kanban-cards" id="col-analise"></div>
+        </div>
+        <div class="kanban-column">
+            <div class="kanban-header">
+                <span class="kanban-title">Pré-eliminada</span>
+                <span class="kanban-count" id="count-preeliminada">0</span>
+            </div>
+            <div class="kanban-cards" id="col-preeliminada"></div>
+        </div>
+        <div class="kanban-column">
+            <div class="kanban-header">
+                <span class="kanban-title">Seleccionado</span>
+                <span class="kanban-count" id="count-seleccionado">0</span>
+            </div>
+            <div class="kanban-cards" id="col-seleccionado"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Anúncios -->
+<div id="tab-anuncios" style="display:none;">
+    <div class="card">
+        <div class="card-body" style="padding:0;">
+            <table>
+                <thead><tr><th>Título</th><th>Unidade</th><th>Vagas</th><th>Data Publicação</th><th>Data Limite</th><th>Estado</th><th style="text-align:right;">Ações</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Técnico de Informática</strong></td><td>Departamento de TI</td><td>2</td><td>15/06/2026</td><td>15/07/2026</td><td><span class="badge badge-success">Aberto</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-eye"></i></button></td></tr>
+                    <tr><td><strong>Contabilista Sénior</strong></td><td>Departamento de Contabilidade</td><td>1</td><td>01/06/2026</td><td>30/06/2026</td><td><span class="badge badge-danger">Encerrado</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-eye"></i></button></td></tr>
+                    <tr><td><strong>Assistente Social</strong></td><td>Divisão de Relações Sociais</td><td>1</td><td>20/06/2026</td><td>20/07/2026</td><td><span class="badge badge-success">Aberto</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-eye"></i></button></td></tr>
+                    <tr><td><strong>Psicólogo Organizacional</strong></td><td>Divisão de Clima</td><td>1</td><td>10/05/2026</td><td>10/06/2026</td><td><span class="badge badge-danger">Encerrado</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-eye"></i></button></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Critérios -->
+<div id="tab-criterios" style="display:none;">
+    <div class="card">
+        <div class="card-header"><span class="card-title">Critérios Eliminatórios — Técnico de Informática</span></div>
+        <div class="card-body" style="padding:0;">
+            <table>
+                <thead><tr><th>Critério</th><th>Campo</th><th>Valor Mínimo</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr><td>Nível Académico</td><td>nivel_academico</td><td>Licenciatura em Informática</td><td><span class="badge badge-success">Ativo</span></td></tr>
+                    <tr><td>Experiência Mínima</td><td>anos_experiencia</td><td>2 anos</td><td><span class="badge badge-success">Ativo</span></td></tr>
+                    <tr><td>Idade Máxima</td><td>data_nascimento</td><td>40 anos</td><td><span class="badge badge-success">Ativo</span></td></tr>
+                    <tr><td>Formação Específica</td><td>formacao</td><td>Eng. Informática / Cs. Computação</td><td><span class="badge badge-success">Ativo</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Novo Anúncio -->
+<div class="modal-overlay" id="modalNovoAnuncio">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Criar Anúncio de Recrutamento</h2>
+            <button class="modal-close" id="closeModalNovoAnuncio">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group"><label class="form-label">Título da Vaga *</label><input class="form-input" type="text" placeholder="Ex: Técnico de Recursos Humanos"></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Unidade Orgânica *</label><select class="form-select"><option>Seleccionar...</option><option>Departamento de TI</option><option>Departamento de Contabilidade</option><option>Divisão de Formação</option><option>Divisão de Relações Sociais</option><option>Direcção de RH</option></select></div>
+                <div class="form-group"><label class="form-label">Categoria *</label><select class="form-select"><option>Seleccionar...</option><option>Quadro Superior</option><option>Quadro Intermediário</option><option>Quadro Técnico</option><option>Quadro de Apoio</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Quantidade de Vagas *</label><input class="form-input" type="number" value="1" min="1"></div>
+                <div class="form-group"><label class="form-label">Tipo de Contrato</label><select class="form-select"><option>Por Tempo Indeterminado</option><option>A Termo Certo</option><option>Estágio Profissional</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Data de Publicação *</label><input class="form-input" type="date"></div>
+                <div class="form-group"><label class="form-label">Data Limite de Candidatura *</label><input class="form-input" type="date"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Remuneração Proposta</label><input class="form-input" type="text" placeholder="Ex: 45.000 - 65.000 MZN"></div>
+                <div class="form-group"><label class="form-label">Local de Trabalho</label><input class="form-input" type="text" value="Maputo" placeholder="Sede / Delegação"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descrição da Vaga *</label><textarea class="form-textarea" rows="3" placeholder="Responsabilidades, actividades principais..."></textarea></div>
+            <div class="form-group"><label class="form-label">Requisitos Obrigatórios *</label><textarea class="form-textarea" rows="2" placeholder="Formação, experiência, competências exigidas..."></textarea></div>
+            <div class="form-group"><label class="form-label">Requisitos Desejáveis</label><textarea class="form-textarea" rows="2" placeholder="Competências adicionais valorizadas..."></textarea></div>
+            <div class="form-group"><label class="form-label">Critérios de Triagem</label><textarea class="form-textarea" rows="2" placeholder="Critérios eliminatórios para pré-eliminação de candidatos..."></textarea></div>
+            <div class="form-group"><label class="form-label">Documento do Anúncio</label><input class="form-input" type="file"><span style="font-size:0.7rem;color:var(--text-muted);">Anúncio oficial para publicação (PDF)</span></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelNovoAnuncio">Cancelar</button>
+            <button class="btn btn-primary" id="publicarAnuncio"><i class="fi fi-sr-check"></i> Publicar Anúncio</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Tab switching
+    $('#tabsRecrut .tab-item').on('click', function() {
+        $('#tabsRecrut .tab-item').removeClass('active');
+        $(this).addClass('active');
+        var t = $(this).data('tab');
+        $('#tab-kanban').toggle(t === 'kanban');
+        $('#tab-anuncios').toggle(t === 'anuncios');
+        $('#tab-criterios').toggle(t === 'criterios');
+    });
+
+    // Kanban rendering
+    var colunas = {
+        'Submetida': { countId: 'count-submetida' },
+        'Em análise': { countId: 'count-analise' },
+        'Pré-eliminada': { countId: 'count-preeliminada' },
+        'Seleccionado': { countId: 'count-seleccionado' }
+    };
+
+    $.each(colunas, function(estado, cfg) {
+        var $col = $('#col-' + estado.toLowerCase().replace(/[ã]/g,'a').replace(/ /g,'-'));
+        var $count = $('#' + cfg.countId);
+        var filtered = candidatos.filter(function(c) {
+            return c.estado === estado || (estado === 'Seleccionado' && (c.estado === 'Seleccionado' || c.estado === 'Seleccionada'));
+        });
+        $count.text(filtered.length);
+        $col.empty();
+        $.each(filtered, function(i, c) {
+            $col.append(
+                '<div class="kanban-card" draggable="true" data-id="' + c.id + '">' +
+                '<div class="kanban-card-title">' + c.nome + '</div>' +
+                '<div class="kanban-card-desc">' + c.formacao + ' — ' + c.nivel + '</div>' +
+                '<div class="kanban-card-footer">' +
+                '<span class="chip" style="font-size:0.65rem;">' + c.email.split('@@')[0] + '</span>' +
+                '<button class="btn btn-sm btn-outline" style="padding:0.2rem 0.4rem;font-size:0.65rem;" data-move="' + c.id + '" title="Avançar">→</button>' +
+                '</div></div>'
+            );
+        });
+    });
+
+    // Move button
+    $(document).on('click', '[data-move]', function() {
+        showToast('Candidato movido com sucesso!', 'success');
+    });
+
+    // Drag and drop
+    $('.kanban-cards').on('dragover', function(e) {
+        e.preventDefault();
+        $(this).css('background', 'rgba(59,130,246,0.05)');
+    }).on('dragleave', function() {
+        $(this).css('background', '');
+    }).on('drop', function(e) {
+        e.preventDefault();
+        $(this).css('background', '');
+        var id = e.originalEvent.dataTransfer.getData('text/plain');
+        var $card = $('.kanban-card[data-id="' + id + '"]');
+        if ($card.length) $(this).append($card);
+        showToast('Candidato movido com sucesso!', 'success');
+    });
+
+    $(document).on('dragstart', '.kanban-card', function(e) {
+        e.originalEvent.dataTransfer.setData('text/plain', $(this).data('id'));
+        $(this).css('opacity', '0.5');
+    }).on('dragend', '.kanban-card', function() {
+        $(this).css('opacity', '1');
+    });
+
+    // Button handlers
+    $('#btnRelatorioRecrut').on('click', function() { showToast('Relatório de recrutamento gerado!', 'success'); });
+    $('#btnNovoAnuncio').on('click', function() { openModal('modalNovoAnuncio'); });
+    $('#closeModalNovoAnuncio, #cancelNovoAnuncio').on('click', function() { closeModal('modalNovoAnuncio'); });
+    $('#publicarAnuncio').on('click', function() { closeModal('modalNovoAnuncio'); showToast('Anúncio publicado com sucesso!', 'success'); });
+});
+</script>
+}

@@ -1,0 +1,169 @@
+@{
+    ViewData["Title"] = "Auditoria";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Auditoria e Logs</h1>
+        <p class="page-subtitle">Registo de actividades e alterações no sistema</p>
+    </div>
+    <button class="btn btn-outline" id="btnExportLog"><i class="fi fi-sr-download"></i> Exportar Log</button>
+</div>
+
+<!-- KPIs -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="stat-info"><h3>Acções Hoje</h3><div class="stat-value">47</div></div><div class="stat-icon blue"><i class="fi fi-sr-bolt"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Criações</h3><div class="stat-value" style="color:var(--success);">12</div></div><div class="stat-icon green"><i class="fi fi-sr-plus-small"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Alterações</h3><div class="stat-value" style="color:var(--info);">28</div></div><div class="stat-icon blue"><i class="fi fi-sr-pencil"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Logins</h3><div class="stat-value">7</div></div><div class="stat-icon amber"><i class="fi fi-sr-lock-open-alt"></i></div></div>
+</div>
+
+<!-- Filtros -->
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-body">
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-group" style="margin:0;flex:1;min-width:150px;">
+                <label class="form-label">Data Início</label>
+                <input class="form-input" type="text" id="auditDataInicio" placeholder="Seleccionar...">
+            </div>
+            <div class="form-group" style="margin:0;flex:1;min-width:150px;">
+                <label class="form-label">Data Fim</label>
+                <input class="form-input" type="text" id="auditDataFim" placeholder="Seleccionar...">
+            </div>
+            <div class="form-group" style="margin:0;flex:1;min-width:150px;">
+                <label class="form-label">Utilizador</label>
+                <select class="form-select" id="auditUtilizador">
+                    <option value="">Todos</option>
+                    <option>joaquim.chissano</option>
+                    <option>ana.fernandes</option>
+                    <option>pedro.cossa</option>
+                    <option>carlos.machava</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin:0;flex:1;min-width:150px;">
+                <label class="form-label">Tipo de Acção</label>
+                <select class="form-select" id="auditTipo">
+                    <option value="">Todas</option>
+                    <option>Criação</option>
+                    <option>Alteração</option>
+                    <option>Eliminação</option>
+                    <option>Login</option>
+                    <option>Exportação</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="btnFiltrarAudit"><i class="fi fi-sr-filter"></i> Filtrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Timeline de Auditoria -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="fi fi-sr-shield-check" style="color:var(--info);margin-right:0.5rem;"></i> Registos de Auditoria</span>
+        <span style="font-size:0.8rem;color:var(--text-muted);" id="countAudit">Hoje: 47 acções</span>
+    </div>
+    <div class="card-body" style="padding:0;" id="listaAudit">
+        <div class="audit-entry">
+            <div class="audit-icon login"><i class="fi fi-sr-lock-open-alt"></i></div>
+            <div class="audit-content">
+                <h4>Login no sistema</h4>
+                <p>joaquim.chissano acedeu ao sistema</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 30/06/2026 09:15 — IP: 192.168.1.100 — Navegador: Chrome 125</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon create"><i class="fi fi-sr-plus"></i></div>
+            <div class="audit-content">
+                <h4>Colaborador registado</h4>
+                <p>Adriana Nhantumbo adicionada ao sistema por ana.fernandes</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 30/06/2026 09:02 — Módulo: Colaboradores</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon update"><i class="fi fi-sr-pencil"></i></div>
+            <div class="audit-content">
+                <h4>Contrato renovado</h4>
+                <p>Contrato de Fátima Tembe (CTR-2024/003) renovado até 2028-02-28</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 30/06/2026 08:45 — Módulo: Contratos — Por: ana.fernandes</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon create"><i class="fi fi-sr-plus"></i></div>
+            <div class="audit-content">
+                <h4>Guia de marcha criada</h4>
+                <p>Nova missão: José Sitoe → Maputo (Censo 2027)</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 30/06/2026 08:30 — Módulo: Guias de Marcha — Por: pedro.cossa</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon update"><i class="fi fi-sr-pencil"></i></div>
+            <div class="audit-content">
+                <h4>Dados pessoais actualizados</h4>
+                <p>Contacto de Carlos Machava alterado de +258 84 111 2222 para +258 85 234 5678</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 29/06/2026 17:20 — Módulo: Colaboradores — Por: ana.fernandes</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon create"><i class="fi fi-sr-plus"></i></div>
+            <div class="audit-content">
+                <h4>Pedido de férias submetido</h4>
+                <p>Carlos Machava solicitou 15 dias de férias (01/08/2026 - 15/08/2026)</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 29/06/2026 16:00 — Módulo: Administração — Por: carlos.machava</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon update"><i class="fi fi-sr-pencil"></i></div>
+            <div class="audit-content">
+                <h4>Pedido aprovado</h4>
+                <p>Pedido de férias de Ana Fernandes aprovado por pedro.cossa</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 29/06/2026 15:30 — Módulo: Administração</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon login"><i class="fi fi-sr-lock-open-alt"></i></div>
+            <div class="audit-content">
+                <h4>Login no sistema</h4>
+                <p>ana.fernandes acedeu ao sistema</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 29/06/2026 08:00 — IP: 192.168.1.105 — Navegador: Firefox 128</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon create"><i class="fi fi-sr-plus"></i></div>
+            <div class="audit-content">
+                <h4>Inquérito publicado</h4>
+                <p>Inquérito "Avaliação de Formação - Q2 2026" publicado por ana.fernandes</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 28/06/2026 14:00 — Módulo: Clima Org.</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon delete"><i class="fi fi-sr-trash"></i></div>
+            <div class="audit-content">
+                <h4>Utilizador desactivado</h4>
+                <p>Conta de mariana.mondlane desactivada por joaquim.chissano</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 28/06/2026 11:00 — Módulo: Utilizadores — Motivo: Saída da instituição</div>
+            </div>
+        </div>
+        <div class="audit-entry">
+            <div class="audit-icon update"><i class="fi fi-sr-pencil"></i></div>
+            <div class="audit-content">
+                <h4>Estado de contrato alterado</h4>
+                <p>Contrato de Rosa Banze (CTR-2023/022) marcado como "Expirado"</p>
+                <div class="audit-meta"><i class="fi fi-sr-clock"></i> 28/06/2026 09:00 — Módulo: Contratos — Sistema automático</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('#auditDataInicio', { locale: 'pt', dateFormat: 'Y-m-d' });
+        flatpickr('#auditDataFim', { locale: 'pt', dateFormat: 'Y-m-d' });
+    }
+
+    $('#btnExportLog').on('click', function() { showToast('Log exportado com sucesso!', 'success'); });
+    $('#btnFiltrarAudit').on('click', function() { showToast('Filtros de auditoria aplicados!', 'success'); });
+});
+</script>
+}

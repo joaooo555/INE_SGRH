@@ -1,0 +1,559 @@
+@{
+    ViewData["Title"] = "Formação e Desenvolvimento";
+    ViewBag.ActivePage = "Formacao";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Formação e Desenvolvimento</h1>
+        <p class="page-subtitle">Planos de formação, acções e acompanhamento</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline"><i class="fi fi-sr-document"></i> Relatório</button>
+        <button class="btn btn-primary" onclick="$('#modalNovaAccao').addClass('active')"><i class="fi fi-sr-plus"></i> Nova Acção</button>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Acções em Curso</h3>
+            <div class="stat-value">1</div>
+            <span class="stat-change positive"><i class="fi fi-sr-arrow-up"></i> A decorrer</span>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-graduation-cap"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Planos Activos</h3>
+            <div class="stat-value">1</div>
+            <span class="stat-change positive"><i class="fi fi-sr-check-circle"></i> Em execução</span>
+        </div>
+        <div class="stat-icon green"><i class="fi fi-sr-clipboard-list"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Horas Formadas Ano</h3>
+            <div class="stat-value">1,240</div>
+            <span class="stat-change positive"><i class="fi fi-sr-arrow-up"></i> +12% vs ano anterior</span>
+        </div>
+        <div class="stat-icon amber"><i class="fi fi-sr-clock"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Certificados Emitidos</h3>
+            <div class="stat-value">42</div>
+            <span class="stat-change neutral"><i class="fi fi-sr-badge-check"></i> Este ano</span>
+        </div>
+        <div class="stat-icon red"><i class="fi fi-sr-certificate"></i></div>
+    </div>
+</div>
+
+<div class="tabs" id="tabsFormacao">
+    <button class="tab-item active" data-tab="accoes"><i class="fi fi-sr-graduation-cap"></i> Acções de Formação</button>
+    <button class="tab-item" data-tab="planos"><i class="fi fi-sr-clipboard-list"></i> Planos</button>
+    <button class="tab-item" data-tab="historico"><i class="fi fi-sr-clock-rotate-left"></i> Histórico</button>
+</div>
+
+<div class="tab-content" id="tab-content-formacao">
+    <!-- Tab: Acções de Formação -->
+    <div class="tab-pane active" id="tab-accoes">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Acções de Formação</span>
+                <div style="display:flex;gap:0.5rem;">
+                    <select class="form-select" style="width:auto;padding:0.35rem 0.75rem;font-size:0.8rem;" id="filtroEstadoFormacao">
+                        <option value="">Todos os Estados</option>
+                        <option value="Em curso">Em curso</option>
+                        <option value="Planeada">Planeada</option>
+                        <option value="Aberta">Aberta</option>
+                        <option value="Concluída">Concluída</option>
+                        <option value="Cancelada">Cancelada</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Tema</th>
+                            <th>Data Início</th>
+                            <th>Data Fim</th>
+                            <th>Local</th>
+                            <th>Vagas</th>
+                            <th>Horas</th>
+                            <th>Estado</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaFormacao"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Planos -->
+    <div class="tab-pane" id="tab-planos" style="display:none;">
+        <div class="card" style="margin-bottom:1rem;">
+            <div class="card-header">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <div class="stat-icon blue" style="width:40px;height:40px;border-radius:0.5rem;"><i class="fi fi-sr-clipboard-list"></i></div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.95rem;">Plano de Formação 2026</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">Aprovado em 15/01/2026 — Vigência: Jan–Dez 2026</div>
+                    </div>
+                </div>
+                <span class="badge badge-success">Activo</span>
+            </div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem;">
+                    <div style="background:var(--bg-body);border-radius:0.5rem;padding:0.75rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;color:var(--primary-light);">5</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Acções Previstas</div>
+                    </div>
+                    <div style="background:var(--bg-body);border-radius:0.5rem;padding:0.75rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;color:var(--success);">1</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Concluídas</div>
+                    </div>
+                    <div style="background:var(--bg-body);border-radius:0.5rem;padding:0.75rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;color:var(--info);">1</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Em Curso</div>
+                    </div>
+                    <div style="background:var(--bg-body);border-radius:0.5rem;padding:0.75rem;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:800;color:var(--text-muted);">3</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;">Planeadas</div>
+                    </div>
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.375rem;">
+                        <span style="font-weight:500;">Progresso Geral</span>
+                        <span style="font-weight:600;">40%</span>
+                    </div>
+                    <div style="height:8px;background:var(--bg-body);border-radius:4px;overflow:hidden;">
+                        <div style="width:40%;height:100%;background:var(--primary-light);border-radius:4px;transition:width 0.4s;"></div>
+                    </div>
+                </div>
+                <div style="font-size:0.85rem;color:var(--text-secondary);">
+                    <strong>Objectivo:</strong> Capacitar os colaboradores em competências técnicas e de liderança, alinhadas às necessidades estratégicas da organização para 2026.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Histórico -->
+    <div class="tab-pane" id="tab-historico" style="display:none;">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Histórico de Formações</span>
+                <div style="display:flex;gap:0.5rem;">
+                    <select class="form-select" style="width:auto;padding:0.35rem 0.75rem;font-size:0.8rem;" id="filtroAnoHistorico">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Tema</th>
+                            <th>Data</th>
+                            <th>Local</th>
+                            <th>Participantes</th>
+                            <th>Horas</th>
+                            <th>Certificado</th>
+                            <th>Avaliação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaHistorico"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Nova Acção de Formação -->
+<div class="modal-overlay" id="modalNovaAccao">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fi fi-sr-plus-circle"></i> Nova Acção de Formação</h3>
+            <button class="modal-close" onclick="$(this).closest('.modal-overlay').removeClass('active')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Nome da Acção</label>
+                <input type="text" class="form-input" id="nomeAccao" placeholder="Ex: Formação em Gestão de Projetos">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tema</label>
+                    <select class="form-select" id="temaAccao">
+                        <option value="">Seleccionar...</option>
+                        <option>Gestão</option>
+                        <option>Liderança</option>
+                        <option>Tecnologia</option>
+                        <option>Ética</option>
+                        <option>Segurança</option>
+                        <option>Finanças</option>
+                        <option>Comunicação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Local</label>
+                    <input type="text" class="form-input" id="localAccao" placeholder="Ex: Sala de Conferências A">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" class="form-input" id="dataInicioAccao">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" class="form-input" id="dataFimAccao">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Vagas</label>
+                    <input type="number" class="form-input" id="vagasAccao" placeholder="Ex: 20" min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Horas</label>
+                    <input type="number" class="form-input" id="horasAccao" placeholder="Ex: 12" min="1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descrição</label>
+                <textarea class="form-textarea" id="descricaoAccao" rows="3" placeholder="Descreva o objectivo e conteúdo da formação..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="$(this).closest('.modal-overlay').removeClass('active')">Cancelar</button>
+            <button class="btn btn-primary" onclick="submeterNovaAccao()"><i class="fi fi-sr-check"></i> Registar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Acção de Formação -->
+<div class="modal-overlay" id="modalEditarFormacao">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fi fi-sr-pen"></i> Editar Acção de Formação</h3>
+            <button class="modal-close" onclick="$(this).closest('.modal-overlay').removeClass('active')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editarFormacaoId">
+            <div class="form-group">
+                <label class="form-label">Nome da Acção</label>
+                <input type="text" class="form-input" id="editarNomeAccao">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tema</label>
+                    <select class="form-select" id="editarTemaAccao">
+                        <option value="">Seleccionar...</option>
+                        <option>Gestão</option>
+                        <option>Liderança</option>
+                        <option>Tecnologia</option>
+                        <option>Ética</option>
+                        <option>Segurança</option>
+                        <option>Finanças</option>
+                        <option>Comunicação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Local</label>
+                    <input type="text" class="form-input" id="editarLocalAccao">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" class="form-input" id="editarDataInicioAccao">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" class="form-input" id="editarDataFimAccao">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Vagas</label>
+                    <input type="number" class="form-input" id="editarVagasAccao" min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Horas</label>
+                    <input type="number" class="form-input" id="editarHorasAccao" min="1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="editarEstadoAccao">
+                    <option>Planeada</option>
+                    <option>Aberta</option>
+                    <option>Em curso</option>
+                    <option>Concluída</option>
+                    <option>Cancelada</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="$(this).closest('.modal-overlay').removeClass('active')">Cancelar</button>
+            <button class="btn btn-primary" onclick="submeterEditarFormacao()"><i class="fi fi-sr-check"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Eliminar Acção de Formação -->
+<div class="modal-overlay" id="modalDeleteFormacao">
+    <div class="modal" style="max-width:420px;">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fi fi-sr-trash" style="color:var(--danger);"></i> Eliminar Acção</h3>
+            <button class="modal-close" onclick="$(this).closest('.modal-overlay').removeClass('active')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="deleteFormacaoId">
+            <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:0.5rem;">Tem a certeza que deseja eliminar a acção de formação:</p>
+            <p style="font-size:0.95rem;font-weight:600;" id="deleteFormacaoNome">—</p>
+            <p style="font-size:0.8rem;color:var(--danger);margin-top:0.75rem;"><i class="fi fi-sr-exclamation-triangle"></i> Esta acção não poderá ser recuperada.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="$(this).closest('.modal-overlay').removeClass('active')">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarEliminarFormacao()"><i class="fi fi-sr-trash"></i> Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Detalhe Acção -->
+<div class="modal-overlay" id="modalAlerta">
+    <div class="modal" style="max-width:520px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="alertaTitulo">—</h3>
+            <button class="modal-close" onclick="$(this).closest('.modal-overlay').removeClass('active')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body" id="alertaCorpo"></div>
+        <div class="modal-footer" id="alertaFooter">
+            <button class="btn btn-outline" onclick="$(this).closest('.modal-overlay').removeClass('active')">Fechar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+var accoesFormacao = [
+    { id: 1, nome: "Formação em Gestão de Projetos", tema: "Gestão", dataInicio: "2026-07-10", dataFim: "2026-07-12", local: "Sala de Conferências A", vagas: 20, inscritos: 15, horas: 12, estado: "Em curso" },
+    { id: 2, nome: "Workshop de Liderança", tema: "Liderança", dataInicio: "2026-08-05", dataFim: "2026-08-06", local: "Auditório Principal", vagas: 30, inscritos: 22, horas: 8, estado: "Planeada" },
+    { id: 3, nome: "Curso de Informática Básica", tema: "Tecnologia", dataInicio: "2026-06-01", dataFim: "2026-06-15", local: "Laboratório de TI", vagas: 15, inscritos: 15, horas: 20, estado: "Concluída" },
+    { id: 4, nome: "Sensibilização em Ética Profissional", tema: "Ética", dataInicio: "2026-09-01", dataFim: "2026-09-01", local: "Sala de Reuniões", vagas: 40, inscritos: 0, horas: 4, estado: "Planeada" },
+    { id: 5, nome: "Formação em Segurança no Trabalho", tema: "Segurança", dataInicio: "2026-07-20", dataFim: "2026-07-21", local: "Sala de Conferências B", vagas: 25, inscritos: 18, horas: 8, estado: "Aberta" }
+];
+
+var historicoFormacao = [
+    { nome: "Curso de Informática Básica", tema: "Tecnologia", data: "01/06/2026 — 15/06/2026", local: "Laboratório de TI", participantes: 15, horas: 20, certificado: true, avaliacao: 4.5 },
+    { nome: "Formação em Ética e Transparência", tema: "Ética", data: "10/03/2026 — 12/03/2026", local: "Sala de Conferências A", participantes: 30, horas: 12, certificado: true, avaliacao: 4.2 },
+    { nome: "Workshop de Comunicação Efectiva", tema: "Comunicação", data: "15/02/2026 — 16/02/2026", local: "Auditório Principal", participantes: 25, horas: 8, certificado: true, avaliacao: 4.7 },
+    { nome: "Formação em Segurança Informática", tema: "Tecnologia", data: "20/01/2026 — 22/01/2026", local: "Laboratório de TI", participantes: 18, horas: 16, certificado: true, avaliacao: 4.3 },
+    { nome: "Curso de Gestão Financeira", tema: "Finanças", data: "01/12/2025 — 05/12/2025", local: "Sala de Reuniões", participantes: 12, horas: 24, certificado: true, avaliacao: 4.6 },
+    { nome: "Formação em Liderança", tema: "Liderança", data: "10/11/2025 — 12/11/2025", local: "Auditório Principal", participantes: 20, horas: 16, certificado: true, avaliacao: 4.8 },
+    { nome: "Sensibilização em Prevenção de Riscos", tema: "Segurança", data: "05/10/2025 — 05/10/2025", local: "Sala de Conferências B", participantes: 35, horas: 4, certificado: true, avaliacao: 4.1 }
+];
+
+function renderTabelaFormacao(filtro) {
+    var $tbody = $('#tabelaFormacao');
+    $tbody.empty();
+    var filtrados = accoesFormacao;
+    if (filtro) {
+        filtrados = accoesFormacao.filter(function(a) { return a.estado === filtro; });
+    }
+    if (filtrados.length === 0) {
+        $tbody.append('<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhuma acção de formação encontrada.</td></tr>');
+        return;
+    }
+    $.each(filtrados, function(i, a) {
+        var pct = a.vagas > 0 ? Math.round((a.inscritos / a.vagas) * 100) : 0;
+        var barColor = pct >= 100 ? 'var(--success)' : pct >= 60 ? 'var(--primary-light)' : 'var(--warning)';
+        var badgeClass = getBadgeEstado(a.estado);
+        var botoes = '<div style="display:flex;gap:0.25rem;">' +
+            '<button class="btn btn-sm btn-outline" title="Ver Detalhe" onclick="verDetalheFormacao(' + a.id + ')"><i class="fi fi-sr-eye"></i></button>' +
+            '<button class="btn btn-sm btn-outline" title="Inscrever" onclick="inscreverColaborador(' + a.id + ')"><i class="fi fi-sr-user-plus"></i></button>' +
+            '<button class="btn btn-sm btn-outline" title="Editar" onclick="editarFormacao(' + a.id + ')"><i class="fi fi-sr-pen"></i></button>' +
+            '<button class="btn btn-sm btn-outline" title="Eliminar" style="color:var(--danger);" onclick="eliminarFormacao(' + a.id + ')"><i class="fi fi-sr-trash"></i></button>' +
+            '</div>';
+        var row = '<tr>' +
+            '<td style="font-weight:600;">' + a.nome + '</td>' +
+            '<td><span class="chip">' + a.tema + '</span></td>' +
+            '<td>' + formatarData(a.dataInicio) + '</td>' +
+            '<td>' + formatarData(a.dataFim) + '</td>' +
+            '<td>' + a.local + '</td>' +
+            '<td style="min-width:120px;">' +
+                '<div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:0.25rem;">' +
+                    '<span>' + a.inscritos + '/' + a.vagas + '</span>' +
+                    '<span style="font-weight:600;">' + pct + '%</span>' +
+                '</div>' +
+                '<div style="height:6px;background:var(--bg-body);border-radius:3px;overflow:hidden;">' +
+                    '<div style="width:' + pct + '%;height:100%;background:' + barColor + ';border-radius:3px;"></div>' +
+                '</div>' +
+            '</td>' +
+            '<td>' + a.horas + 'h</td>' +
+            '<td><span class="badge ' + badgeClass + '">' + a.estado + '</span></td>' +
+            '<td>' + botoes + '</td>' +
+            '</tr>';
+        $tbody.append(row);
+    });
+}
+
+function renderHistorico() {
+    var $tbody = $('#tabelaHistorico');
+    $tbody.empty();
+    $.each(historicoFormacao, function(i, h) {
+        var stars = '';
+        var fullStars = Math.floor(h.avaliacao);
+        for (var s = 0; s < 5; s++) {
+            stars += s < fullStars ? '<i class="fi fi-sr-star" style="color:var(--warning);font-size:0.7rem;"></i>' : '<i class="fi fi-sr-star" style="color:var(--text-muted);font-size:0.7rem;"></i>';
+        }
+        var certBadge = h.certificado
+            ? '<span class="badge badge-success"><i class="fi fi-sr-check"></i> Emitido</span>'
+            : '<span class="badge badge-gray">Pendente</span>';
+        var row = '<tr>' +
+            '<td style="font-weight:600;">' + h.nome + '</td>' +
+            '<td><span class="chip">' + h.tema + '</span></td>' +
+            '<td>' + h.data + '</td>' +
+            '<td>' + h.local + '</td>' +
+            '<td>' + h.participantes + '</td>' +
+            '<td>' + h.horas + 'h</td>' +
+            '<td>' + certBadge + '</td>' +
+            '<td><div style="display:flex;align-items:center;gap:0.375rem;">' + stars + ' <span style="font-size:0.75rem;font-weight:600;">' + h.avaliacao + '</span></div></td>' +
+            '</tr>';
+        $tbody.append(row);
+    });
+}
+
+function verDetalheFormacao(id) {
+    var a = accoesFormacao.find(function(x) { return x.id === id; });
+    if (!a) return;
+    var pct = a.vagas > 0 ? Math.round((a.inscritos / a.vagas) * 100) : 0;
+    var badgeClass = getBadgeEstado(a.estado);
+    var corpo = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">' +
+        '<div><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.125rem;">Tema</div><div style="font-size:0.85rem;font-weight:500;">' + a.tema + '</div></div>' +
+        '<div><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.125rem;">Estado</div><span class="badge ' + badgeClass + '">' + a.estado + '</span></div>' +
+        '<div><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.125rem;">Data Início</div><div style="font-size:0.85rem;">' + formatarData(a.dataInicio) + '</div></div>' +
+        '<div><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.125rem;">Data Fim</div><div style="font-size:0.85rem;">' + formatarData(a.dataFim) + '</div></div>' +
+        '<div><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.125rem;">Local</div><div style="font-size:0.85rem;">' + a.local + '</div></div>' +
+        '<div><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.125rem;">Horas</div><div style="font-size:0.85rem;font-weight:600;">' + a.horas + 'h</div></div>' +
+        '</div>' +
+        '<div style="margin-bottom:0.5rem;"><div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.25rem;">Inscrições: ' + a.inscritos + '/' + a.vagas + ' (' + pct + '%)</div>' +
+        '<div style="height:8px;background:var(--bg-body);border-radius:4px;overflow:hidden;">' +
+        '<div style="width:' + pct + '%;height:100%;background:var(--primary-light);border-radius:4px;"></div></div></div>';
+    $('#alertaTitulo').html('<i class="fi fi-sr-graduation-cap"></i> ' + a.nome);
+    $('#alertaCorpo').html(corpo);
+    $('#alertaFooter').html('<button class="btn btn-outline" onclick="$(\'#modalAlerta\').removeClass(\'active\')">Fechar</button>');
+    $('#modalAlerta').addClass('active');
+}
+
+function inscreverColaborador(id) {
+    var a = accoesFormacao.find(function(x) { return x.id === id; });
+    if (!a) return;
+    if (a.inscritos >= a.vagas) {
+        showToast('Não há vagas disponíveis para esta acção.', 'warning');
+        return;
+    }
+    a.inscritos++;
+    showToast('Colaborador inscrito com sucesso em "' + a.nome + '"!', 'success');
+    renderTabelaFormacao($('#filtroEstadoFormacao').val());
+}
+
+function editarFormacao(id) {
+    var a = accoesFormacao.find(function(x) { return x.id === id; });
+    if (!a) return;
+    $('#editarFormacaoId').val(a.id);
+    $('#editarNomeAccao').val(a.nome);
+    $('#editarTemaAccao').val(a.tema);
+    $('#editarLocalAccao').val(a.local);
+    $('#editarDataInicioAccao').val(a.dataInicio);
+    $('#editarDataFimAccao').val(a.dataFim);
+    $('#editarVagasAccao').val(a.vagas);
+    $('#editarHorasAccao').val(a.horas);
+    $('#editarEstadoAccao').val(a.estado);
+    $('#modalEditarFormacao').addClass('active');
+}
+
+function eliminarFormacao(id) {
+    var a = accoesFormacao.find(function(x) { return x.id === id; });
+    if (!a) return;
+    $('#deleteFormacaoId').val(a.id);
+    $('#deleteFormacaoNome').text(a.nome);
+    $('#modalDeleteFormacao').addClass('active');
+}
+
+function confirmarEliminarFormacao() {
+    var id = parseInt($('#deleteFormacaoId').val());
+    accoesFormacao = accoesFormacao.filter(function(a) { return a.id !== id; });
+    $('#modalDeleteFormacao').removeClass('active');
+    showToast('Acção de formação eliminada com sucesso.', 'success');
+    renderTabelaFormacao($('#filtroEstadoFormacao').val());
+}
+
+function submeterNovaAccao() {
+    var nome = $('#nomeAccao').val().trim();
+    var tema = $('#temaAccao').val();
+    var local = $('#localAccao').val().trim();
+    var dataInicio = $('#dataInicioAccao').val();
+    var dataFim = $('#dataFimAccao').val();
+    var vagas = parseInt($('#vagasAccao').val());
+    var horas = parseInt($('#horasAccao').val());
+    if (!nome || !tema || !local || !dataInicio || !dataFim || !vagas || !horas) {
+        showToast('Preencha todos os campos obrigatórios.', 'warning');
+        return;
+    }
+    var newId = Math.max.apply(null, accoesFormacao.map(function(a) { return a.id; })) + 1;
+    accoesFormacao.push({
+        id: newId, nome: nome, tema: tema, dataInicio: dataInicio, dataFim: dataFim,
+        local: local, vagas: vagas, inscritos: 0, horas: horas, estado: "Planeada"
+    });
+    $('#modalNovaAccao').removeClass('active');
+    $('#nomeAccao').val(''); $('#temaAccao').val(''); $('#localAccao').val('');
+    $('#dataInicioAccao').val(''); $('#dataFimAccao').val('');
+    $('#vagasAccao').val(''); $('#horasAccao').val(''); $('#descricaoAccao').val('');
+    showToast('Acção de formação registada com sucesso!', 'success');
+    renderTabelaFormacao('');
+}
+
+function submeterEditarFormacao() {
+    var id = parseInt($('#editarFormacaoId').val());
+    var a = accoesFormacao.find(function(x) { return x.id === id; });
+    if (!a) return;
+    a.nome = $('#editarNomeAccao').val().trim();
+    a.tema = $('#editarTemaAccao').val();
+    a.local = $('#editarLocalAccao').val().trim();
+    a.dataInicio = $('#editarDataInicioAccao').val();
+    a.dataFim = $('#editarDataFimAccao').val();
+    a.vagas = parseInt($('#editarVagasAccao').val());
+    a.horas = parseInt($('#editarHorasAccao').val());
+    a.estado = $('#editarEstadoAccao').val();
+    $('#modalEditarFormacao').removeClass('active');
+    showToast('Acção de formação actualizada com sucesso!', 'success');
+    renderTabelaFormacao($('#filtroEstadoFormacao').val());
+}
+
+$(document).ready(function() {
+    renderTabelaFormacao('');
+    renderHistorico();
+
+    $('#tabsFormacao .tab-item').on('click', function() {
+        var tab = $(this).data('tab');
+        $('#tabsFormacao .tab-item').removeClass('active');
+        $(this).addClass('active');
+        $('#tab-content-formacao .tab-pane').hide().removeClass('active');
+        $('#tab-' + tab).show().addClass('active');
+    });
+
+    $('#filtroEstadoFormacao').on('change', function() {
+        renderTabelaFormacao($(this).val());
+    });
+});
+</script>
+}

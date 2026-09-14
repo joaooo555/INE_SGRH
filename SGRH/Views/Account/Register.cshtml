@@ -1,0 +1,70 @@
+@model RegisterViewModel
+@{
+    Layout = "_LayoutAuth";
+    ViewData["Title"] = "Criar Conta";
+}
+
+<div class="auth-tabs">
+    <a href="@Url.Action("Login", "Account")" class="auth-tab">Entrar</a>
+    <a href="@Url.Action("Register", "Account")" class="auth-tab active">Criar Conta</a>
+</div>
+
+<form asp-action="Register" asp-controller="Account" method="post" class="auth-form">
+    @Html.AntiForgeryToken()
+
+    <div class="auth-input-group">
+        <label asp-for="FullName">Nome Completo</label>
+        <div class="auth-input-wrapper">
+            <i class="fi fi-sr-user"></i>
+            <input asp-for="FullName" type="text" class="form-input" placeholder="O seu nome completo" autofocus>
+        </div>
+        <span asp-validation-for="FullName" class="auth-validation"></span>
+    </div>
+
+    <div class="auth-input-group">
+        <label asp-for="Email">Email</label>
+        <div class="auth-input-wrapper">
+            <i class="fi fi-sr-envelope"></i>
+            <input asp-for="Email" type="email" class="form-input" placeholder="exemplo@email.com">
+        </div>
+        <span asp-validation-for="Email" class="auth-validation"></span>
+    </div>
+
+    <div class="auth-input-group">
+        <label asp-for="Password">Password</label>
+        <div class="auth-input-wrapper">
+            <i class="fi fi-sr-lock"></i>
+            <input asp-for="Password" class="form-input" placeholder="Mínimo 6 caracteres">
+        </div>
+        <span asp-validation-for="Password" class="auth-validation"></span>
+    </div>
+
+    <div class="auth-input-group">
+        <label asp-for="ConfirmPassword">Confirmar Password</label>
+        <div class="auth-input-wrapper">
+            <i class="fi fi-sr-lock"></i>
+            <input asp-for="ConfirmPassword" class="form-input" placeholder="Repita a password">
+        </div>
+        <span asp-validation-for="ConfirmPassword" class="auth-validation"></span>
+    </div>
+
+    <div class="auth-row" style="margin-top:0.25rem;">
+        <label class="auth-checkbox">
+            <input asp-for="AcceptTerms" type="checkbox">
+            <span>Aceito os <a href="#" class="auth-link">termos e condições</a></span>
+        </label>
+    </div>
+    <span asp-validation-for="AcceptTerms" class="auth-validation" style="margin-top:-0.5rem;margin-bottom:0.5rem;display:block;"></span>
+
+    <button type="submit" class="btn btn-primary auth-btn">
+        <i class="fi fi-sr-user-plus"></i> Criar Conta
+    </button>
+</form>
+
+<div class="auth-footer-text">
+    Já tem conta? <a href="@Url.Action("Login", "Account")" class="auth-link">Entrar</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

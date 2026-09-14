@@ -1,0 +1,221 @@
+@{
+    ViewData["Title"] = "Assuntos Sociais";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Assuntos Sociais e Bem-Estar</h1>
+        <p class="page-subtitle">Apoio social, canal confidencial e acompanhamento de casos</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline" id="btnRelatorioSocial"><i class="fi fi-sr-download"></i> Relatório</button>
+        <button class="btn btn-primary" id="btnNovoCaso"><i class="fi fi-sr-plus"></i> Novo Caso</button>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="stat-info"><h3>Casos Activos</h3><div class="stat-value" style="color:var(--warning);">2</div></div><div class="stat-icon amber"><i class="fi fi-sr-folder-open"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Canal Confidencial</h3><div class="stat-value">2</div></div><div class="stat-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;"><i class="fi fi-sr-lock"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Resolvidos (Mês)</h3><div class="stat-value" style="color:var(--success);">1</div></div><div class="stat-icon green"><i class="fi fi-sr-check-circle"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Total de Casos</h3><div class="stat-value">4</div></div><div class="stat-icon blue"><i class="fi fi-sr-folder"></i></div></div>
+</div>
+
+<!-- Alerta Canal Confidencial -->
+<div style="padding:1rem;background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);border-radius:0.75rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;">
+    <i class="fi fi-sr-shield-check" style="color:#8b5cf6;font-size:1.5rem;"></i>
+    <div>
+        <strong style="color:#7c3aed;">Canal Confidencial Disponível</strong>
+        <p style="font-size:0.8rem;color:var(--text-muted);">Os colaboradores podem reportar casos de forma anónima através do canal confidencial. Todos os dados são tratados com total sigilo.</p>
+    </div>
+    <button class="btn btn-outline" style="border-color:#8b5cf6;color:#7c3aed;" id="btnCanalConf"><i class="fi fi-sr-lock"></i> Canal Confidencial</button>
+</div>
+
+<!-- Lista de Casos -->
+<div class="card">
+    <div class="card-header"><span class="card-title">Casos de Apoio Social</span></div>
+    <div class="card-body" style="padding:0;">
+        <table>
+            <thead><tr><th>ID</th><th>Colaborador</th><th>Tipo</th><th>Canal</th><th>Descrição</th><th>Data Registo</th><th>Estado</th><th style="text-align:right;">Ações</th></tr></thead>
+            <tbody id="tabelaCasos"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Novo Caso -->
+<div class="modal-overlay" id="modalNovoCaso">
+    <div class="modal">
+        <div class="modal-header"><h2 class="modal-title">Registar Novo Caso</h2><button class="modal-close" id="closeNovoCaso">&times;</button></div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Colaborador *</label><select class="form-select"><option>Seleccionar...</option><option>Ana Maria Fernandes</option><option>Carlos Alberto Machava</option><option>Fátima Zacarias Tembe</option><option>Tomás Ngwenya Dlamini</option><option>Vanessa Lourenço Matusse</option></select></div>
+                <div class="form-group"><label class="form-label">Tipo de Caso *</label><select class="form-select"><option>Seleccionar...</option><option>Doença</option><option>Apoio social</option><option>Emergência</option><option>Situação de risco</option><option>Assédio</option><option>Saúde mental</option><option>Outro</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Canal de Origem *</label><select class="form-select"><option>Directo</option><option>Canal confidencial</option><option>Encaminhamento</option></select></div>
+                <div class="form-group"><label class="form-label">Prioridade *</label><select class="form-select"><option>Baixa</option><option selected>Média</option><option>Alta</option><option>Urgente</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Data de Registo</label><input class="form-input" type="date"></div>
+                <div class="form-group"><label class="form-label">Técnico Responsável</label><select class="form-select"><option>Seleccionar...</option><option>Vanessa Lourenço Matusse</option><option>Ana Maria Fernandes</option></select></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descrição da Situação *</label><textarea class="form-textarea" rows="3" placeholder="Descreva detalhadamente a situação do colaborador..."></textarea></div>
+            <div class="form-group"><label class="form-label">Accão Planeada</label><textarea class="form-textarea" rows="2" placeholder="Accões de apoio previstas..."></textarea></div>
+            <div class="form-group"><label class="form-label">Documentos de Apoio</label><input class="form-input" type="file" multiple><span style="font-size:0.7rem;color:var(--text-muted);">Atestados, relatórios, requerimentos (PDF, JPG)</span></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelNovoCaso">Cancelar</button>
+            <button class="btn btn-primary" id="registarCaso">Registar Caso</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Canal Confidencial -->
+<div class="modal-overlay" id="modalCanalConfidencial">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" style="color:#7c3aed;"><i class="fi fi-sr-lock"></i> Canal Confidencial</h2>
+            <button class="modal-close" id="closeCanalConf">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="padding:1rem;background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.2);border-radius:0.5rem;margin-bottom:1rem;">
+                <p style="font-size:0.85rem;color:#7c3aed;"><i class="fi fi-sr-shield-check"></i> <strong>Este canal é totalmente anónimo.</strong> A sua identidade não será revelada em nenhuma circunstância.</p>
+            </div>
+            <div class="form-group"><label class="form-label">Tipo de Caso *</label><select class="form-select"><option>Seleccionar...</option><option>Doença</option><option>Apoio social</option><option>Emergência</option><option>Assédio</option><option>Outro</option></select></div>
+            <div class="form-group"><label class="form-label">Descrição do Caso *</label><textarea class="form-textarea" rows="5" placeholder="Descreva a situação com o máximo de detalhe possível..."></textarea></div>
+            <div class="form-group"><label class="form-label">Documento de Suporte (opcional)</label><input class="form-input" type="file" accept=".pdf,.jpg,.png"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelCanalConf">Cancelar</button>
+            <button class="btn" style="background:#7c3aed;color:white;" id="submeterAnonimo"><i class="fi fi-sr-paper-plane"></i> Submeter Anónimo</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Caso -->
+<div class="modal-overlay" id="modalEditarCaso">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Editar Caso de Apoio</h2>
+            <button class="modal-close" id="closeEditarCaso">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Colaborador</label><input class="form-input" type="text" id="editCasoColab"></div>
+                <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="editCasoTipo"><option>Doença</option><option>Apoio social</option><option>Emergência</option></select></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descrição</label><textarea class="form-textarea" id="editCasoDesc"></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="editCasoEstado"><option>Registado</option><option>Em tratamento</option><option>Encaminhado</option><option>Resolvido</option></select></div>
+                <div class="form-group"><label class="form-label">Canal</label><select class="form-select" id="editCasoCanal"><option>Directo</option><option>Canal confidencial</option></select></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelEditarCaso">Cancelar</button>
+            <button class="btn btn-primary" id="guardarCaso"><i class="fi fi-sr-check"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Eliminar Caso -->
+<div class="modal-overlay" id="modalDeleteCaso">
+    <div class="modal" style="max-width:440px;">
+        <div class="modal-header" style="background:rgba(239,68,68,0.03);">
+            <h2 class="modal-title" style="color:var(--danger);">Eliminar Caso</h2>
+            <button class="modal-close" id="closeDeleteCaso">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;gap:1rem;align-items:center;">
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;"><i class="fi fi-sr-trash" style="color:var(--danger);font-size:1.25rem;"></i></div>
+                <div><p style="font-weight:600;">Eliminar este caso?</p><p style="font-size:0.8rem;color:var(--text-muted);">Os dados serão removidos permanentemente.</p></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelDeleteCaso">Cancelar</button>
+            <button class="btn btn-danger" id="confirmDeleteCaso"><i class="fi fi-sr-trash"></i> Eliminar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Render casos table
+    function renderizarCasos() {
+        var $tbody = $('#tabelaCasos');
+        $tbody.empty();
+        $.each(casosApoio, function(i, c) {
+            $tbody.append(
+                '<tr style="cursor:pointer;" data-ver="' + c.id + '">' +
+                '<td><code style="font-size:0.75rem;background:var(--bg-body);padding:0.2rem 0.4rem;border-radius:4px;">CS-' + String(c.id).padStart(3,'0') + '</code></td>' +
+                '<td><div style="display:flex;align-items:center;gap:0.5rem;">' +
+                (c.canal === 'Canal confidencial' ? '<i class="fi fi-sr-lock" style="color:#8b5cf6;"></i>' : '') +
+                '<strong>' + c.colaborador + '</strong></div></td>' +
+                '<td><span class="chip">' + c.tipo + '</span></td>' +
+                '<td>' + (c.canal === 'Canal confidencial' ? '<span class="badge badge-purple"><i class="fi fi-sr-lock"></i> Confidencial</span>' : '<span class="badge badge-gray">Directo</span>') + '</td>' +
+                '<td style="max-width:250px;">' + c.descricao + '</td>' +
+                '<td>' + formatarData(c.dataRegisto) + '</td>' +
+                '<td><span class="badge ' + getBadgeEstado(c.estado) + '">' + c.estado + '</span></td>' +
+                '<td style="text-align:right;" onclick="event.stopPropagation()">' +
+                '<button class="btn btn-sm btn-outline" data-editar="' + c.id + '" title="Editar"><i class="fi fi-sr-pencil"></i></button> ' +
+                '<button class="btn btn-sm btn-outline" data-delete-caso="' + c.id + '" title="Eliminar" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>' +
+                '</td></tr>'
+            );
+        });
+    }
+    renderizarCasos();
+
+    // Ver detalhes
+    $(document).on('click', '[data-ver]', function(e) {
+        if ($(e.target).closest('[data-editar], [data-delete-caso]').length) return;
+        var id = parseInt($(this).data('ver'));
+        var c = casosApoio.find(function(caso){ return caso.id === id; });
+        if (!c) return;
+        var conteudo = '<div style="display:grid;gap:1rem;">' +
+            '<div style="display:flex;gap:1rem;align-items:center;">' +
+            '<div style="width:48px;height:48px;border-radius:50%;background:' + (c.canal==='Canal confidencial'?'rgba(139,92,246,0.1)':'rgba(59,130,246,0.1)') + ';display:flex;align-items:center;justify-content:center;">' +
+            '<i class="fi ' + (c.canal==='Canal confidencial'?'fi-sr-lock':'fi-sr-heart') + '" style="color:' + (c.canal==='Canal confidencial'?'#8b5cf6':'var(--info)') + ';font-size:1.25rem;"></i></div>' +
+            '<div><h3 style="font-size:1rem;">Caso CS-' + String(c.id).padStart(3,'0') + '</h3>' +
+            '<p style="font-size:0.8rem;color:var(--text-muted);">' + c.tipo + ' — ' + c.canal + '</p></div></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;padding:1rem;background:var(--bg-body);border-radius:0.5rem;">' +
+            '<div><strong style="color:var(--text-muted);font-size:0.75rem;display:block;">Colaborador</strong>' + c.colaborador + '</div>' +
+            '<div><strong style="color:var(--text-muted);font-size:0.75rem;display:block;">Data de Registo</strong>' + formatarData(c.dataRegisto) + '</div>' +
+            '<div><strong style="color:var(--text-muted);font-size:0.75rem;display:block;">Estado</strong><span class="badge ' + getBadgeEstado(c.estado) + '">' + c.estado + '</span></div>' +
+            '<div><strong style="color:var(--text-muted);font-size:0.75rem;display:block;">Canal</strong>' + c.canal + '</div></div>' +
+            '<div><strong style="font-size:0.85rem;display:block;margin-bottom:0.5rem;">Descrição</strong>' +
+            '<p style="font-size:0.85rem;color:var(--text-secondary);padding:0.75rem;background:var(--bg-body);border-radius:0.5rem;">' + c.descricao + '</p></div></div>';
+        mostrarAlerta('Detalhe do Caso de Apoio', conteudo,
+            '<button class="btn btn-outline" onclick="closeModal(\'modalAlerta\')">Fechar</button>');
+    });
+
+    // Editar
+    $(document).on('click', '[data-editar]', function() {
+        var id = parseInt($(this).data('editar'));
+        var c = casosApoio.find(function(caso){ return caso.id === id; });
+        if (!c) return;
+        $('#editCasoColab').val(c.colaborador);
+        $('#editCasoTipo').val(c.tipo);
+        $('#editCasoDesc').val(c.descricao);
+        $('#editCasoEstado').val(c.estado);
+        $('#editCasoCanal').val(c.canal);
+        openModal('modalEditarCaso');
+    });
+
+    // Eliminar
+    $(document).on('click', '[data-delete-caso]', function() { openModal('modalDeleteCaso'); });
+
+    // Button handlers
+    $('#btnRelatorioSocial').on('click', function() { showToast('Relatório social gerado!', 'success'); });
+    $('#btnNovoCaso').on('click', function() { openModal('modalNovoCaso'); });
+    $('#btnCanalConf').on('click', function() { openModal('modalCanalConfidencial'); });
+    $('#closeNovoCaso, #cancelNovoCaso').on('click', function() { closeModal('modalNovoCaso'); });
+    $('#registarCaso').on('click', function() { closeModal('modalNovoCaso'); showToast('Caso registado com sucesso!', 'success'); });
+    $('#closeCanalConf, #cancelCanalConf').on('click', function() { closeModal('modalCanalConfidencial'); });
+    $('#submeterAnonimo').on('click', function() { closeModal('modalCanalConfidencial'); showToast('Caso submetido anonimamente. Obrigado.', 'success'); });
+    $('#closeEditarCaso, #cancelEditarCaso').on('click', function() { closeModal('modalEditarCaso'); });
+    $('#guardarCaso').on('click', function() { closeModal('modalEditarCaso'); showToast('Caso actualizado!', 'success'); });
+    $('#closeDeleteCaso, #cancelDeleteCaso').on('click', function() { closeModal('modalDeleteCaso'); });
+    $('#confirmDeleteCaso').on('click', function() { closeModal('modalDeleteCaso'); showToast('Caso eliminado!', 'danger'); });
+});
+</script>
+}

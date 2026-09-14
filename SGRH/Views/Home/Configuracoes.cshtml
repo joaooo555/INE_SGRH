@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Configurações";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Configurações do Sistema</h1>
+        <p class="page-subtitle">Parâmetros gerais e preferências do sistema</p>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabsConfig">
+    <button class="tab-item active" data-configtab="geral">Geral</button>
+    <button class="tab-item" data-configtab="notificacoes">Notificações</button>
+    <button class="tab-item" data-configtab="templates">Templates</button>
+    <button class="tab-item" data-configtab="backup">Backup & Restore</button>
+</div>
+
+<!-- Geral -->
+<div id="config-geral">
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <div class="settings-section">
+                <h3><i class="fi fi-sr-building" style="margin-right:0.5rem;"></i> Dados da Instituição</h3>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Nome da Instituição</label><input class="form-input" type="text" value="Instituto Nacional de Estatística"></div>
+                    <div class="form-group"><label class="form-label">Sigla</label><input class="form-input" type="text" value="INE"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Nº Contribuinte</label><input class="form-input" type="text" value="400 001 234"></div>
+                    <div class="form-group"><label class="form-label">Contacto</label><input class="form-input" type="text" value="+258 21 490 900"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Endereço</label><input class="form-input" type="text" value="Av. Eduardo Mondlane, 1009, Maputo, Moçambique"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <div class="settings-section">
+                <h3><i class="fi fi-sr-globe" style="margin-right:0.5rem;"></i> Regionalização</h3>
+                <div class="settings-row"><div class="settings-label"><h4>Idioma do Sistema</h4><p>Idioma padrão para a interface</p></div><select class="form-select" style="width:auto;"><option selected>Português (Moçambique)</option><option>Inglês</option></select></div>
+                <div class="settings-row"><div class="settings-label"><h4>Moeda Padrão</h4><p>Moeda para valores monetários</p></div><select class="form-select" style="width:auto;"><option selected>Metical (MZN)</option><option>USD</option><option>EUR</option></select></div>
+                <div class="settings-row"><div class="settings-label"><h4>Fuso Horário</h4><p>Horário de referência do sistema</p></div><select class="form-select" style="width:auto;"><option selected>CAT (UTC+2)</option><option>WAT (UTC+1)</option></select></div>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <div class="settings-section">
+                <h3><i class="fi fi-sr-lock" style="margin-right:0.5rem;"></i> Segurança</h3>
+                <div class="settings-row"><div class="settings-label"><h4>Expiração de Senha</h4><p>Forçar alteração de senha a cada 90 dias</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="settings-row"><div class="settings-label"><h4>Autenticação de Dois Factores</h4><p>Adicionar camada extra de segurança</p></div><label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+                <div class="settings-row"><div class="settings-label"><h4>Bloqueio após Tentativas</h4><p>Bloquear conta após 5 tentativas falhadas</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            </div>
+        </div>
+    </div>
+    <div style="text-align:right;"><button class="btn btn-primary" id="btnGuardarGeral"><i class="fi fi-sr-check"></i> Guardar Alterações</button></div>
+</div>
+
+<!-- Notificações -->
+<div id="config-notificacoes" style="display:none;">
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <div class="settings-section">
+                <h3><i class="fi fi-sr-bell" style="margin-right:0.5rem;"></i> Alertas por Email</h3>
+                <div class="settings-row"><div class="settings-label"><h4>Contratos a Expirar</h4><p>Receber alerta quando contratos estiverem a expirar</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="settings-row"><div class="settings-label"><h4>Pedidos Pendentes</h4><p>Notificar sobre pedidos de aprovação</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="settings-row"><div class="settings-label"><h4>Novas Candidaturas</h4><p>Alerta quando novas candidaturas são submetidas</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="settings-row"><div class="settings-label"><h4>Formações Próximas</h4><p>Lembrete 3 dias antes do início da formação</p></div><label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <div class="settings-section">
+                <h3><i class="fi fi-sr-envelope" style="margin-right:0.5rem;"></i> Configuração de Email</h3>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Servidor SMTP</label><input class="form-input" type="text" value="smtp.sgrh.gov.mz"></div>
+                    <div class="form-group"><label class="form-label">Porta</label><input class="form-input" type="text" value="587"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Email Remetente</label><input class="form-input" type="email" value="sgrh@sgrh.gov.mz"></div>
+                    <div class="form-group"><label class="form-label">Senha</label><input class="form-input" type="password" value="••••••••"></div>
+                </div>
+                <button class="btn btn-outline" id="btnTestarEmail" style="margin-top:0.5rem;"><i class="fi fi-sr-paper-plane"></i> Enviar Email de Teste</button>
+            </div>
+        </div>
+    </div>
+    <div style="text-align:right;"><button class="btn btn-primary" id="btnGuardarNotif"><i class="fi fi-sr-check"></i> Guardar</button></div>
+</div>
+
+<!-- Templates -->
+<div id="config-templates" style="display:none;">
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header">
+            <span class="card-title"><i class="fi fi-sr-file" style="color:var(--info);margin-right:0.5rem;"></i> Templates de Documentos</span>
+            <button class="btn btn-sm btn-primary" id="btnNovoTemplate"><i class="fi fi-sr-plus"></i> Novo Template</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Nome do Template</th><th>Módulo</th><th>Última Actualização</th><th style="text-align:right;">Ações</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Ficha Individual do Colaborador</strong></td><td><span class="chip">Colaboradores</span></td><td>15/06/2026</td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-pencil"></i> Editar</button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-copy"></i></button></td></tr>
+                        <tr><td><strong>Contrato de Trabalho</strong></td><td><span class="chip">Contratos</span></td><td>10/06/2026</td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-pencil"></i> Editar</button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-copy"></i></button></td></tr>
+                        <tr><td><strong>Guia de Marcha</strong></td><td><span class="chip">Guias de Marcha</span></td><td>20/06/2026</td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-pencil"></i> Editar</button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-copy"></i></button></td></tr>
+                        <tr><td><strong>Parecer de Aprovação</strong></td><td><span class="chip">Administração</span></td><td>05/06/2026</td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-pencil"></i> Editar</button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-copy"></i></button></td></tr>
+                        <tr><td><strong>Declaração de Estágio</strong></td><td><span class="chip">Estágios</span></td><td>01/06/2026</td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-pencil"></i> Editar</button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-copy"></i></button></td></tr>
+                        <tr><td><strong>Certificado de Formação</strong></td><td><span class="chip">Formação</span></td><td>25/05/2026</td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-pencil"></i> Editar</button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-copy"></i></button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backup -->
+<div id="config-backup" style="display:none;">
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><span class="card-title"><i class="fi fi-sr-database" style="color:var(--info);margin-right:0.5rem;"></i> Backup Automático</span></div>
+        <div class="card-body">
+            <div class="settings-row"><div class="settings-label"><h4>Backup Automático Activado</h4><p>Cópia de segurança diária às 02:00</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            <div class="settings-row"><div class="settings-label"><h4>Retenção de Backups</h4><p>Manter backups dos últimos 30 dias</p></div><select class="form-select" style="width:auto;"><option>7 dias</option><option selected>30 dias</option><option>60 dias</option><option>90 dias</option></select></div>
+            <div class="settings-row"><div class="settings-label"><h4>Último Backup</h4><p>30/06/2026 às 02:00 — Tamanho: 45.2 MB</p></div><span class="badge badge-success"><i class="fi fi-sr-check-circle"></i> Concluído</span></div>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><span class="card-title"><i class="fi fi-sr-call-history" style="color:var(--info);margin-right:0.5rem;"></i> Histórico de Backups</span></div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Data</th><th>Hora</th><th>Tamanho</th><th>Tipo</th><th>Estado</th><th style="text-align:right;">Ações</th></tr></thead>
+                    <tbody>
+                        <tr><td>30/06/2026</td><td>02:00</td><td>45.2 MB</td><td><span class="chip">Automático</span></td><td><span class="badge badge-success">Concluído</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-download"></i></button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-undo"></i></button></td></tr>
+                        <tr><td>29/06/2026</td><td>02:00</td><td>44.8 MB</td><td><span class="chip">Automático</span></td><td><span class="badge badge-success">Concluído</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-download"></i></button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-undo"></i></button></td></tr>
+                        <tr><td>28/06/2026</td><td>14:30</td><td>43.5 MB</td><td><span class="chip" style="background:rgba(59,130,246,0.1);color:var(--info);">Manual</span></td><td><span class="badge badge-success">Concluído</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-download"></i></button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-undo"></i></button></td></tr>
+                        <tr><td>28/06/2026</td><td>02:00</td><td>43.2 MB</td><td><span class="chip">Automático</span></td><td><span class="badge badge-success">Concluído</span></td><td style="text-align:right;"><button class="btn btn-sm btn-outline"><i class="fi fi-sr-download"></i></button> <button class="btn btn-sm btn-outline"><i class="fi fi-sr-undo"></i></button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+        <button class="btn btn-outline" id="btnBackupManual"><i class="fi fi-sr-database"></i> Backup Manual Agora</button>
+        <button class="btn btn-outline" id="btnRestaurarBackup"><i class="fi fi-sr-upload"></i> Restaurar Backup</button>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Tab switching
+    $('#tabsConfig .tab-item').on('click', function() {
+        $('#tabsConfig .tab-item').removeClass('active');
+        $(this).addClass('active');
+        var tabName = $(this).data('configtab');
+        $.each(['geral','notificacoes','templates','backup'], function(i, name) {
+            $('#config-' + name).toggle(name === tabName);
+        });
+    });
+
+    // Toggle switch toasts
+    $(document).on('change', '.toggle-switch input, .form-select', function() {
+        showToast('Configuração actualizada!', 'success');
+    });
+
+    // Buttons
+    $('#btnGuardarGeral').on('click', function() { showToast('Configurações guardadas com sucesso!', 'success'); });
+    $('#btnTestarEmail').on('click', function() { showToast('Email de teste enviado com sucesso!', 'success'); });
+    $('#btnGuardarNotif').on('click', function() { showToast('Notificações guardadas com sucesso!', 'success'); });
+    $('#btnNovoTemplate').on('click', function() { showToast('Novo template criado', 'info'); });
+    $('#btnBackupManual').on('click', function() { showToast('Backup manual iniciado...', 'info'); });
+    $('#btnRestaurarBackup').on('click', function() { showToast('Ficheiro de restore selecionado', 'info'); });
+
+    // Template edit/duplicate
+    $(document).on('click', '.table .btn-outline', function() {
+        var icon = $(this).find('i');
+        if (icon.hasClass('fi-sr-pencil')) { showToast('Template aberto para edição', 'info'); }
+        else if (icon.hasClass('fi-sr-copy')) { showToast('Template duplicado!', 'success'); }
+        else if (icon.hasClass('fi-sr-download')) { showToast('Download do backup iniciado', 'success'); }
+        else if (icon.hasClass('fi-sr-undo')) { showToast('Backup restaurado com sucesso!', 'success'); }
+    });
+});
+</script>
+}

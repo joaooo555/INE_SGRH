@@ -1,0 +1,494 @@
+@{
+    ViewData["Title"] = "Contratos";
+    ViewBag.ActivePage = "Contratos";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gestão de Contratos</h1>
+        <p class="page-subtitle">Registo e acompanhamento de contratos de trabalho</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <button class="btn btn-outline" onclick="showToast('Relatório gerado com sucesso','success')">
+            <i class="fi fi-sr-document"></i> Relatório
+        </button>
+        <button class="btn btn-primary" onclick="openModal('modalNovoContrato')">
+            <i class="fi fi-sr-plus"></i> Novo Contrato
+        </button>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Contratos Vigentes</h3>
+            <div class="stat-value" id="kpiVigentes">8</div>
+            <span class="stat-change positive">Ativos no sistema</span>
+        </div>
+        <div class="stat-icon blue"><i class="fi fi-sr-file-check"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>A Expirar &lt;30 dias</h3>
+            <div class="stat-value" id="kpiExpirar">2</div>
+            <span class="stat-change negative">Requer atenção</span>
+        </div>
+        <div class="stat-icon amber"><i class="fi fi-sr-clock"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Expirados</h3>
+            <div class="stat-value" id="kpiExpirados">1</div>
+            <span class="stat-change negative">Acima do prazo</span>
+        </div>
+        <div class="stat-icon red"><i class="fi fi-sr-calendar-xmark"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>Renovações Pendentes</h3>
+            <div class="stat-value" id="kpiRenovacoes">1</div>
+            <span class="stat-change neutral">Aguardando decisão</span>
+        </div>
+        <div class="stat-icon green"><i class="fi fi-sr-arrows-rotate"></i></div>
+    </div>
+</div>
+
+<!-- Alerta de Expirações -->
+<div class="card" style="border-left:4px solid var(--danger);margin-bottom:1.5rem;">
+    <div class="card-header">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+            <i class="fi fi-sr-triangle-exclamation" style="color:var(--danger);"></i>
+            <span class="card-title">Alertas de Expiração</span>
+        </div>
+        <span class="badge badge-danger">2 contratos</span>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div id="listaAlertas"></div>
+    </div>
+</div>
+
+<!-- Tabela de Contratos -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Lista de Contratos</span>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+            <select class="form-select" id="filtroEstadoContrato" style="width:auto;padding:0.375rem 0.75rem;font-size:0.8rem;">
+                <option value="">Todos os Estados</option>
+                <option value="Vigente">Vigente</option>
+                <option value="Expirado">Expirado</option>
+                <option value="Rescindido">Rescindido</option>
+                <option value="Rascunho">Rascunho</option>
+            </select>
+        </div>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nº Contrato</th>
+                    <th>Colaborador</th>
+                    <th>Tipo</th>
+                    <th>Data Início</th>
+                    <th>Data Fim</th>
+                    <th>Remuneração</th>
+                    <th>Estado</th>
+                    <th>Dias Rest.</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaContratos">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Novo Contrato -->
+<div class="modal-overlay" id="modalNovoContrato">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Novo Contrato</span>
+            <button class="modal-close" onclick="closeModal('modalNovoContrato')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Colaborador</label>
+                    <select class="form-select" id="novoColaborador">
+                        <option value="">Selecionar colaborador...</option>
+                        <option>Ana Maria Fernandes</option>
+                        <option>Carlos Alberto Machava</option>
+                        <option>Fátima Zacarias Tembe</option>
+                        <option>José Manuel Sitoe</option>
+                        <option>Mariana Inácio Mondlane</option>
+                        <option>Pedro Henrique Cossa</option>
+                        <option>Rosa Amélia Banze</option>
+                        <option>Tomás Ngwenya Dlamini</option>
+                        <option>Vanessa Lourenço Matusse</option>
+                        <option>Wilson António Nhaca</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Contrato</label>
+                    <select class="form-select" id="novoTipo">
+                        <option value="">Selecionar tipo...</option>
+                        <option>Contrato a Termo Certo</option>
+                        <option>Contrato por Tempo Indeterminado</option>
+                        <option>Contrato de Prestação de Serviços</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Data de Início</label>
+                    <input type="text" class="form-input" id="novoDataInicio" placeholder="dd/mm/aaaa">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data de Fim</label>
+                    <input type="text" class="form-input" id="novoDataFim" placeholder="dd/mm/aaaa">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Remuneração (MZN)</label>
+                    <input type="number" class="form-input" id="novoRemuneracao" placeholder="Ex: 45000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" id="novoEstado">
+                        <option>Vigente</option>
+                        <option>Rascunho</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Observações</label>
+                <textarea class="form-textarea" id="novoObservacoes" placeholder="Notas adicionais sobre o contrato..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalNovoContrato')">Cancelar</button>
+            <button class="btn btn-primary" onclick="gravarNovoContrato()">Guardar Contrato</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Contrato -->
+<div class="modal-overlay" id="modalEditarContrato">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Editar Contrato</span>
+            <button class="modal-close" onclick="closeModal('modalEditarContrato')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editarContratoId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Nº Contrato</label>
+                    <input type="text" class="form-input" id="editarNumero" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Colaborador</label>
+                    <input type="text" class="form-input" id="editarColaborador" readonly>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Contrato</label>
+                    <select class="form-select" id="editarTipo">
+                        <option>Contrato a Termo Certo</option>
+                        <option>Contrato por Tempo Indeterminado</option>
+                        <option>Contrato de Prestação de Serviços</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" id="editarEstado">
+                        <option>Vigente</option>
+                        <option>Expirado</option>
+                        <option>Rescindido</option>
+                        <option>Rascunho</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Data de Início</label>
+                    <input type="text" class="form-input" id="editarDataInicio">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data de Fim</label>
+                    <input type="text" class="form-input" id="editarDataFim">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Remuneração (MZN)</label>
+                <input type="number" class="form-input" id="editarRemuneracao">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('modalEditarContrato')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarEdicaoContrato()">Guardar Alterações</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Eliminar Contrato -->
+<div class="modal-overlay" id="modalDeleteContrato">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title" style="color:var(--danger);">Eliminar Contrato</span>
+            <button class="modal-close" onclick="closeModal('modalDeleteContrato')"><i class="fi fi-sr-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="text-align:center;padding:1rem 0;">
+                <i class="fi fi-sr-trash-xmark" style="font-size:2.5rem;color:var(--danger);margin-bottom:0.75rem;display:block;"></i>
+                <p style="font-size:0.95rem;color:var(--text-primary);margin-bottom:0.25rem;">Tem certeza que deseja eliminar este contrato?</p>
+                <p id="mensagemDeleteContrato" style="font-size:0.85rem;color:var(--text-secondary);"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <input type="hidden" id="deleteContratoId">
+            <button class="btn btn-outline" onclick="closeModal('modalDeleteContrato')">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarEliminacaoContrato()">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    renderizarContratos(contratos);
+
+    $('#filtroEstadoContrato').on('change', function() {
+        var filtro = $(this).val();
+        if (!filtro) {
+            renderizarContratos(contratos);
+        } else {
+            var filtrados = contratos.filter(function(c) { return c.estado === filtro; });
+            renderizarContratos(filtrados);
+        }
+    });
+});
+
+function renderizarAlertas() {
+    var $lista = $('#listaAlertas');
+    $lista.empty();
+    var alertas = contratos.filter(function(c) {
+        var d = diasRestantes(c.dataFim);
+        return d >= 0 && d <= 30;
+    });
+    if (alertas.length === 0) {
+        $lista.append('<div style="text-align:center;color:var(--text-muted);padding:1rem;">Nenhum alerta de expiração</div>');
+        return;
+    }
+    alertas.forEach(function(c) {
+        var dias = diasRestantes(c.dataFim);
+        $lista.append(
+            '<div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border:1px solid var(--border);border-radius:0.5rem;background:rgba(239,68,68,0.02);">' +
+                '<div style="display:flex;align-items:center;gap:0.75rem;">' +
+                    '<div class="stat-icon red" style="width:36px;height:36px;border-radius:50%;font-size:0.8rem;">' +
+                        '<i class="fi fi-sr-clock"></i>' +
+                    '</div>' +
+                    '<div>' +
+                        '<div style="font-weight:600;font-size:0.85rem;">' + c.colaborador + '</div>' +
+                        '<div style="font-size:0.75rem;color:var(--text-secondary);">Expira em ' + formatarData(c.dataFim) + ' — <strong style="color:var(--danger);">' + dias + ' dia' + (dias !== 1 ? 's' : '') + '</strong></div>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="btn btn-sm btn-danger" onclick="renovarContratoAlerta(' + c.id + ')">Renovar</button>' +
+            '</div>'
+        );
+    });
+    $('#kpiExpirar').text(alertas.length);
+}
+
+function renderizarContratos(dados) {
+    var $tbody = $('#tabelaContratos');
+    $tbody.empty();
+
+    var vigentes = 0, expirados = 0, renovacoes = 0, expirar = 0;
+    contratos.forEach(function(c) {
+        if (c.estado === 'Vigente') vigentes++;
+        if (c.estado === 'Expirado') expirados++;
+        var d = diasRestantes(c.dataFim);
+        if (d >= 0 && d <= 30) expirar++;
+    });
+    renovacoes = expirar;
+    $('#kpiVigentes').text(vigentes);
+    $('#kpiExpirar').text(expirar);
+    $('#kpiExpirados').text(expirados);
+    $('#kpiRenovacoes').text(renovacoes);
+
+    renderizarAlertas();
+
+    if (dados.length === 0) {
+        $tbody.append('<tr><td colspan="9"><div class="empty-state"><h3>Nenhum contrato encontrado</h3><p>Não existem contratos para o filtro selecionado.</p></div></td></tr>');
+        return;
+    }
+
+    dados.forEach(function(c) {
+        var dias = diasRestantes(c.dataFim);
+        var diasLabel = c.dataFim ? (dias < 0 ? '<span style="color:var(--danger);">' + Math.abs(dias) + 'd exp.</span>' : (dias === 0 ? '<span style="color:var(--danger);">Hoje</span>' : dias + 'd')) : '—';
+        var remuneracaoFmt = formatarMoeda(c.remuneracao);
+
+        $tbody.append(
+            '<tr>' +
+                '<td><strong>' + c.numero + '</strong></td>' +
+                '<td>' + c.colaborador + '</td>' +
+                '<td><span style="font-size:0.75rem;">' + c.tipo + '</span></td>' +
+                '<td>' + formatarData(c.dataInicio) + '</td>' +
+                '<td>' + formatarData(c.dataFim) + '</td>' +
+                '<td>' + remuneracaoFmt + '</td>' +
+                '<td><span class="badge ' + getBadgeEstado(c.estado) + '">' + c.estado + '</span></td>' +
+                '<td>' + diasLabel + '</td>' +
+                '<td>' +
+                    '<div style="display:flex;gap:0.25rem;">' +
+                        '<button class="btn-icon btn-outline" title="Ver" onclick="verContrato(' + c.id + ')"><i class="fi fi-sr-eye"></i></button>' +
+                        '<button class="btn-icon btn-outline" title="Editar" onclick="editarContrato(' + c.id + ')"><i class="fi fi-sr-pen"></i></button>' +
+                        '<button class="btn-icon btn-outline" title="Eliminar" onclick="eliminarContrato(' + c.id + ')" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>'
+        );
+    });
+}
+
+function verContrato(id) {
+    var c = contratos.find(function(x) { return x.id === id; });
+    if (!c) return;
+    var dias = diasRestantes(c.dataFim);
+    var corpo =
+        '<div style="display:flex;flex-direction:column;gap:0.75rem;">' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Nº Contrato</span>' +
+                '<strong style="font-size:0.85rem;">' + c.numero + '</strong>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Colaborador</span>' +
+                '<strong style="font-size:0.85rem;">' + c.colaborador + '</strong>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Tipo</span>' +
+                '<span style="font-size:0.85rem;">' + c.tipo + '</span>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Data Início</span>' +
+                '<span style="font-size:0.85rem;">' + formatarData(c.dataInicio) + '</span>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Data Fim</span>' +
+                '<span style="font-size:0.85rem;">' + formatarData(c.dataFim) + '</span>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Remuneração</span>' +
+                '<strong style="font-size:0.85rem;">' + formatarMoeda(c.remuneracao) + '</strong>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Estado</span>' +
+                '<span class="badge ' + getBadgeEstado(c.estado) + '">' + c.estado + '</span>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;">' +
+                '<span style="color:var(--text-secondary);font-size:0.85rem;">Dias Restantes</span>' +
+                '<strong style="font-size:0.85rem;">' + (c.dataFim ? (dias < 0 ? 'Expirado' : dias + ' dias') : 'Indeterminado') + '</strong>' +
+            '</div>' +
+        '</div>';
+    mostrarAlerta('Detalhes do Contrato — ' + c.numero, corpo, '<button class="btn btn-outline" onclick="closeModal(\'modalAlerta\')">Fechar</button>');
+}
+
+function renovarContratoAlerta(id) {
+    var c = contratos.find(function(x) { return x.id === id; });
+    if (!c) return;
+    var novaData = new Date(c.dataFim || new Date());
+    novaData.setFullYear(novaData.getFullYear() + 1);
+    c.dataFim = novaData.toISOString().split('T')[0];
+    c.estado = 'Vigente';
+    renderizarContratos(contratos);
+    showToast('Contrato de ' + c.colaborador + ' renovado com sucesso!', 'success');
+}
+
+function editarContrato(id) {
+    var c = contratos.find(function(x) { return x.id === id; });
+    if (!c) return;
+    $('#editarContratoId').val(c.id);
+    $('#editarNumero').val(c.numero);
+    $('#editarColaborador').val(c.colaborador);
+    $('#editarTipo').val(c.tipo);
+    $('#editarEstado').val(c.estado);
+    $('#editarDataInicio').val(c.dataInicio);
+    $('#editarDataFim').val(c.dataFim || '');
+    $('#editarRemuneracao').val(c.remuneracao);
+    openModal('modalEditarContrato');
+}
+
+function guardarEdicaoContrato() {
+    var id = parseInt($('#editarContratoId').val());
+    var c = contratos.find(function(x) { return x.id === id; });
+    if (!c) return;
+    c.tipo = $('#editarTipo').val();
+    c.estado = $('#editarEstado').val();
+    c.dataInicio = $('#editarDataInicio').val();
+    c.dataFim = $('#editarDataFim').val() || null;
+    c.remuneracao = parseFloat($('#editarRemuneracao').val());
+    closeModal('modalEditarContrato');
+    renderizarContratos(contratos);
+    showToast('Contrato de ' + c.colaborador + ' atualizado com sucesso!', 'success');
+}
+
+function eliminarContrato(id) {
+    var c = contratos.find(function(x) { return x.id === id; });
+    if (!c) return;
+    $('#deleteContratoId').val(c.id);
+    $('#mensagemDeleteContrato').html('Contrato <strong>' + c.numero + '</strong> — ' + c.colaborador);
+    openModal('modalDeleteContrato');
+}
+
+function confirmarEliminacaoContrato() {
+    var id = parseInt($('#deleteContratoId').val());
+    var idx = contratos.findIndex(function(x) { return x.id === id; });
+    if (idx === -1) return;
+    var nome = contratos[idx].colaborador;
+    contratos.splice(idx, 1);
+    closeModal('modalDeleteContrato');
+    renderizarContratos(contratos);
+    showToast('Contrato de ' + nome + ' eliminado com sucesso!', 'success');
+}
+
+function gravarNovoContrato() {
+    var colaborador = $('#novoColaborador').val();
+    var tipo = $('#novoTipo').val();
+    var dataInicio = $('#novoDataInicio').val();
+    var dataFim = $('#novoDataFim').val();
+    var remuneracao = parseFloat($('#novoRemuneracao').val());
+    var estado = $('#novoEstado').val();
+
+    if (!colaborador || !tipo || !dataInicio || !remuneracao) {
+        showToast('Preencha todos os campos obrigatórios', 'warning');
+        return;
+    }
+
+    var maxId = contratos.reduce(function(m, c) { return c.id > m ? c.id : m; }, 0);
+    var numFormat = 'CTR-' + new Date().getFullYear() + '/' + String(maxId + 1).padStart(3, '0');
+
+    contratos.push({
+        id: maxId + 1,
+        colaborador: colaborador,
+        numero: numFormat,
+        tipo: tipo,
+        dataInicio: dataInicio,
+        dataFim: dataFim || null,
+        remuneracao: remuneracao,
+        estado: estado
+    });
+
+    $('#novoColaborador').val('');
+    $('#novoTipo').val('');
+    $('#novoDataInicio').val('');
+    $('#novoDataFim').val('');
+    $('#novoRemuneracao').val('');
+    $('#novoObservacoes').val('');
+    closeModal('modalNovoContrato');
+    renderizarContratos(contratos);
+    showToast('Novo contrato registado com sucesso!', 'success');
+}
+</script>
+}

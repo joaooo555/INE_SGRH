@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - SGRH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@flaticon/flaticon-uicons@3.3.1/css/all/all.min.css">
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true">
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="auth-layout">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="auth-logo-icon">SG</div>
+                <div class="auth-logo-text">
+                    <h1><span>SG</span>RH</h1>
+                    <p>Gestão de Pessoal</p>
+                </div>
+            </div>
+
+            @RenderBody()
+        </div>
+
+        <div class="auth-footer">
+            <p>&copy; 2026 SGRH v1.0 &mdash; Sistema de Gestão de Recursos Humanos</p>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - SGRH</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@flaticon/flaticon-uicons@3.3.1/css/all/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="~/css/styles.css" asp-append-version="true">
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="sidebar-overlay"></div>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div style="width:40px;height:40px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;">SG</div>
+            <div><h1><span>SG</span>RH</h1><span style="font-size:0.65rem;color:rgba(255,255,255,0.5);font-weight:400;">Gestão de Pessoal</span></div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">Principal</div>
+            <a href="@Url.Action("Index", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Dashboard" ? "active" : "")"><i class="fi fi-sr-home"></i> Dashboard</a>
+            <a href="@Url.Action("Colaboradores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Colaboradores" ? "active" : "")"><i class="fi fi-sr-users"></i> Colaboradores</a>
+            <div class="sidebar-section">Gestão</div>
+            <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")"><i class="fi fi-sr-file"></i> Contratos <span class="sidebar-badge">2</span></a>
+            <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")"><i class="fi fi-sr-settings"></i> Administração <span class="sidebar-badge">3</span></a>
+            <a href="@Url.Action("Formacao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Formacao" ? "active" : "")"><i class="fi fi-sr-graduation-cap"></i> Formação</a>
+            <a href="@Url.Action("Estagios", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Estagios" ? "active" : "")"><i class="fi fi-sr-briefcase"></i> Estágios</a>
+            <a href="@Url.Action("GuiasMarcha", "Home")" class="sidebar-item @(ViewBag.ActivePage == "GuiasMarcha" ? "active" : "")"><i class="fi fi-sr-route"></i> Guias de Marcha</a>
+            <div class="sidebar-section">Pessoal</div>
+            <a href="@Url.Action("Recrutamento", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Recrutamento" ? "active" : "")"><i class="fi fi-sr-search"></i> Recrutamento</a>
+            <a href="@Url.Action("Clima", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Clima" ? "active" : "")"><i class="fi fi-sr-chart-simple"></i> Clima Org.</a>
+            <a href="@Url.Action("AssuntosSociais", "Home")" class="sidebar-item @(ViewBag.ActivePage == "AssuntosSociais" ? "active" : "")"><i class="fi fi-sr-heart"></i> Assuntos Sociais</a>
+            <div class="sidebar-section">Sistema</div>
+            <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")"><i class="fi fi-sr-chart-mixed"></i> Reporting</a>
+            <a href="@Url.Action("Utilizadores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")"><i class="fi fi-sr-user-gear"></i> Utilizadores</a>
+            <a href="@Url.Action("Auditoria", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")"><i class="fi fi-sr-shield-check"></i> Auditoria</a>
+            <a href="@Url.Action("Configuracoes", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Configuracoes" ? "active" : "")"><i class="fi fi-sr-gears"></i> Configurações</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="topbar-toggle"><i class="fi fi-sr-menu-burger"></i></button>
+                <div class="topbar-search"><i class="fi fi-sr-search"></i><input type="text" placeholder="Pesquisar..."></div>
+            </div>
+            <div class="topbar-right">
+                <button class="topbar-icon"><i class="fi fi-sr-bell"></i><span class="badge">5</span></button>
+                <a href="@Url.Action("Logout", "Account")" class="topbar-icon" title="Sair" style="text-decoration:none;color:var(--text-secondary);cursor:pointer;"><i class="fi fi-sr-sign-out-alt"></i></a>
+                <div class="topbar-user"><div class="topbar-avatar">JC</div><div class="topbar-user-info"><span class="topbar-user-name">Joaquim Chissano</span><span class="topbar-user-role">Director Geral</span></div></div>
+            </div>
+        </header>
+
+        <div class="page-content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
