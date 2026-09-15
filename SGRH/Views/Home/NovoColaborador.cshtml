@@ -1,0 +1,347 @@
+@model SGRH.Models.Colaborador
+@{
+    ViewData["Title"] = "Novo Colaborador";
+    var estadosCivis = ViewBag.EstadosCivis as IEnumerable<SGRH.Models.EstadoCivil> ?? new List<SGRH.Models.EstadoCivil>();
+    var unidades = ViewBag.UnidadesOrganicas as IEnumerable<SGRH.Models.UnidadeOrganica> ?? new List<SGRH.Models.UnidadeOrganica>();
+    var categorias = ViewBag.Categorias as IEnumerable<SGRH.Models.Categoria> ?? new List<SGRH.Models.Categoria>();
+    var carreiras = ViewBag.Carreiras as IEnumerable<SGRH.Models.Carreira> ?? new List<SGRH.Models.Carreira>();
+    var funcoes = ViewBag.Funcoes as IEnumerable<SGRH.Models.Funcao> ?? new List<SGRH.Models.Funcao>();
+    var formasIngresso = ViewBag.FormasIngresso as IEnumerable<SGRH.Models.FormaIngresso> ?? new List<SGRH.Models.FormaIngresso>();
+    var tiposContrato = ViewBag.TiposContrato as IEnumerable<SGRH.Models.TipoContrato> ?? new List<SGRH.Models.TipoContrato>();
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Novo Colaborador</h1>
+        <p class="page-subtitle">Preencha os dados para registar um novo colaborador</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <a href="/Home/Colaboradores" class="btn btn-outline"><i class="fi fi-sr-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form id="formNovoColab" method="post" action="/Home/NovoColaborador" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="tabs" id="formTabs" style="margin-bottom:1.5rem;">
+                <button type="button" class="tab-item active" data-formtab="dadosPessoais">Dados Pessoais</button>
+                <button type="button" class="tab-item" data-formtab="dadosProfissionais">Dados Profissionais</button>
+                <button type="button" class="tab-item" data-formtab="docsContrato">Documentos e Contrato</button>
+            </div>
+
+            <!-- Dados Pessoais -->
+            <div class="form-section" id="secDadosPessoais">
+                <div class="form-row" style="align-items:flex-start;">
+                    <div class="form-group" style="flex:0 0 auto;">
+                        <label class="form-label">Foto do Colaborador</label>
+                        <div style="display:flex;gap:1rem;align-items:center;">
+                            <div id="fotoPreview" style="width:100px;height:100px;border-radius:50%;background:var(--bg-secondary);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-muted);overflow:hidden;">
+                                <i class="fi fi-sr-user"></i>
+                            </div>
+                            <div>
+                                <input type="file" name="foto" id="fotoColab" accept="image/*" style="display:none;" onchange="previewFoto(this)">
+                                <button type="button" class="btn btn-outline" onclick="$('#fotoColab').click()"><i class="fi fi-sr-camera"></i> Escolher Foto</button>
+                                <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">JPG, PNG. Max 2MB.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nome Completo <span style="color:var(--danger);">*</span></label>
+                        <input type="text" class="form-input" name="NomeCompleto" id="nomeColab" placeholder="Nome completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NUIT</label>
+                        <input type="text" class="form-input" name="Nuit" id="nuitColab" placeholder="0000000000000A" maxlength="14">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Data de Nascimento <span style="color:var(--danger);">*</span></label>
+                        <input type="date" class="form-input" name="DataNascimento" id="dataNascimento" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sexo <span style="color:var(--danger);">*</span></label>
+                        <select class="form-select" name="Sexo" id="sexoColab" required>
+                            <option value="">Selecionar...</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Feminino</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Estado Civil</label>
+                        <select class="form-select" name="IdEstadoCivil" id="estadoCivilColab">
+                            <option value="">Selecionar...</option>
+                            @foreach (var ec in estadosCivis)
+                            {
+                                <option value="@ec.IdEstadoCivil">@ec.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nacionalidade</label>
+                        <input type="text" class="form-input" name="Nacionalidade" id="nacionalidadeColab" value="Moçambicana">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Número de Identificação</label>
+                        <input type="text" class="form-input" name="NumeroIdentificacao" id="numeroIdentificacao" placeholder="Bilhete de identidade / Passaporte">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contacto Telefónico</label>
+                        <input type="text" class="form-input" name="ContactoTelefonico" id="contactoColab" placeholder="+258 8X XXX XXXX">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" name="ContactoEmail" id="emailColab" placeholder="email@ine.gov.mz">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Endereço de Residência</label>
+                        <input type="text" class="form-input" name="EnderecoResidencia" id="enderecoColab" placeholder="Endereço completo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados Profissionais -->
+            <div class="form-section" id="secDadosProfissionais" style="display:none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Unidade Orgânica <span style="color:var(--danger);">*</span></label>
+                        <select class="form-select" name="IdUnidadeOrganica" id="unidadeColab" required>
+                            <option value="">Selecionar...</option>
+                            @foreach (var u in unidades)
+                            {
+                                <option value="@u.IdUnidadeOrganica">@u.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" name="IdCategoria" id="categoriaColab">
+                            <option value="">Selecionar...</option>
+                            @foreach (var cat in categorias)
+                            {
+                                <option value="@cat.IdCategoria">@cat.Descricao</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Carreira</label>
+                        <select class="form-select" name="IdCarreira" id="carreiraColab">
+                            <option value="">Selecionar...</option>
+                            @foreach (var car in carreiras)
+                            {
+                                <option value="@car.IdCarreira">@car.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Função</label>
+                        <select class="form-select" name="IdFuncao" id="funcaoColab">
+                            <option value="">Selecionar...</option>
+                            @foreach (var f in funcoes)
+                            {
+                                <option value="@f.IdFuncao">@f.Nome</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Data de Ingresso <span style="color:var(--danger);">*</span></label>
+                        <input type="date" class="form-input" name="DataIngresso" id="dataIngresso" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Forma de Ingresso</label>
+                        <select class="form-select" name="IdFormaIngresso" id="formaIngressoColab">
+                            <option value="">Selecionar...</option>
+                            @foreach (var fi in formasIngresso)
+                            {
+                                <option value="@fi.IdFormaIngresso">@fi.Nome</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Estado <span style="color:var(--danger);">*</span></label>
+                        <select class="form-select" name="Estado" id="estadoColab" required>
+                            <option value="Ativo">Activo</option>
+                            <option value="Inativo">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentos e Contrato -->
+            <div class="form-section" id="secDocsContrato" style="display:none;">
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border-color);">Novo Contrato</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Contrato <span style="color:var(--danger);">*</span></label>
+                        <select class="form-select" name="tipoContrato" id="tipoContrato" required>
+                            <option value="">Selecionar...</option>
+                            @foreach (var tc in tiposContrato)
+                            {
+                                <option value="@tc.Nome">@tc.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Remuneração (MZN) <span style="color:var(--danger);">*</span></label>
+                        <input type="number" class="form-input" name="remuneracao" id="remuneracao" placeholder="Ex: 45000" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Data de Início <span style="color:var(--danger);">*</span></label>
+                        <input type="date" class="form-input" name="dataInicioContrato" id="dataInicioContrato" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data de Fim</label>
+                        <input type="date" class="form-input" name="dataFimContrato" id="dataFimContrato">
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">Deixe vazio para contratos por tempo indeterminado.</p>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Estado do Contrato <span style="color:var(--danger);">*</span></label>
+                        <select class="form-select" name="estadoContrato" id="estadoContrato" required>
+                            <option value="Vigente">Vigente</option>
+                            <option value="Suspenso">Suspenso</option>
+                            <option value="Rescindido">Rescindido</option>
+                            <option value="Expirado">Expirado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 style="font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border-color);">Documentos</h3>
+                <div class="form-group">
+                    <label class="form-label" for="docsColab" style="cursor:pointer;">Anexar Documentos</label>
+                    <input type="file" id="docsColab" name="documentos" multiple accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword" style="display:none;" onchange="adicionarDocumentos(this)">
+                    <div id="areaUpload" style="border:2px dashed var(--border-color);border-radius:8px;padding:2rem;text-align:center;background:var(--bg-secondary);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'" onclick="document.getElementById('docsColab').click()">
+                        <i class="fi fi-sr-cloud-upload" style="font-size:2rem;color:var(--primary);margin-bottom:0.5rem;display:block;"></i>
+                        <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:500;">Arraste ficheiros ou clique para selecionar</p>
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin:0.25rem 0 0;">Apenas ficheiros PDF ou Word (.docx, .doc). Máx 10MB por ficheiro.</p>
+                    </div>
+                    <div id="listaDocumentos" style="margin-top:1rem;"></div>
+                </div>
+
+                <h3 style="font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border-color);">Observações</h3>
+                <div class="form-group">
+                    <textarea class="form-input" name="Observacoes" id="observacoes" rows="4" placeholder="Notas adicionais sobre o colaborador, contrato ou documentos..." style="resize:vertical;"></textarea>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
+                <a href="/Home/Colaboradores" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Registar Colaborador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function previewFoto(input) {
+    if (input.files && input.files[0]) {
+        var file = input.files[0];
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('A imagem deve ter no máximo 2MB.', 'warning');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#fotoPreview').html('<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function processarFicheiros(files) {
+    var extensoesPermitidas = ['.pdf', '.docx', '.doc'];
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (extensoesPermitidas.indexOf(ext) === -1) {
+            showToast('Formato não suportado no ficheiro "' + file.name + '".', 'warning');
+            continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('O ficheiro "' + file.name + '" excede o limite de 10MB.', 'warning');
+            continue;
+        }
+        var icon = 'fi fi-sr-document';
+        if (ext === '.pdf') icon = 'fi fi-sr-file-pdf';
+        else if (ext === '.docx' || ext === '.doc') icon = 'fi fi-sr-file-word';
+
+        var tamanho = file.size < 1024 * 1024
+            ? (file.size / 1024).toFixed(1) + ' KB'
+            : (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+
+        var item = '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;margin-bottom:0.5rem;">' +
+            '<i class="' + icon + '" style="font-size:1.3rem;color:var(--primary);"></i>' +
+            '<div style="flex:1;min-width:0;">' +
+                '<div style="font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + file.name + '">' + file.name + '</div>' +
+                '<div style="font-size:0.75rem;color:var(--text-muted);">' + tamanho + '</div>' +
+            '</div>' +
+        '</div>';
+        $('#listaDocumentos').append(item);
+    }
+}
+
+function adicionarDocumentos(input) {
+    if (input.files && input.files.length > 0) {
+        processarFicheiros(input.files);
+    }
+}
+
+$(document).ready(function() {
+    $('#formTabs .tab-item').on('click', function() {
+        $('#formTabs .tab-item').removeClass('active');
+        $(this).addClass('active');
+        var tab = $(this).data('formtab');
+        $('.form-section').hide();
+        if (tab === 'dadosPessoais') $('#secDadosPessoais').show();
+        else if (tab === 'dadosProfissionais') $('#secDadosProfissionais').show();
+        else if (tab === 'docsContrato') $('#secDocsContrato').show();
+    });
+
+    var dropArea = document.getElementById('areaUpload');
+    if (dropArea) {
+        ['dragenter', 'dragover'].forEach(function(eventName) {
+            dropArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropArea.style.borderColor = 'var(--primary)';
+                dropArea.style.background = 'var(--bg-hover)';
+            }, false);
+        });
+        ['dragleave', 'drop'].forEach(function(eventName) {
+            dropArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropArea.style.borderColor = 'var(--border-color)';
+                dropArea.style.background = 'var(--bg-secondary)';
+            }, false);
+        });
+        dropArea.addEventListener('drop', function(e) {
+            var dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                processarFicheiros(dt.files);
+            }
+        }, false);
+    }
+});
+</script>
+}
