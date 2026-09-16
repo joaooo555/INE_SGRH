@@ -9,7 +9,7 @@
         <p class="page-subtitle">Gestão do processo individual dos funcionários</p>
     </div>
     <div style="display:flex;gap:0.5rem;">
-        <button class="btn btn-outline" onclick="gerarFicha()"><i class="fi fi-sr-file-pdf"></i> Gerar Ficha</button>
+        <button class="btn btn-outline" onclick="exportarExcel()"><i class="fi fi-sr-file-excel"></i> Exportar Excel</button>
         <a href="/Home/NovoColaborador" class="btn btn-primary"><i class="fi fi-sr-plus"></i> Novo Colaborador</a>
     </div>
 </div>
@@ -112,7 +112,7 @@
                             <div style="display:flex;gap:0.25rem;">
                                 <button class="btn btn-icon btn-outline" title="Ver Ficha" onclick="verFicha($(this.closest('tr')))"><i class="fi fi-sr-eye"></i></button>
                                 <a href="/Home/EditarColaborador?id=@c.IdColaborador" class="btn btn-icon btn-outline" title="Editar"><i class="fi fi-sr-pencil"></i></a>
-                                <button class="btn btn-icon btn-outline" title="Registar Progressão" onclick="abrirModalProgressao($(this.closest('tr')))" style="color:var(--primary);"><i class="fi fi-sr-arrow-up"></i></button>
+                                <button class="btn btn-icon btn-outline" title="Registar Progressão/Regressão" onclick="abrirModalCarreira($(this.closest('tr')))" style="color:var(--primary);"><i class="fi fi-sr-sort"></i></button>
                                 <button class="btn btn-icon btn-outline" title="Desativar" onclick="confirmarDelete(@c.IdColaborador, '@c.NomeCompleto.Replace("'", "\\'"))" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>
                             </div>
                         </td>
@@ -137,45 +137,65 @@
     </div>
 </div>
 
-<!-- Modal: Registar Progressão -->
-<div class="modal-overlay" id="modalProgressao">
+<!-- Modal: Registar Progressão/Regressão -->
+<div class="modal-overlay" id="modalCarreira">
     <div class="modal" style="max-width:650px;">
         <div class="modal-header">
-            <h3 class="modal-title"><i class="fi fi-sr-arrow-up" style="color:var(--primary);margin-right:0.5rem;"></i> Registar Progressão na Carreira</h3>
-            <button class="modal-close" onclick="closeModal('modalProgressao')"><i class="fi fi-sr-xmark"></i></button>
+            <h3 class="modal-title"><i class="fi fi-sr-sort" style="color:var(--primary);margin-right:0.5rem;"></i> Gestão de Carreira</h3>
+            <button class="modal-close" onclick="closeModal('modalCarreira')"><i class="fi fi-sr-xmark"></i></button>
         </div>
         <div class="modal-body">
-            <form id="formProgressao">
-                <input type="hidden" id="progColabId">
-                <div style="background:var(--bg-secondary);padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;">
-                    <div id="progAvatar" class="table-avatar" style="width:40px;height:40px;font-size:0.9rem;"></div>
-                    <div>
-                        <div id="progNomeColab" style="font-weight:600;font-size:0.95rem;"></div>
-                        <div id="progCargoAtual" style="font-size:0.8rem;color:var(--text-secondary);"></div>
-                    </div>
+            <div style="background:var(--bg-secondary);padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;">
+                <div id="carreiraAvatar" class="table-avatar" style="width:40px;height:40px;font-size:0.9rem;"></div>
+                <div>
+                    <div id="carreiraNomeColab" style="font-weight:600;font-size:0.95rem;"></div>
+                    <div id="carreiraCargoAtual" style="font-size:0.8rem;color:var(--text-secondary);"></div>
                 </div>
+            </div>
+
+            <div class="tabs" id="tabsCarreira" style="margin-bottom:1rem;border-bottom:2px solid var(--border);padding-bottom:0;">
+                <button class="tab-item active" data-tipo="progressao" onclick="trocarTipoCarreira('progressao')" style="border-bottom:2px solid var(--primary);margin-bottom:-2px;">
+                    <i class="fi fi-sr-arrow-up" style="color:var(--primary);margin-right:0.3rem;"></i> Progressão
+                </button>
+                <button class="tab-item" data-tipo="regressao" onclick="trocarTipoCarreira('regressao')" style="border-bottom:2px solid transparent;margin-bottom:-2px;">
+                    <i class="fi fi-sr-arrow-down" style="color:#e67e22;margin-right:0.3rem;"></i> Regressão
+                </button>
+            </div>
+
+            <form id="formCarreira">
+                <input type="hidden" id="carreiraColabId">
+                <input type="hidden" id="carreiraTipo" value="progressao">
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Tipo de Progressão <span style="color:var(--danger);">*</span></label>
-                        <select class="form-select" id="progTipo" required>
-                            <option value="Promoção">Promoção de Categoria</option>
-                            <option value="Progressão">Progressão por Tempo de Serviço</option>
-                            <option value="Nomeação">Nomeação para Nova Função</option>
-                            <option value="Reclassificação">Reclassificação Profissional</option>
-                            <option value="Mudança de Escalão">Mudança de Escalão / Classe</option>
+                        <label class="form-label">Tipo de Movimento <span style="color:var(--danger);">*</span></label>
+                        <select class="form-select" id="carreiraTipoMovimento" required>
+                            <optgroup label="Progressão" id="optProgressao">
+                                <option value="Promoção">Promoção de Categoria</option>
+                                <option value="Progressão">Progressão por Tempo de Serviço</option>
+                                <option value="Nomeação">Nomeação para Nova Função</option>
+                                <option value="Reclassificação">Reclassificação Profissional</option>
+                                <option value="Mudança de Escalão">Mudança de Escalão / Classe</option>
+                            </optgroup>
+                            <optgroup label="Regressão" id="optRegressao" style="display:none;">
+                                <option value="Rebaixamento">Rebaixamento de Categoria</option>
+                                <option value="Regressão">Regressão por Tempo de Serviço</option>
+                                <option value="Transferência">Transferência para Função Inferior</option>
+                                <option value="Reclassificação Baixa">Reclassificação Profissional</option>
+                                <option value="Mudança de Escalão Baixa">Mudança de Escalão / Classe</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Data da Progressão <span style="color:var(--danger);">*</span></label>
-                        <input type="date" class="form-input" id="progData" required>
+                        <label class="form-label">Data <span style="color:var(--danger);">*</span></label>
+                        <input type="date" class="form-input" id="carreiraData" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Nova Categoria <span style="color:var(--danger);">*</span></label>
-                        <select class="form-select" id="progNovaCategoria" required>
+                        <select class="form-select" id="carreiraNovaCategoria" required>
                             <option value="Assessor Principal">Assessor Principal</option>
                             <option value="Primeiro Assessor">Primeiro Assessor</option>
                             <option value="Assessor">Assessor</option>
@@ -202,7 +222,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nova Função</label>
-                        <select class="form-select" id="progNovaFuncao">
+                        <select class="form-select" id="carreiraNovaFuncao">
                             <option value="Director Geral">Director Geral</option>
                             <option value="Director Geral Adjunto">Director Geral Adjunto</option>
                             <option value="Chefe de Departamento">Chefe de Departamento</option>
@@ -228,23 +248,23 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Nº do Despacho / Diploma</label>
-                        <input type="text" class="form-input" id="progDespacho" placeholder="Ex: Despacho nº 42/PR/2026">
+                        <input type="text" class="form-input" id="carreiraDespacho" placeholder="Ex: Despacho nº 42/PR/2026">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nova Remuneração (MZN)</label>
-                        <input type="number" class="form-input" id="progNovaRemuneracao" placeholder="Ex: 85000" min="0">
+                        <input type="number" class="form-input" id="carreiraNovaRemuneracao" placeholder="Ex: 85000" min="0">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Fundamentação / Observações</label>
-                    <textarea class="form-input" id="progObs" rows="2" placeholder="Motivo ou despacho de suporte da progressão..."></textarea>
+                    <label class="form-label">Fundamentação / Observações <span id="obrigatorioObs" style="color:var(--danger);display:none;">*</span></label>
+                    <textarea class="form-input" id="carreiraObs" rows="2" placeholder="Motivo ou despacho de suporte..."></textarea>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeModal('modalProgressao')">Cancelar</button>
-            <button class="btn btn-primary" onclick="salvarProgressao()"><i class="fi fi-sr-check"></i> Registar Progressão</button>
+            <button class="btn btn-outline" onclick="closeModal('modalCarreira')">Cancelar</button>
+            <button class="btn btn-primary" id="btnSalvarCarreira" onclick="salvarCarreira()"><i class="fi fi-sr-check"></i> <span>Registar Progressão</span></button>
         </div>
     </div>
 </div>
@@ -264,10 +284,10 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('modalConfirmarDelete')">Cancelar</button>
-            <form id="formDelete" method="post" action="/Home/EliminarColaborador" style="display:inline;">
+            <form id="formDelete" style="display:inline;">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="id" id="deleteColabId">
-                <button type="submit" class="btn btn-danger">Desativar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarDesativacao()">Desativar</button>
             </form>
         </div>
     </div>
@@ -279,6 +299,28 @@ function confirmarDelete(id, nome) {
     $('#deleteColabId').val(id);
     $('#nomeColabDelete').text(nome);
     openModal('modalConfirmarDelete');
+}
+
+function confirmarDesativacao() {
+    var form = document.getElementById('formDelete');
+    var formData = new FormData(form);
+    
+    fetch('/Home/EliminarColaborador', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(response) {
+        if (response.ok) {
+            closeModal('modalConfirmarDelete');
+            showToast('Colaborador desativado com sucesso!');
+            setTimeout(function() { location.reload(); }, 1000);
+        } else {
+            showToast('Erro ao desativar colaborador.', 'danger');
+        }
+    })
+    .catch(function() {
+        showToast('Erro de conexão.', 'danger');
+    });
 }
 
 function verFicha($row) {
@@ -336,7 +378,7 @@ function verFicha($row) {
     openModal('modalFicha');
 }
 
-function abrirModalProgressao($row) {
+function abrirModalCarreira($row) {
     var id = $row.data('id');
     var nome = $row.data('nome') || '';
     var categoria = $row.data('categoria') || 'Sem categoria';
@@ -345,37 +387,78 @@ function abrirModalProgressao($row) {
     var fotoPath = $row.data('fotopath');
     var iniciais = $row.data('iniciais') || '';
 
-    $('#progColabId').val(id);
-    $('#progNomeColab').text(nome);
-    $('#progCargoAtual').text(categoria + ' • ' + funcao + ' • ' + unidade);
+    $('#carreiraColabId').val(id);
+    $('#carreiraNomeColab').text(nome);
+    $('#carreiraCargoAtual').text(categoria + ' • ' + funcao + ' • ' + unidade);
 
     if (fotoPath) {
-        $('#progAvatar').html('<img src="' + fotoPath + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">');
+        $('#carreiraAvatar').html('<img src="' + fotoPath + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">');
     } else {
-        $('#progAvatar').html(iniciais);
+        $('#carreiraAvatar').html(iniciais);
     }
 
-    $('#progData').val(new Date().toISOString().split('T')[0]);
-    $('#progNovaCategoria').val(categoria);
-    $('#progNovaFuncao').val(funcao);
-    $('#progDespacho').val('');
-    $('#progObs').val('');
-    openModal('modalProgressao');
+    $('#carreiraData').val(new Date().toISOString().split('T')[0]);
+    $('#carreiraNovaCategoria').val(categoria);
+    $('#carreiraNovaFuncao').val(funcao);
+    $('#carreiraDespacho').val('');
+    $('#carreiraObs').val('');
+    
+    trocarTipoCarreira('progressao');
+    openModal('modalCarreira');
 }
 
-function salvarProgressao() {
-    var nome = $('#progNomeColab').text();
-    var tipo = $('#progTipo').val();
-    var data = $('#progData').val();
-    var despacho = $('#progDespacho').val();
+function trocarTipoCarreira(tipo) {
+    $('#carreiraTipo').val(tipo);
+    
+    $('#tabsCarreira .tab-item').removeClass('active');
+    $('#tabsCarreira .tab-item[data-tipo="' + tipo + '"]').addClass('active');
+    
+    if (tipo === 'progressao') {
+        $('#optProgressao').show();
+        $('#optRegressao').hide();
+        $('#carreiraTipoMovimento').val('Promoção');
+        $('#obrigatorioObs').hide();
+        $('#carreiraObs').attr('required', false);
+        $('#carreiraObs').attr('placeholder', 'Motivo ou despacho de suporte da progressão...');
+        $('#btnSalvarCarreira span').text('Registar Progressão');
+        $('#btnSalvarCarreira').removeClass('btn-warning').addClass('btn-primary');
+        $('#btnSalvarCarreira').css('background', '').css('border-color', '');
+    } else {
+        $('#optProgressao').hide();
+        $('#optRegressao').show();
+        $('#carreiraTipoMovimento').val('Rebaixamento');
+        $('#obrigatorioObs').show();
+        $('#carreiraObs').attr('required', true);
+        $('#carreiraObs').attr('placeholder', 'Motivo ou despacho de suporte da regressão...');
+        $('#btnSalvarCarreira span').text('Registar Regressão');
+        $('#btnSalvarCarreira').removeClass('btn-primary').addClass('btn-warning');
+        $('#btnSalvarCarreira').css('background', '#e67e22').css('border-color', '#e67e22');
+    }
+    
+    $('#tabsCarreira .tab-item[data-tipo="progressao"]').css('border-bottom-color', tipo === 'progressao' ? 'var(--primary)' : 'transparent');
+    $('#tabsCarreira .tab-item[data-tipo="regressao"]').css('border-bottom-color', tipo === 'regressao' ? '#e67e22' : 'transparent');
+}
+
+function salvarCarreira() {
+    var nome = $('#carreiraNomeColab').text();
+    var tipo = $('#carreiraTipo').val();
+    var tipoMovimento = $('#carreiraTipoMovimento').val();
+    var data = $('#carreiraData').val();
+    var obs = $('#carreiraObs').val();
 
     if (!data) {
-        showToast('Preencha a data da progressão.', 'warning');
+        showToast('Preencha a data do movimento.', 'warning');
         return;
     }
 
-    closeModal('modalProgressao');
-    showToast('Progressão de "' + nome + '" registada com sucesso!');
+    if (tipo === 'regressao' && !obs) {
+        showToast('Preencha a fundamentação da regressão.', 'warning');
+        return;
+    }
+
+    closeModal('modalCarreira');
+    var msg = tipo === 'progressao' ? 'Progressão' : 'Regressão';
+    showToast(msg + ' de "' + nome + '" registada com sucesso!');
 }
 
 function gerarFicha() {
@@ -386,6 +469,82 @@ function gerarFicha() {
     }
     verFicha($firstRow);
 }
+
+function renderizarTabela(colaboradores) {
+    var $tbody = $('#corpoTabela');
+    $tbody.empty();
+    
+    if (colaboradores.length === 0) {
+        $tbody.append('<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text-secondary);">Nenhum colaborador encontrado</td></tr>');
+        return;
+    }
+    
+    colaboradores.forEach(function(c) {
+        var hoje = new Date();
+        var nasc = new Date(c.dataNascimento);
+        var idade = hoje.getFullYear() - nasc.getFullYear();
+        var m = hoje.getMonth() - nasc.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+        
+        var ingresso = new Date(c.dataIngresso);
+        var tempoServico = hoje.getFullYear() - ingresso.getFullYear();
+        var mi = hoje.getMonth() - ingresso.getMonth();
+        if (mi < 0 || (mi === 0 && hoje.getDate() < ingresso.getDate())) tempoServico--;
+        
+        var partes = (c.nomeCompleto || '').split(' ');
+        var iniciais = '';
+        for (var i = 0; i < Math.min(2, partes.length); i++) {
+            if (partes[i].length > 0) iniciais += partes[i][0].toUpperCase();
+        }
+        
+        var fotoHtml = '';
+        if (c.fotoPath) {
+            fotoHtml = '<div class="table-avatar" style="overflow:hidden;"><img src="' + c.fotoPath + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>';
+        } else {
+            fotoHtml = '<div class="table-avatar">' + iniciais + '</div>';
+        }
+        
+        var estadoBadge = c.estado === 'Ativo' 
+            ? '<span class="badge badge-success">Ativo</span>' 
+            : '<span class="badge badge-danger">Inativo</span>';
+        
+        var row = '<tr data-estado="' + c.estado + '" ' +
+            'data-id="' + c.idColaborador + '" ' +
+            'data-nome="' + (c.nomeCompleto || '') + '" ' +
+            'data-nuit="' + (c.nuit || '') + '" ' +
+            'data-sexo="' + (c.sexo || '') + '" ' +
+            'data-estadocivil="' + (c.estadoCivil || '') + '" ' +
+            'data-nacionalidade="' + (c.nacionalidade || '') + '" ' +
+            'data-contacto="' + (c.contactoTelefonico || '') + '" ' +
+            'data-email="' + (c.contactoEmail || '') + '" ' +
+            'data-unidade="' + (c.unidadeOrganica || '') + '" ' +
+            'data-categoria="' + (c.categoria || '') + '" ' +
+            'data-carreira="' + (c.carreira || '') + '" ' +
+            'data-funcao="' + (c.funcao || '') + '" ' +
+            'data-dataingresso="' + (c.dataIngresso || '') + '" ' +
+            'data-formaingresso="' + (c.formaIngresso || '') + '" ' +
+            'data-fotopath="' + (c.fotoPath || '') + '" ' +
+            'data-iniciais="' + iniciais + '">' +
+            '<td><div class="table-user">' + fotoHtml + '<div class="table-user-info"><span class="name">' + (c.nomeCompleto || '') + '</span></div></div></td>' +
+            '<td>' + (c.nuit || '-') + '</td>' +
+            '<td>' + (c.unidadeOrganica || '-') + '</td>' +
+            '<td>' + (c.categoria || '-') + '</td>' +
+            '<td>' + (c.funcao || '-') + '</td>' +
+            '<td>' + estadoBadge + '</td>' +
+            '<td>' + idade + ' anos</td>' +
+            '<td>' + tempoServico + ' anos</td>' +
+            '<td><div style="display:flex;gap:0.25rem;">' +
+            '<button class="btn btn-icon btn-outline" title="Ver Ficha" onclick="verFicha($(this.closest(\'tr\')))" style="cursor:pointer;"><i class="fi fi-sr-eye"></i></button> ' +
+            '<a href="/Home/EditarColaborador?id=' + c.idColaborador + '" class="btn btn-icon btn-outline" title="Editar"><i class="fi fi-sr-pencil"></i></a> ' +
+            '<button class="btn btn-icon btn-outline" title="Registar Progressão/Regressão" onclick="abrirModalCarreira($(this.closest(\'tr\')))" style="color:var(--primary);cursor:pointer;"><i class="fi fi-sr-sort"></i></button> ' +
+            '<button class="btn btn-icon btn-outline" title="Desativar" onclick="confirmarDelete(' + c.idColaborador + ', \'' + (c.nomeCompleto || '').replace(/'/g, "\\'") + '\')" style="color:var(--danger);cursor:pointer;"><i class="fi fi-sr-trash"></i></button>' +
+            '</div></td></tr>';
+        
+        $tbody.append(row);
+    });
+}
+
+var searchTimer = null;
 
 $(document).ready(function() {
     var flash = '@(TempData["Toast"])';
@@ -409,16 +568,30 @@ $(document).ready(function() {
     });
 
     $('#pesquisarColab').on('input', function() {
-        var termo = $(this).val().toLowerCase();
-        $('#corpoTabela tr[data-estado]').each(function() {
-            var $row = $(this);
-            var nome = ($row.data('nome') || '').toLowerCase();
-            var nuit = ($row.data('nuit') || '').toLowerCase();
-            var unidade = ($row.data('unidade') || '').toLowerCase();
-            var funcao = ($row.data('funcao') || '').toLowerCase();
-            var match = nome.indexOf(termo) > -1 || nuit.indexOf(termo) > -1 || unidade.indexOf(termo) > -1 || funcao.indexOf(termo) > -1;
-            $row.toggle(match);
-        });
+        var termo = $(this).val().trim();
+        
+        if (searchTimer) clearTimeout(searchTimer);
+        
+        if (termo === '') {
+            location.reload();
+            return;
+        }
+        
+        if (termo.length < 2) return;
+        
+        searchTimer = setTimeout(function() {
+            $.ajax({
+                url: '/Home/PesquisarColaboradores',
+                type: 'GET',
+                data: { termo: termo },
+                success: function(data) {
+                    renderizarTabela(data);
+                },
+                error: function() {
+                    showToast('Erro ao pesquisar colaboradores.', 'danger');
+                }
+            });
+        }, 300);
     });
 });
 </script>

@@ -41,6 +41,64 @@ namespace SGRH.Controllers
             return View(colaboradores);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> PesquisarColaboradores(string termo)
+        {
+            if (string.IsNullOrWhiteSpace(termo))
+            {
+                return Json(new object[0]);
+            }
+
+            termo = termo.ToLower();
+
+            var colaboradores = await _db.Colaboradores
+                .Include(c => c.UnidadeOrganica)
+                .Include(c => c.Categoria)
+                .Include(c => c.Carreira)
+                .Include(c => c.Funcao)
+                .Include(c => c.EstadoCivil)
+                .Include(c => c.FormaIngresso)
+                .Where(c =>
+                    c.NomeCompleto.ToLower().Contains(termo) ||
+                    (c.Nuit != null && c.Nuit.ToLower().Contains(termo)) ||
+                    (c.ContactoEmail != null && c.ContactoEmail.ToLower().Contains(termo)) ||
+                    (c.ContactoTelefonico != null && c.ContactoTelefonico.Contains(termo)) ||
+                    (c.NumeroIdentificacao != null && c.NumeroIdentificacao.ToLower().Contains(termo)) ||
+                    (c.UnidadeOrganica != null && c.UnidadeOrganica.Nome.ToLower().Contains(termo)) ||
+                    (c.Categoria != null && c.Categoria.Descricao.ToLower().Contains(termo)) ||
+                    (c.Carreira != null && c.Carreira.Nome.ToLower().Contains(termo)) ||
+                    (c.Funcao != null && c.Funcao.Nome.ToLower().Contains(termo)) ||
+                    (c.FormaIngresso != null && c.FormaIngresso.Nome.ToLower().Contains(termo))
+                )
+                .OrderBy(c => c.NomeCompleto)
+                .Select(c => new
+                {
+                    c.IdColaborador,
+                    c.NomeCompleto,
+                    c.Nuit,
+                    c.Sexo,
+                    c.DataNascimento,
+                    c.DataIngresso,
+                    c.Estado,
+                    c.ContactoTelefonico,
+                    c.ContactoEmail,
+                    c.EnderecoResidencia,
+                    c.Nacionalidade,
+                    c.NumeroIdentificacao,
+                    c.FotoPath,
+                    c.Observacoes,
+                    UnidadeOrganica = c.UnidadeOrganica != null ? c.UnidadeOrganica.Nome : null,
+                    Categoria = c.Categoria != null ? c.Categoria.Descricao : null,
+                    Carreira = c.Carreira != null ? c.Carreira.Nome : null,
+                    Funcao = c.Funcao != null ? c.Funcao.Nome : null,
+                    EstadoCivil = c.EstadoCivil != null ? c.EstadoCivil.Nome : null,
+                    FormaIngresso = c.FormaIngresso != null ? c.FormaIngresso.Nome : null
+                })
+                .ToListAsync();
+
+            return Json(colaboradores);
+        }
+
         public async Task<IActionResult> NovoColaborador()
         {
             ViewBag.ActivePage = "Colaboradores";
