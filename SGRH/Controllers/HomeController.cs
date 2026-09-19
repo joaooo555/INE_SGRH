@@ -178,6 +178,7 @@ namespace SGRH.Controllers
                     {
                         IdColaborador = colaborador.IdColaborador,
                         IdTipoContrato = tipoContratoObj.IdTipoContrato,
+                        NumeroContrato = await GerarNumeroContrato(),
                         DataInicio = dataInicioContrato.Value,
                         DataFim = dataFimContrato,
                         Remuneracao = remuneracao,
@@ -239,6 +240,15 @@ namespace SGRH.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.ActivePage = "Colaboradores";
+                ViewBag.Contrato = await _db.Contratos
+                    .Include(c => c.TipoContrato)
+                    .Where(c => c.IdColaborador == id)
+                    .OrderByDescending(c => c.DataRegisto)
+                    .FirstOrDefaultAsync();
+                ViewBag.Documentos = await _db.Documentos
+                    .Where(d => d.IdColaborador == id)
+                    .OrderByDescending(d => d.DataUpload)
+                    .ToListAsync();
                 await CarregarDadosReferencia();
                 return View(colaborador);
             }
@@ -340,6 +350,7 @@ namespace SGRH.Controllers
                         {
                             IdColaborador = id,
                             IdTipoContrato = tipoContratoObj.IdTipoContrato,
+                            NumeroContrato = await GerarNumeroContrato(),
                             DataInicio = dataInicioContrato.Value,
                             DataFim = dataFimContrato,
                             Remuneracao = remuneracao,
@@ -382,10 +393,202 @@ namespace SGRH.Controllers
             ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
         }
 
-        public IActionResult Contratos()
+        private async Task<string> GerarNumeroContrato()
+        {
+            var countAno = await _db.Contratos.CountAsync(c => c.DataRegisto.Year == DateTime.Now.Year);
+            return $"CTR-{DateTime.Now.Year}/{(countAno + 1).ToString("D3")}";
+        }
+
+        public async Task<IActionResult> Contratos()
         {
             ViewBag.ActivePage = "Contratos";
+
+            var contratos = await _db.Contratos
+                .Include(c => c.Colaborador)
+                .Include(c => c.TipoContrato)
+                .OrderByDescending(c => c.DataRegisto)
+                .ToListAsync();
+
+            ViewBag.Vigentes = contratos.Count(c => c.Estado == "Vigente");
+            ViewBag.Expirados = contratos.Count(c => c.Estado == "Expirado");
+
+            var hoje = DateOnly.FromDateTime(DateTime.Now);
+            var em30Dias = hoje.AddDays(30);
+            ViewBag.AExpirar = contratos.Count(c =>
+                c.Estado == "Vigente" && c.DataFim.HasValue &&
+                c.DataFim.Value >= hoje && c.DataFim.Value <= em30Dias);
+            ViewBag.RenovacoesPendentes = ViewBag.AExpirar;
+            ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
+
+            return View(contratos);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NovoContrato()
+        {
+            ViewBag.ActivePage = "Contratos";
+            ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
+            ViewBag.Colaboradores = await _db.Colaboradores
+                .Where(c => c.Estado == "Ativo")
+                .OrderBy(c => c.NomeCompleto)
+                .ToListAsync();
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NovoContrato(Contrato contrato, string? estadoContrato, List<IFormFile>? documentos)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.ActivePage = "Contratos";
+                ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
+                ViewBag.Colaboradores = await _db.Colaboradores
+                    .Where(c => c.Estado == "Ativo")
+                    .OrderBy(c => c.NomeCompleto)
+                    .ToListAsync();
+                return View(contrato);
+            }
+
+            contrato.NumeroContrato = await GerarNumeroContrato();
+            contrato.Estado = estadoContrato ?? "Vigente";
+            contrato.DataRegisto = DateTime.Now;
+            _db.Contratos.Add(contrato);
+            await _db.SaveChangesAsync();
+
+            if (documentos != null && documentos.Count > 0)
+            {
+                var docsDir = Path.Combine(_env.WebRootPath, "uploads", "documentos");
+                Directory.CreateDirectory(docsDir);
+
+                foreach (var doc in documentos)
+                {
+                    if (doc.Length > 0)
+                    {
+                        var ext = Path.GetExtension(doc.FileName);
+                        var fileName = $"contrato_{contrato.IdContrato}_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid().ToString("N").Substring(0, 8)}{ext}";
+                        var filePath = Path.Combine(docsDir, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await doc.CopyToAsync(stream);
+                        }
+
+                        var docEntidade = new Documento
+                        {
+                            IdColaborador = contrato.IdColaborador,
+                            IdTipoDocumento = 1,
+                            Titulo = doc.FileName,
+                            Ficheiro = await System.IO.File.ReadAllBytesAsync(filePath),
+                            Formato = ext,
+                            DataUpload = DateTime.Now
+                        };
+                        _db.Documentos.Add(docEntidade);
+                    }
+                }
+                await _db.SaveChangesAsync();
+            }
+
+            TempData["Toast"] = "Contrato registado com sucesso!";
+            return RedirectToAction(nameof(Contratos));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditarContrato(int? id)
+        {
+            if (id == null) return NotFound();
+
+            ViewBag.ActivePage = "Contratos";
+
+            var contrato = await _db.Contratos
+                .Include(c => c.Colaborador)
+                .Include(c => c.TipoContrato)
+                .FirstOrDefaultAsync(c => c.IdContrato == id);
+
+            if (contrato == null) return NotFound();
+
+            ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
+            return View(contrato);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarContrato(Contrato model, string? estadoContrato, List<IFormFile>? documentos)
+        {
+            var contrato = await _db.Contratos.FindAsync(model.IdContrato);
+            if (contrato == null) return NotFound();
+
+            contrato.IdTipoContrato = model.IdTipoContrato;
+            contrato.DataInicio = model.DataInicio;
+            contrato.DataFim = model.DataFim;
+            contrato.Remuneracao = model.Remuneracao;
+            contrato.Objecto = model.Objecto;
+            contrato.Estado = estadoContrato ?? contrato.Estado;
+
+            await _db.SaveChangesAsync();
+
+            if (documentos != null && documentos.Count > 0)
+            {
+                var docsDir = Path.Combine(_env.WebRootPath, "uploads", "documentos");
+                Directory.CreateDirectory(docsDir);
+
+                foreach (var doc in documentos)
+                {
+                    if (doc.Length > 0)
+                    {
+                        var ext = Path.GetExtension(doc.FileName);
+                        var fileName = $"contrato_{contrato.IdContrato}_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid().ToString("N").Substring(0, 8)}{ext}";
+                        var filePath = Path.Combine(docsDir, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await doc.CopyToAsync(stream);
+                        }
+
+                        var docEntidade = new Documento
+                        {
+                            IdColaborador = contrato.IdColaborador,
+                            IdTipoDocumento = 1,
+                            Titulo = doc.FileName,
+                            Ficheiro = await System.IO.File.ReadAllBytesAsync(filePath),
+                            Formato = ext,
+                            DataUpload = DateTime.Now
+                        };
+                        _db.Documentos.Add(docEntidade);
+                    }
+                }
+                await _db.SaveChangesAsync();
+            }
+
+            TempData["Toast"] = "Contrato atualizado com sucesso!";
+            return RedirectToAction(nameof(Contratos));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EliminarContrato(int id)
+        {
+            var contrato = await _db.Contratos.FindAsync(id);
+            if (contrato == null) return NotFound();
+
+            _db.Contratos.Remove(contrato);
+            await _db.SaveChangesAsync();
+
+            TempData["Toast"] = "Contrato eliminado com sucesso!";
+            return RedirectToAction(nameof(Contratos));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RenovarContrato(int id)
+        {
+            var contrato = await _db.Contratos.FindAsync(id);
+            if (contrato == null) return NotFound();
+
+            contrato.DataFim = (contrato.DataFim ?? DateOnly.FromDateTime(DateTime.Now)).AddYears(1);
+            contrato.Estado = "Vigente";
+            await _db.SaveChangesAsync();
+
+            TempData["Toast"] = "Contrato renovado com sucesso!";
+            return RedirectToAction(nameof(Contratos));
         }
 
         public IActionResult Administracao()

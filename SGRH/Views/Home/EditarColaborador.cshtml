@@ -24,7 +24,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form id="formEditarColab" method="post" action="/Home/EditarColaborador" enctype="multipart/form-data">
+        <form id="formEditarColab" method="post" action="/Home/EditarColaborador/@Model.IdColaborador" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <input type="hidden" name="IdColaborador" value="@Model.IdColaborador">
 
@@ -320,7 +320,7 @@
 
             <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
                 <a href="/Home/Colaboradores" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Guardar Alterações</button>
+                <button type="submit" class="btn btn-primary" formnovalidate><i class="fi fi-sr-check"></i> Guardar Alterações</button>
             </div>
         </form>
     </div>

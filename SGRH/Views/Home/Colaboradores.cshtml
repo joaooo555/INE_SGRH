@@ -284,43 +284,30 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('modalConfirmarDelete')">Cancelar</button>
-            <form id="formDelete" style="display:inline;">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" id="deleteColabId">
-                <button type="button" class="btn btn-danger" onclick="confirmarDesativacao()">Desativar</button>
-            </form>
+            <button type="button" class="btn btn-danger" onclick="submeterDesativacao()"><i class="fi fi-sr-check"></i> Desativar</button>
         </div>
     </div>
 </div>
 
+<!-- Formulario oculto para desativacao (fora do modal) -->
+<form id="formDelete" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
 @section Scripts {
 <script>
+var deleteId = 0;
 function confirmarDelete(id, nome) {
-    $('#deleteColabId').val(id);
+    deleteId = id;
     $('#nomeColabDelete').text(nome);
     openModal('modalConfirmarDelete');
 }
 
-function confirmarDesativacao() {
+function submeterDesativacao() {
+    closeModal('modalConfirmarDelete');
     var form = document.getElementById('formDelete');
-    var formData = new FormData(form);
-    
-    fetch('/Home/EliminarColaborador', {
-        method: 'POST',
-        body: formData
-    })
-    .then(function(response) {
-        if (response.ok) {
-            closeModal('modalConfirmarDelete');
-            showToast('Colaborador desativado com sucesso!');
-            setTimeout(function() { location.reload(); }, 1000);
-        } else {
-            showToast('Erro ao desativar colaborador.', 'danger');
-        }
-    })
-    .catch(function() {
-        showToast('Erro de conexão.', 'danger');
-    });
+    form.action = '/Home/EliminarColaborador/' + deleteId;
+    form.submit();
 }
 
 function verFicha($row) {

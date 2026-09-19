@@ -39,20 +39,6 @@ function saveColaboradoresStorage(arr) {
 
 var colaboradores = getColaboradoresStorage();
 
-// ---- Mock Data: Contratos ----
-const contratos = [
-    { id: 1, colaborador: "Ana Maria Fernandes", numero: "CTR-2024/001", tipo: "Contrato a Termo Certo", dataInicio: "2024-01-01", dataFim: "2026-12-31", remuneracao: 85000, estado: "Vigente" },
-    { id: 2, colaborador: "Carlos Alberto Machava", numero: "CTR-2023/015", tipo: "Contrato por Tempo Indeterminado", dataInicio: "2023-06-01", dataFim: null, remuneracao: 95000, estado: "Vigente" },
-    { id: 3, colaborador: "Fátima Zacarias Tembe", numero: "CTR-2024/003", tipo: "Contrato a Termo Certo", dataInicio: "2024-03-01", dataFim: "2026-02-28", remuneracao: 65000, estado: "Vigente" },
-    { id: 4, colaborador: "José Manuel Sitoe", numero: "CTR-2022/008", tipo: "Contrato por Tempo Indeterminado", dataInicio: "2022-09-01", dataFim: null, remuneracao: 55000, estado: "Vigente" },
-    { id: 5, colaborador: "Mariana Inácio Mondlane", numero: "CTR-2025/001", tipo: "Contrato a Termo Certo", dataInicio: "2025-02-01", dataFim: "2026-09-26", remuneracao: 48000, estado: "Vigente" },
-    { id: 6, colaborador: "Pedro Henrique Cossa", numero: "CTR-2024/012", tipo: "Contrato por Tempo Indeterminado", dataInicio: "2024-08-15", dataFim: null, remuneracao: 78000, estado: "Vigente" },
-    { id: 7, colaborador: "Rosa Amélia Banze", numero: "CTR-2023/022", tipo: "Contrato a Termo Certo", dataInicio: "2023-04-01", dataFim: "2026-09-19", remuneracao: 52000, estado: "Vigente" },
-    { id: 8, colaborador: "Tomás Ngwenya Dlamini", numero: "CTR-2024/005", tipo: "Contrato a Termo Certo", dataInicio: "2024-07-01", dataFim: "2026-06-30", remuneracao: 42000, estado: "Vigente" },
-    { id: 9, colaborador: "Vanessa Lourenço Matusse", numero: "CTR-2025/008", tipo: "Contrato a Termo Certo", dataInicio: "2025-01-10", dataFim: "2027-01-09", remuneracao: 45000, estado: "Vigente" },
-    { id: 10, colaborador: "Wilson António Nhaca", numero: "CTR-2021/003", tipo: "Contrato por Tempo Indeterminado", dataInicio: "2021-11-20", dataFim: null, remuneracao: 88000, estado: "Vigente" },
-];
-
 // ---- Mock Data: Candidatos Recrutamento ----
 const candidatos = [
     { id: 1, nome: "Alice Tembe", email: "alice@email.com", formacao: "Engenharia Informática", nivel: "Mestrado", estado: "Submetida" },
