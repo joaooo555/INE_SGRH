@@ -45,12 +45,12 @@
         <header class="topbar">
             <div class="topbar-left">
                 <button class="topbar-toggle"><i class="fi fi-sr-menu-burger"></i></button>
-                <div class="topbar-search"><i class="fi fi-sr-search"></i><input type="text" placeholder="Pesquisar..."></div>
+                <div class="topbar-search"><i class="fi fi-sr-search"></i><input type="text" id="pesquisarGeral" placeholder="Pesquisar..." autocomplete="off"></div>
             </div>
             <div class="topbar-right">
                 <button class="topbar-icon"><i class="fi fi-sr-bell"></i><span class="badge">5</span></button>
                 <a href="@Url.Action("Logout", "Account")" class="topbar-icon" title="Sair" style="text-decoration:none;color:var(--text-secondary);cursor:pointer;"><i class="fi fi-sr-sign-out-alt"></i></a>
-                <div class="topbar-user"><div class="topbar-avatar">JC</div><div class="topbar-user-info"><span class="topbar-user-name">Joaquim Chissano</span><span class="topbar-user-role">Director Geral</span></div></div>
+                <div class="topbar-user"><div class="topbar-avatar">@(User.Identity?.Name?.Length >= 2 ? User.Identity.Name.Substring(0,2).ToUpper() : "UU")</div><div class="topbar-user-info"><span class="topbar-user-name">@(User.FindFirst("ColaboradorNome")?.Value ?? User.Identity?.Name ?? "Utilizador")</span><span class="topbar-user-role">@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Sem perfil")</span></div></div>
             </div>
         </header>
 

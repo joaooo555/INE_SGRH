@@ -462,6 +462,7 @@ public class AppDbContext : DbContext
             new Funcao { IdFuncao = 17, Nome = "Agente de Segurança", Descricao = "Vigilância e segurança" },
             new Funcao { IdFuncao = 18, Nome = "Auxiliar de Limpeza", Descricao = "Serviços de limpeza e conservação" }
         );
+
     }
 }
 

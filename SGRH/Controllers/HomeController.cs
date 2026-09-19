@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SGRH.Data;
+using SGRH.Helpers;
 using SGRH.Models;
 
 namespace SGRH.Controllers
@@ -639,10 +640,263 @@ namespace SGRH.Controllers
             return View();
         }
 
-        public IActionResult Utilizadores()
+        public async Task<IActionResult> Utilizadores()
         {
             ViewBag.ActivePage = "Utilizadores";
+            ViewBag.Perfis = await _db.PerfisAcesso.ToListAsync();
+            ViewBag.Colaboradores = await _db.Colaboradores
+                .Where(c => c.Estado == "Ativo")
+                .OrderBy(c => c.NomeCompleto)
+                .Select(c => new { c.IdColaborador, c.NomeCompleto })
+                .ToListAsync();
             return View();
+        }
+
+        public async Task<IActionResult> NovoUtilizador()
+        {
+            ViewBag.ActivePage = "Utilizadores";
+            ViewBag.Perfis = await _db.PerfisAcesso.ToListAsync();
+            ViewBag.Colaboradores = await _db.Colaboradores
+                .Where(c => c.Estado == "Ativo")
+                .OrderBy(c => c.NomeCompleto)
+                .ToListAsync();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NovoUtilizador(string username, string email, string password, int idPerfil, int? idColaborador, string? permissoesJson)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                TempData["Erro"] = "Preencha todos os campos obrigatorios.";
+                return RedirectToAction(nameof(NovoUtilizador));
+            }
+
+            if (await _db.UtilizadoresSistema.AnyAsync(u => u.Username == username))
+            {
+                TempData["Erro"] = "Username ja existe.";
+                return RedirectToAction(nameof(NovoUtilizador));
+            }
+
+            var utilizador = new UtilizadorSistema
+            {
+                Username = username,
+                Email = email,
+                PasswordHash = PasswordHelper.Hash(password),
+                IdPerfil = idPerfil,
+                IdColaborador = idColaborador,
+                Estado = "Ativo",
+                DataCriacao = DateTime.Now
+            };
+
+            _db.UtilizadoresSistema.Add(utilizador);
+            await _db.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(permissoesJson))
+            {
+                var permissoes = System.Text.Json.JsonSerializer.Deserialize<List<PermissaoRequest>>(
+                    permissoesJson,
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (permissoes != null && permissoes.Count > 0)
+                {
+                    permissoes = permissoes.Where(p => !string.IsNullOrWhiteSpace(p.Modulo)).ToList();
+                    if (permissoes.Count > 0)
+                    {
+                        var existentes = await _db.Permissoes.Where(p => p.IdPerfil == idPerfil).ToListAsync();
+                        if (existentes.Count > 0)
+                        {
+                            _db.Permissoes.RemoveRange(existentes);
+                            await _db.SaveChangesAsync();
+                        }
+
+                        foreach (var perm in permissoes)
+                        {
+                            _db.Permissoes.Add(new Permissao
+                            {
+                                IdPerfil = idPerfil,
+                                Modulo = perm.Modulo,
+                                PodeVisualizar = perm.PodeVisualizar,
+                                PodeCriar = perm.PodeCriar,
+                                PodeEditar = perm.PodeEditar,
+                                PodeEliminar = perm.PodeEliminar
+                            });
+                        }
+
+                        await _db.SaveChangesAsync();
+                    }
+                }
+            }
+
+            TempData["Sucesso"] = "Utilizador criado com sucesso!";
+            return RedirectToAction(nameof(Utilizadores));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObterUtilizadores()
+        {
+            var utilizadores = await _db.UtilizadoresSistema
+                .Include(u => u.PerfilAcesso)
+                .Include(u => u.Colaborador)
+                .OrderBy(u => u.Username)
+                .Select(u => new
+                {
+                    id = u.IdUtilizador,
+                    username = u.Username,
+                    email = u.Email,
+                    perfil = u.PerfilAcesso.Nome,
+                    idPerfil = u.IdPerfil,
+                    colaborador = u.Colaborador != null ? u.Colaborador.NomeCompleto : "",
+                    idColaborador = u.IdColaborador,
+                    estado = u.Estado,
+                    ultimoAcesso = u.UltimoAcesso,
+                    dataCriacao = u.DataCriacao
+                })
+                .ToListAsync();
+
+            return Json(utilizadores);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObterPermissoes(int idPerfil)
+        {
+            var permissoes = await _db.Permissoes
+                .Where(p => p.IdPerfil == idPerfil)
+                .Select(p => new
+                {
+                    id = p.IdPermissao,
+                    modulo = p.Modulo,
+                    podeVisualizar = p.PodeVisualizar,
+                    podeCriar = p.PodeCriar,
+                    podeEditar = p.PodeEditar,
+                    podeEliminar = p.PodeEliminar
+                })
+                .ToListAsync();
+
+            return Json(permissoes);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CriarUtilizador([FromBody] CriarUtilizadorRequest model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+                return Json(new { sucesso = false, mensagem = "Dados incompletos." });
+
+            if (await _db.UtilizadoresSistema.AnyAsync(u => u.Username == model.Username))
+                return Json(new { sucesso = false, mensagem = "Username já existe." });
+
+            var utilizador = new UtilizadorSistema
+            {
+                Username = model.Username,
+                Email = model.Email,
+                PasswordHash = PasswordHelper.Hash(model.Password),
+                IdPerfil = model.IdPerfil,
+                IdColaborador = model.IdColaborador,
+                Estado = "Ativo",
+                DataCriacao = DateTime.Now
+            };
+
+            _db.UtilizadoresSistema.Add(utilizador);
+            await _db.SaveChangesAsync();
+
+            return Json(new { sucesso = true, mensagem = "Utilizador criado com sucesso!" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AtualizarUtilizador([FromBody] AtualizarUtilizadorRequest model)
+        {
+            if (model == null) return Json(new { sucesso = false, mensagem = "Dados inválidos." });
+
+            var utilizador = await _db.UtilizadoresSistema.FindAsync(model.Id);
+            if (utilizador == null) return Json(new { sucesso = false, mensagem = "Utilizador não encontrado." });
+
+            utilizador.Email = model.Email;
+            utilizador.IdPerfil = model.IdPerfil;
+            utilizador.Estado = model.Estado;
+            if (!string.IsNullOrWhiteSpace(model.Password))
+                utilizador.PasswordHash = PasswordHelper.Hash(model.Password);
+
+            await _db.SaveChangesAsync();
+
+            return Json(new { sucesso = true, mensagem = "Utilizador actualizado com sucesso!" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EliminarUtilizador(int id)
+        {
+            var utilizador = await _db.UtilizadoresSistema.FindAsync(id);
+            if (utilizador == null) return Json(new { sucesso = false, mensagem = "Utilizador não encontrado." });
+
+            _db.UtilizadoresSistema.Remove(utilizador);
+            await _db.SaveChangesAsync();
+
+            return Json(new { sucesso = true, mensagem = "Utilizador eliminado com sucesso!" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarPermissoes([FromBody] GuardarPermissoesRequest model)
+        {
+            if (model == null) return Json(new { sucesso = false, mensagem = "Dados inválidos." });
+
+            var permissoesExistentes = await _db.Permissoes
+                .Where(p => p.IdPerfil == model.IdPerfil)
+                .ToListAsync();
+
+            if (permissoesExistentes.Count > 0)
+            {
+                _db.Permissoes.RemoveRange(permissoesExistentes);
+                await _db.SaveChangesAsync();
+            }
+
+            foreach (var perm in model.Permissoes)
+            {
+                _db.Permissoes.Add(new Permissao
+                {
+                    IdPerfil = model.IdPerfil,
+                    Modulo = perm.Modulo,
+                    PodeVisualizar = perm.PodeVisualizar,
+                    PodeCriar = perm.PodeCriar,
+                    PodeEditar = perm.PodeEditar,
+                    PodeEliminar = perm.PodeEliminar
+                });
+            }
+
+            await _db.SaveChangesAsync();
+
+            return Json(new { sucesso = true, mensagem = "Permissões actualizadas com sucesso!" });
+        }
+
+        public class CriarUtilizadorRequest
+        {
+            public string Username { get; set; } = "";
+            public string Email { get; set; } = "";
+            public string Password { get; set; } = "";
+            public int IdPerfil { get; set; }
+            public int? IdColaborador { get; set; }
+        }
+
+        public class AtualizarUtilizadorRequest
+        {
+            public int Id { get; set; }
+            public string Email { get; set; } = "";
+            public int IdPerfil { get; set; }
+            public string Estado { get; set; } = "Ativo";
+            public string? Password { get; set; }
+        }
+
+        public class GuardarPermissoesRequest
+        {
+            public int IdPerfil { get; set; }
+            public List<PermissaoRequest> Permissoes { get; set; } = [];
+        }
+
+        public class PermissaoRequest
+        {
+            public string Modulo { get; set; } = "";
+            public bool PodeVisualizar { get; set; }
+            public bool PodeCriar { get; set; }
+            public bool PodeEditar { get; set; }
+            public bool PodeEliminar { get; set; }
         }
 
         public IActionResult Auditoria()

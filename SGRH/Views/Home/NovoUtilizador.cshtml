@@ -1,0 +1,161 @@
+@{
+    ViewData["Title"] = "Novo Utilizador";
+    var perfis = ViewBag.Perfis as List<SGRH.Models.PerfilAcesso> ?? [];
+    var colaboradores = ViewBag.Colaboradores as List<SGRH.Models.Colaborador> ?? [];
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Novo Utilizador</h1>
+        <p class="page-subtitle">Preencha os dados para criar um novo utilizador no sistema</p>
+    </div>
+    <a href="@Url.Action("Utilizadores", "Home")" class="btn btn-outline"><i class="fi fi-sr-arrow-left"></i> Voltar</a>
+</div>
+
+@if (TempData["Erro"] != null)
+{
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:0.5rem;padding:0.75rem 1rem;margin-bottom:1rem;color:var(--danger);font-size:0.85rem;">
+        <i class="fi fi-sr-exclamation-triangle" style="margin-right:0.5rem;"></i> @TempData["Erro"]
+    </div>
+}
+
+<div class="card">
+    <div class="card-body" style="padding:2rem;">
+        <form method="post" action="@Url.Action("NovoUtilizador", "Home")">
+            @Html.AntiForgeryToken()
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-user" style="color:var(--primary);margin-right:0.5rem;"></i> Dados de Acesso</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nome de Utilizador *</label>
+                        <input class="form-input" type="text" name="username" placeholder="Ex: joaquim.chissano" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input class="form-input" type="email" name="email" placeholder="email@ine.gov.mz" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Senha *</label>
+                        <input class="form-input" type="password" name="password" value="SGRH2026!" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Perfil de Acesso *</label>
+                        <select class="form-select" name="idPerfil" required>
+                            <option value="">Seleccionar perfil...</option>
+                            @foreach (var p in perfis)
+                            {
+                                <option value="@p.IdPerfil">@p.Nome - @p.Descricao</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-link" style="color:var(--primary);margin-right:0.5rem;"></i> Vinculo com Colaborador</h3>
+                <div class="form-group">
+                    <label class="form-label">Colaborador Vinculado</label>
+                    <select class="form-select" name="idColaborador">
+                        <option value="">Nenhum</option>
+                        @foreach (var c in colaboradores)
+                        {
+                            <option value="@c.IdColaborador">@c.NomeCompleto</option>
+                        }
+                    </select>
+                </div>
+                <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;margin-top:0.5rem;">
+                    <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> O utilizador recebera as credenciais de acesso. Recomenda-se alterar a senha no primeiro login.</p>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-key" style="color:var(--primary);margin-right:0.5rem;"></i> Permissões de Acesso</h3>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;">Defina ou ajuste as permissões do perfil <span id="permPerfilNome" style="font-weight:600;color:var(--primary);">seleccionado</span> para a conta. As permissões são aplicadas ao perfil de acesso.</p>
+                <div id="permAviso" style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;font-size:0.8rem;color:var(--text-muted);">
+                    <i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> Seleccione um perfil de acesso para configurar as permissões.
+                </div>
+                <div id="permTabelaContainer" class="table-container" style="display:none;overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Módulo</th>
+                                <th style="text-align:center;">Visualizar</th>
+                                <th style="text-align:center;">Criar</th>
+                                <th style="text-align:center;">Editar</th>
+                                <th style="text-align:center;">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="permTabela"></tbody>
+                    </table>
+                </div>
+                <input type="hidden" name="permissoesJson" id="permissoesJson">
+            </div>
+
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1.5rem;">
+                <a href="@Url.Action("Utilizadores", "Home")" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Criar Utilizador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+var todosModulos = ['Dashboard','Colaboradores','Contratos','Administracao','Formacao','Estagios','GuiasMarcha','Recrutamento','Clima','AssuntosSociais','Reporting','Utilizadores','Auditoria','Configuracoes'];
+var permissoesPerfilAtual = [];
+
+function carregarPermissoesPerfil(idPerfil) {
+    if (!idPerfil) {
+        $('#permTabelaContainer').hide();
+        $('#permAviso').show();
+        $('#permPerfilNome').text('seleccionado');
+        return;
+    }
+    $('#permPerfilNome').text($('select[name="idPerfil"] option:selected').text().split(' - ')[0]);
+    $.get('/Home/ObterPermissoes', { idPerfil: idPerfil }, function(data) {
+        permissoesPerfilAtual = data;
+        var $tbody = $('#permTabela');
+        $tbody.empty();
+        $.each(todosModulos, function(i, modulo) {
+            var perm = data.find(function(p){ return p.modulo === modulo; });
+            $tbody.append(
+                '<tr><td style="font-weight:600;">' + modulo + '</td>' +
+                '<td style="text-align:center;"><label class="toggle-switch"><input type="checkbox" class="perm-vis" data-mod="' + modulo + '" ' + (perm && perm.podeVisualizar ? 'checked' : '') + '><span class="toggle-slider"></span></label></td>' +
+                '<td style="text-align:center;"><label class="toggle-switch"><input type="checkbox" class="perm-criar" data-mod="' + modulo + '" ' + (perm && perm.podeCriar ? 'checked' : '') + '><span class="toggle-slider"></span></label></td>' +
+                '<td style="text-align:center;"><label class="toggle-switch"><input type="checkbox" class="perm-editar" data-mod="' + modulo + '" ' + (perm && perm.podeEditar ? 'checked' : '') + '><span class="toggle-slider"></span></label></td>' +
+                '<td style="text-align:center;"><label class="toggle-switch"><input type="checkbox" class="perm-eliminar" data-mod="' + modulo + '" ' + (perm && perm.podeEliminar ? 'checked' : '') + '><span class="toggle-slider"></span></label></td>' +
+                '</tr>'
+            );
+        });
+        $('#permAviso').hide();
+        $('#permTabelaContainer').show();
+    });
+}
+
+$(document).ready(function() {
+    $('select[name="idPerfil"]').on('change', function() {
+        carregarPermissoesPerfil(parseInt($(this).val()) || 0);
+    });
+
+    $('form[action="/Home/NovoUtilizador"]').on('submit', function() {
+        var permissoes = [];
+        $('#permTabela tr').each(function() {
+            var modulo = $(this).find('.perm-vis').data('mod');
+            if (modulo) {
+                permissoes.push({
+                    modulo: modulo,
+                    podeVisualizar: $(this).find('.perm-vis').is(':checked'),
+                    podeCriar: $(this).find('.perm-criar').is(':checked'),
+                    podeEditar: $(this).find('.perm-editar').is(':checked'),
+                    podeEliminar: $(this).find('.perm-eliminar').is(':checked')
+                });
+            }
+        });
+        $('#permissoesJson').val(JSON.stringify(permissoes));
+    });
+});
+</script>
+}
