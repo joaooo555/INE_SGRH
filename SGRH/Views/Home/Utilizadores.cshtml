@@ -23,10 +23,10 @@
 <!-- Tabs -->
 <div class="tabs" id="tabsUtil">
     <button class="tab-item active" data-tab="todos">Todos</button>
-    <button class="tab-item" data-tab="Administrador">Administradores</button>
-    <button class="tab-item" data-tab="RH">RH</button>
-    <button class="tab-item" data-tab="Gestor">Gestores</button>
-    <button class="tab-item" data-tab="FAE">FAEs</button>
+    @foreach (var p in perfis)
+    {
+        <button class="tab-item" data-tab="@p.Nome">@p.Nome</button>
+    }
 </div>
 
 <!-- Tabela -->
@@ -95,7 +95,7 @@
 
 @section Scripts {
 <script>
-var perfilBadgeClass = { 'Administrador': 'admin', 'RH': 'rh', 'Gestor': 'gestor', 'FAE': 'fae' };
+var perfilBadgeClass = { 'Administrador': 'admin', 'Gestor RH': 'rh', 'Director': 'gestor', 'Utilizador': 'fae' };
 var utilizadores = [];
 var filtroUtilTab = 'todos';
 
