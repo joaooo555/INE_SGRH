@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "Novo Estágio";
+    var unidades = ViewBag.Unidades as List<SGRH.Models.UnidadeOrganica> ?? [];
+    var supervisores = ViewBag.Supervisores as List<SGRH.Models.Colaborador> ?? [];
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Novo Estágio</h1>
+        <p class="page-subtitle">Preencha os dados para cadastrar um novo estagiário no sistema</p>
+    </div>
+    <a href="@Url.Action("Estagios", "Home")" class="btn btn-outline"><i class="fi fi-sr-arrow-left"></i> Voltar</a>
+</div>
+
+@if (TempData["Erro"] != null)
+{
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:0.5rem;padding:0.75rem 1rem;margin-bottom:1rem;color:var(--danger);font-size:0.85rem;">
+        <i class="fi fi-sr-exclamation-triangle" style="margin-right:0.5rem;"></i> @TempData["Erro"]
+    </div>
+}
+
+<div class="card">
+    <div class="card-body" style="padding:2rem;">
+        <form method="post" action="@Url.Action("NovoEstagio", "Home")">
+            @Html.AntiForgeryToken()
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-user" style="color:var(--primary);margin-right:0.5rem;"></i> Dados do Estagiário</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nome do Estagiário *</label>
+                        <input class="form-input" type="text" name="nomeEstagiario" placeholder="Ex: Maria Silva" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input class="form-input" type="email" name="email" placeholder="email@exemplo.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Telefone</label>
+                        <input class="form-input" type="text" name="telefone" placeholder="Ex: 84 123 4567">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Documento de Identificação</label>
+                        <input class="form-input" type="text" name="documentoIdentificacao" placeholder="Ex: BI 100023456M">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Instituição de Ensino</label>
+                        <input class="form-input" type="text" name="instituicaoEnsino" placeholder="Ex: Universidade Eduardo Mondlane">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Estágio *</label>
+                        <select class="form-select" name="tipoEstagio" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Académico">Académico</option>
+                            <option value="Profissional">Profissional</option>
+                            <option value="Institucional">Institucional</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-link" style="color:var(--primary);margin-right:0.5rem;"></i> Enquadramento</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Unidade Orgânica *</label>
+                        <select class="form-select" name="idUnidadeOrganica" required>
+                            <option value="">Seleccionar...</option>
+                            @foreach (var u in unidades)
+                            {
+                                <option value="@u.IdUnidadeOrganica">@u.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Supervisor / Orientador *</label>
+                        <select class="form-select" name="idSupervisor" required>
+                            <option value="">Seleccionar...</option>
+                            @foreach (var s in supervisores)
+                            {
+                                <option value="@s.IdColaborador">@s.NomeCompleto</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Data Início *</label>
+                        <input type="date" class="form-input" name="dataInicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data Fim Prevista</label>
+                        <input type="date" class="form-input" name="dataFim">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Plano de Estágio</label>
+                    <textarea class="form-textarea" rows="3" name="planoEstagio" placeholder="Actividades e objectivos do estágio..."></textarea>
+                </div>
+            </div>
+
+            <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;margin-bottom:2rem;">
+                <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> O registo será criado com o estado "Solicitado" e ficará pendente de aprovação na gestão de estágios.</p>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1.5rem;">
+                <a href="@Url.Action("Estagios", "Home")" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Cadastrar Estágio</button>
+            </div>
+        </form>
+    </div>
+</div>

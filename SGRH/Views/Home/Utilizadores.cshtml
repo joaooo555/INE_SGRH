@@ -20,13 +20,22 @@
     <div class="stat-card"><div class="stat-info"><h3>Perfis</h3><div class="stat-value" id="kpiPerfis">0</div></div><div class="stat-icon amber"><i class="fi fi-sr-user-shield"></i></div></div>
 </div>
 
-<!-- Tabs -->
-<div class="tabs" id="tabsUtil">
-    <button class="tab-item active" data-tab="todos">Todos</button>
-    @foreach (var p in perfis)
-    {
-        <button class="tab-item" data-tab="@p.Nome">@p.Nome</button>
-    }
+<!-- ComboBox Filtrar por Perfil -->
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-body" style="padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+            <i class="fi fi-sr-filter" style="color:var(--primary-light);font-size:1rem;"></i>
+            <span style="font-weight:600;font-size:0.85rem;color:var(--text-primary);">Filtrar por perfil:</span>
+        </div>
+        <select class="form-select" id="comboPerfil" style="min-width:260px;max-width:360px;">
+            <option value="todos">Todos os perfis</option>
+            @foreach (var p in perfis)
+            {
+                <option value="@p.Nome">@p.Nome — @p.Descricao</option>
+            }
+        </select>
+        <span style="font-size:0.8rem;color:var(--text-muted);" id="perfilCount"></span>
+    </div>
 </div>
 
 <!-- Tabela -->
@@ -95,9 +104,9 @@
 
 @section Scripts {
 <script>
-var perfilBadgeClass = { 'Administrador': 'admin', 'Gestor RH': 'rh', 'Director': 'gestor', 'Utilizador': 'fae' };
+var perfilBadgeClass = { 'Administrador': 'admin', 'RH': 'rh', 'Gestor': 'gestor', 'Direccao': 'gestor', 'Funcionario': 'fae', 'Juri': '', 'Juridico': '', 'Formador': '', 'Supervisor': '', 'Estagiario': '', 'Candidato': '', 'InstituicaoEnsino': '', 'TI': '' };
 var utilizadores = [];
-var filtroUtilTab = 'todos';
+var filtroUtilPerfil = 'todos';
 
 function formatarData(dt) {
     if (!dt) return '—';
@@ -118,7 +127,7 @@ function renderizarTabela(dados) {
     var $tbody = $('#tabelaUtilizadores');
     $tbody.empty();
     if (!dados || dados.length === 0) {
-        $tbody.append('<tr><td colspan="6"><div class="empty-state"><h3>Nenhum utilizador encontrado</h3><p>Não existe nenhum utilizador para a pesquisa efectuada.</p></div></td></tr>');
+        $tbody.append('<tr><td colspan="6"><div class="empty-state"><h3>Nenhum utilizador encontrado</h3><p>Nao existe nenhum utilizador para a pesquisa efectuada.</p></div></td></tr>');
         return;
     }
     $.each(dados, function(i, u) {
@@ -135,14 +144,15 @@ function renderizarTabela(dados) {
             '</td></tr>'
         );
     });
+    $('#perfilCount').text(dados.length + ' utilizador(es)');
 }
 
 function aplicarFiltros() {
     var termo = $('#pesquisarGeral').val().toLowerCase().trim();
     var dados = utilizadores;
 
-    if (filtroUtilTab !== 'todos') {
-        dados = dados.filter(function(u){ return u.perfil === filtroUtilTab; });
+    if (filtroUtilPerfil !== 'todos') {
+        dados = dados.filter(function(u){ return u.perfil === filtroUtilPerfil; });
     }
 
     if (termo) {
@@ -171,29 +181,13 @@ function carregarUtilizadores() {
 $(document).ready(function() {
     carregarUtilizadores();
 
-    // Populate colaborador select
-    $.get('/Home/Utilizadores', function(html) {
-        var $page = $(html);
-        var colaboradoresData = [];
-        $('#novoColaborador').find('option').not(':first').remove();
-    });
-
-    // Carregar colaboradores via JSON
-    $.ajax({
-        url: '/Home/Utilizadores',
-        type: 'GET',
-        success: function() {}
-    });
-
-    // Tabs
-    $('#tabsUtil .tab-item').on('click', function() {
-        $('#tabsUtil .tab-item').removeClass('active');
-        $(this).addClass('active');
-        filtroUtilTab = $(this).data('tab');
+    // ComboBox filtro por perfil
+    $('#comboPerfil').on('change', function() {
+        filtroUtilPerfil = $(this).val();
         aplicarFiltros();
     });
 
-    // Pesquisa instantânea via topbar
+    // Pesquisa instantanea via topbar
     $('#pesquisarGeral').on('input', aplicarFiltros);
 
     // Editar

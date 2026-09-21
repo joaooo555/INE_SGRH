@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = "Gestão de Estágios";
     ViewBag.ActivePage = "Estagios";
 }
@@ -10,7 +10,7 @@
     </div>
     <div style="display:flex;gap:0.5rem;">
         <button class="btn btn-outline"><i class="fi fi-sr-document"></i> Relatório</button>
-        <button class="btn btn-primary" onclick="$('#modalNovoEstagio').addClass('active')"><i class="fi fi-sr-plus"></i> Novo Estágio</button>
+        <a href="@Url.Action("NovoEstagio", "Home")" class="btn btn-primary"><i class="fi fi-sr-plus"></i> Novo Estágio</a>
     </div>
 </div>
 
@@ -50,11 +50,11 @@
 </div>
 
 <div class="tabs" style="margin-bottom:1.25rem;">
-    <button class="tab-item active" data-filtro="todos"><i class="fi fi-sr-list"></i> Todos</button>
-    <button class="tab-item" data-filtro="em-curso"><i class="fi fi-sr-play"></i> Em Curso</button>
-    <button class="tab-item" data-filtro="academico"><i class="fi fi-sr-graduation-cap"></i> Académico</button>
-    <button class="tab-item" data-filtro="profissional"><i class="fi fi-sr-briefcase"></i> Profissional</button>
-    <button class="tab-item" data-filtro="institucional"><i class="fi fi-sr-building"></i> Institucional</button>
+    <button class="tab-item active" data-filtro="todos"><i class="fi fi-sr-list"></i> Todos <span class="tab-count" data-conta="todos"></span></button>
+    <button class="tab-item" data-filtro="em-curso"><i class="fi fi-sr-play"></i> Em Curso <span class="tab-count" data-conta="em-curso"></span></button>
+    <button class="tab-item" data-filtro="academico"><i class="fi fi-sr-graduation-cap"></i> Académico <span class="tab-count" data-conta="academico"></span></button>
+    <button class="tab-item" data-filtro="profissional"><i class="fi fi-sr-briefcase"></i> Profissional <span class="tab-count" data-conta="profissional"></span></button>
+    <button class="tab-item" data-filtro="institucional"><i class="fi fi-sr-building"></i> Institucional <span class="tab-count" data-conta="institucional"></span></button>
 </div>
 
 <div id="listaEstagios" class="grid-2"></div>
@@ -209,73 +209,7 @@
 
 @section Scripts {
 <script>
-var estagios = [
-    {
-        nome: "Ana Tembe",
-        initials: "AT",
-        tipo: "academico",
-        tipoLabel: "Académico",
-        area: "Recursos Humanos",
-        instituicao: "Universidade Eduardo Mondlane",
-        orientador: "Carlos Machel",
-        inicio: "2025-09-01",
-        fim: "2026-02-28",
-        estado: "em-curso",
-        estadoLabel: "Em Curso",
-        badgeClass: "badge-success",
-        progresso: 65,
-        avaliacao: false
-    },
-    {
-        nome: "Pedro Nhaca",
-        initials: "PN",
-        tipo: "profissional",
-        tipoLabel: "Profissional",
-        area: "Tecnologias de Informação",
-        instituicao: "ISCTEM",
-        orientador: "Ana Tembe",
-        inicio: "2025-10-15",
-        fim: "2026-04-15",
-        estado: "em-curso",
-        estadoLabel: "Em Curso",
-        badgeClass: "badge-success",
-        progresso: 40,
-        avaliacao: false
-    },
-    {
-        nome: "Carla Mondlane",
-        initials: "CM",
-        tipo: "institucional",
-        tipoLabel: "Institucional",
-        area: "Finanças",
-        instituicao: "ISCTEM",
-        orientador: "Pedro Nhaca",
-        inicio: "2025-11-01",
-        fim: "2026-05-01",
-        estado: "pendente",
-        estadoLabel: "Pendente",
-        badgeClass: "badge-warning",
-        progresso: 0,
-        avaliacao: false
-    },
-    {
-        nome: "Ricardo Cossa",
-        initials: "RC",
-        tipo: "profissional",
-        tipoLabel: "Profissional",
-        area: "Administração Geral",
-        instituicao: "UDM",
-        orientador: "Carlos Machel",
-        inicio: "2025-03-01",
-        fim: "2025-08-31",
-        estado: "concluido",
-        estadoLabel: "Concluído",
-        badgeClass: "badge-info",
-        progresso: 100,
-        avaliacao: true
-    }
-];
-
+var estagios = @Html.Raw(ViewBag.EstagiosJson ?? "[]");
 function renderizarEstagios(filtro) {
     var html = '';
     var filtrados = estagios;
@@ -332,6 +266,27 @@ function renderizarEstagios(filtro) {
     $('#listaEstagios').html(html);
 }
 
+function atualizarContagens() {
+    if (typeof estagios === 'undefined' || !estagios || !estagios.length) {
+        $('.tab-count').text('');
+        return;
+    }
+    var total = estagios.length;
+    var emCurso = 0, academico = 0, profissional = 0, institucional = 0;
+    for (var i = 0; i < estagios.length; i++) {
+        var e = estagios[i];
+        if (e.estado === 'em-curso') emCurso++;
+        if (e.tipo === 'academico') academico++;
+        else if (e.tipo === 'profissional') profissional++;
+        else if (e.tipo === 'institucional') institucional++;
+    }
+    $('[data-conta="todos"]').text(total);
+    $('[data-conta="em-curso"]').text(emCurso);
+    $('[data-conta="academico"]').text(academico);
+    $('[data-conta="profissional"]').text(profissional);
+    $('[data-conta="institucional"]').text(institucional);
+}
+
 function formatarData(dataStr) {
     var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     var parts = dataStr.split('-');
@@ -345,6 +300,7 @@ function avaliarEstagio(nome, tipo) {
 }
 
 $(document).ready(function() {
+    atualizarContagens();
     renderizarEstagios('todos');
 
     $('[data-filtro]').on('click', function() {

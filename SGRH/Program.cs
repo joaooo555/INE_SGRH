@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SGRH.Data;
+using SGRH.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// ── Base de dados ──────────────────────────────────────────────────
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -20,9 +19,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.IsEssential = true;
+    options.Cookie.HttpOnly = true;
+});
+
+builder.Services.AddScoped<AutorizacaoService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -31,7 +39,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -42,12 +50,14 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}/{id?}")
     .WithStaticAssets();
 
-// ── Seed de dados de acesso ────────────────────────────────────────
+// ── Seed de perfis e permissões ────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.ExecuteSqlRaw(@"
-        -- Perfis de acesso (ID = explícito, precisa de IDENTITY_INSERT ON)
+        -- ═══════════════════════════════════════════════════════════
+        -- PERFIS DE ACESSO (13 perfis)
+        -- ═══════════════════════════════════════════════════════════
         SET IDENTITY_INSERT perfil_acesso ON;
 
         IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 1)
@@ -61,11 +71,40 @@ using (var scope = app.Services.CreateScope())
             VALUES (3, 'Gestor', 'Gestao de equipas e processos', 2);
         IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 4)
             INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
-            VALUES (4, 'FAE', 'Formacao e apoio social', 1);
+            VALUES (4, 'Direccao', 'Direcao estrategica da organizacao', 3);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 5)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (5, 'Funcionario', 'Funcionario ou formador de apoio', 1);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 6)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (6, 'Juri', 'Membro de jury de recrutamento', 2);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 7)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (7, 'Juridico', 'Assessoria juridica e contratos', 2);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 8)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (8, 'Formador', 'Formador externo ou interno', 1);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 9)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (9, 'Supervisor', 'Supervisor de estagios', 2);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 10)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (10, 'Estagiario', 'Estagiario da organizacao', 1);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 11)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (11, 'Candidato', 'Candidato a recrutamento', 1);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 12)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (12, 'InstituicaoEnsino', 'Instituicao de ensino parceira', 1);
+        IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 13)
+            INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
+            VALUES (13, 'TI', 'Suporte tecnico e administracao', 3);
 
         SET IDENTITY_INSERT perfil_acesso OFF;
 
-        -- Permissoes Administrador (Perfil 1)
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - ADMINISTRADOR (Perfil 1) - Total em tudo
+        -- ═══════════════════════════════════════════════════════════
         IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 1)
         BEGIN
             INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
@@ -86,7 +125,13 @@ using (var scope = app.Services.CreateScope())
                 (1, 'Configuracoes', 1, 1, 1, 1);
         END
 
-        -- Permissoes RH (Perfil 2)
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - RH (Perfil 2)
+        -- Cadastro=Total, Recrutamento=Total, Contratos=Total,
+        -- Admin=Total, Formacao=Total, Estagios=Total,
+        -- Clima=Restrito, AssuntosSociais=Elevado,
+        -- Reporting=Elevado, AdminSys=Total
+        -- ═══════════════════════════════════════════════════════════
         IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 2)
         BEGIN
             INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
@@ -94,16 +139,26 @@ using (var scope = app.Services.CreateScope())
                 (2, 'Dashboard', 1, 1, 1, 1),
                 (2, 'Colaboradores', 1, 1, 1, 1),
                 (2, 'Contratos', 1, 1, 1, 1),
+                (2, 'Administracao', 1, 1, 1, 1),
                 (2, 'Formacao', 1, 1, 1, 1),
                 (2, 'Estagios', 1, 1, 1, 1),
                 (2, 'GuiasMarcha', 1, 1, 1, 1),
                 (2, 'Recrutamento', 1, 1, 1, 1),
-                (2, 'Clima', 1, 1, 1, 1),
-                (2, 'AssuntosSociais', 1, 1, 1, 1),
-                (2, 'Reporting', 1, 1, 1, 1);
+                (2, 'Clima', 1, 0, 0, 0),
+                (2, 'AssuntosSociais', 1, 1, 1, 0),
+                (2, 'Reporting', 1, 1, 1, 0),
+                (2, 'Utilizadores', 1, 1, 1, 1),
+                (2, 'Auditoria', 1, 1, 1, 1),
+                (2, 'Configuracoes', 1, 1, 1, 1);
         END
 
-        -- Permissoes Gestor (Perfil 3) - consulta em todos os modulos
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - GESTOR (Perfil 3)
+        -- Cadastro=Consulta, Recrutamento=Consulta, Contratos=Consulta,
+        -- Admin=Aprovacao, Formacao=Consulta, Estagios=SeSupervisor,
+        -- Clima=Consulta, AssuntosSociais=Nao, Reporting=Consulta,
+        -- AdminSys=Nao
+        -- ═══════════════════════════════════════════════════════════
         IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 3)
         BEGIN
             INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
@@ -111,27 +166,268 @@ using (var scope = app.Services.CreateScope())
                 (3, 'Dashboard', 1, 0, 0, 0),
                 (3, 'Colaboradores', 1, 0, 0, 0),
                 (3, 'Contratos', 1, 0, 0, 0),
-                (3, 'Administracao', 1, 0, 0, 0),
+                (3, 'Administracao', 1, 0, 1, 0),
                 (3, 'Formacao', 1, 0, 0, 0),
                 (3, 'Estagios', 1, 0, 0, 0),
-                (3, 'GuiasMarcha', 1, 0, 0, 0),
+                (3, 'GuiasMarcha', 1, 0, 1, 0),
                 (3, 'Recrutamento', 1, 0, 0, 0),
                 (3, 'Clima', 1, 0, 0, 0),
-                (3, 'AssuntosSociais', 1, 0, 0, 0),
+                (3, 'AssuntosSociais', 0, 0, 0, 0),
                 (3, 'Reporting', 1, 0, 0, 0),
-                (3, 'Utilizadores', 1, 0, 0, 0),
-                (3, 'Auditoria', 1, 0, 0, 0),
-                (3, 'Configuracoes', 1, 0, 0, 0);
+                (3, 'Utilizadores', 0, 0, 0, 0),
+                (3, 'Auditoria', 0, 0, 0, 0),
+                (3, 'Configuracoes', 0, 0, 0, 0);
         END
 
-        -- Permissoes FAE (Perfil 4) - consulta em Dashboard, Formacao e AssuntosSociais
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - DIRECAO (Perfil 4)
+        -- Cadastro=Consulta, Recrutamento=Consulta, Contratos=Consulta,
+        -- Admin=Consulta, Formacao=Consulta, Estagios=Consulta,
+        -- Clima=Consulta, AssuntosSociais=ConsultaAgregada,
+        -- Reporting=Elevado, AdminSys=Nao
+        -- ═══════════════════════════════════════════════════════════
         IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 4)
         BEGIN
             INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
             VALUES
                 (4, 'Dashboard', 1, 0, 0, 0),
+                (4, 'Colaboradores', 1, 0, 0, 0),
+                (4, 'Contratos', 1, 0, 0, 0),
+                (4, 'Administracao', 1, 0, 0, 0),
                 (4, 'Formacao', 1, 0, 0, 0),
-                (4, 'AssuntosSociais', 1, 0, 0, 0);
+                (4, 'Estagios', 1, 0, 0, 0),
+                (4, 'GuiasMarcha', 1, 0, 0, 0),
+                (4, 'Recrutamento', 1, 0, 0, 0),
+                (4, 'Clima', 1, 0, 0, 0),
+                (4, 'AssuntosSociais', 1, 0, 0, 0),
+                (4, 'Reporting', 1, 1, 1, 0),
+                (4, 'Utilizadores', 0, 0, 0, 0),
+                (4, 'Auditoria', 0, 0, 0, 0),
+                (4, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - FUNCIONARIO/FAE (Perfil 5)
+        -- Cadastro=Proprio, Recrutamento=Consulta, Contratos=Proprio,
+        -- Admin=Solicitacao, Formacao=Proprio, Estagios=Proprio,
+        -- Clima=Participacao, AssuntosSociais=Proprio,
+        -- Reporting=PropriosDados, AdminSys=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 5)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (5, 'Dashboard', 1, 0, 0, 0),
+                (5, 'Colaboradores', 1, 0, 0, 0),
+                (5, 'Contratos', 1, 0, 0, 0),
+                (5, 'Administracao', 1, 1, 0, 0),
+                (5, 'Formacao', 1, 0, 0, 0),
+                (5, 'Estagios', 1, 0, 0, 0),
+                (5, 'GuiasMarcha', 1, 1, 0, 0),
+                (5, 'Recrutamento', 1, 0, 0, 0),
+                (5, 'Clima', 1, 1, 0, 0),
+                (5, 'AssuntosSociais', 1, 0, 0, 0),
+                (5, 'Reporting', 1, 0, 0, 0),
+                (5, 'Utilizadores', 0, 0, 0, 0),
+                (5, 'Auditoria', 0, 0, 0, 0),
+                (5, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - JURI (Perfil 6)
+        -- Cadastro=Nao, Recrutamento=Avaliacao, Resto=Nao,
+        -- Reporting=Recrutamento
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 6)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (6, 'Dashboard', 1, 0, 0, 0),
+                (6, 'Colaboradores', 0, 0, 0, 0),
+                (6, 'Contratos', 0, 0, 0, 0),
+                (6, 'Administracao', 0, 0, 0, 0),
+                (6, 'Formacao', 0, 0, 0, 0),
+                (6, 'Estagios', 0, 0, 0, 0),
+                (6, 'GuiasMarcha', 0, 0, 0, 0),
+                (6, 'Recrutamento', 1, 1, 0, 0),
+                (6, 'Clima', 0, 0, 0, 0),
+                (6, 'AssuntosSociais', 0, 0, 0, 0),
+                (6, 'Reporting', 1, 0, 0, 0),
+                (6, 'Utilizadores', 0, 0, 0, 0),
+                (6, 'Auditoria', 0, 0, 0, 0),
+                (6, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - JURIDICO (Perfil 7)
+        -- Cadastro=ConsultaNecessaria, Contratos=Elevado,
+        -- Reporting=Contratos, Resto=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 7)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (7, 'Dashboard', 1, 0, 0, 0),
+                (7, 'Colaboradores', 1, 0, 0, 0),
+                (7, 'Contratos', 1, 1, 1, 0),
+                (7, 'Administracao', 0, 0, 0, 0),
+                (7, 'Formacao', 0, 0, 0, 0),
+                (7, 'Estagios', 0, 0, 0, 0),
+                (7, 'GuiasMarcha', 0, 0, 0, 0),
+                (7, 'Recrutamento', 0, 0, 0, 0),
+                (7, 'Clima', 0, 0, 0, 0),
+                (7, 'AssuntosSociais', 0, 0, 0, 0),
+                (7, 'Reporting', 1, 0, 0, 0),
+                (7, 'Utilizadores', 0, 0, 0, 0),
+                (7, 'Auditoria', 0, 0, 0, 0),
+                (7, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - FORMADOR (Perfil 8)
+        -- Cadastro=ConsultaNecessaria, Formacao=Elevado,
+        -- Reporting=Formacao, Resto=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 8)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (8, 'Dashboard', 1, 0, 0, 0),
+                (8, 'Colaboradores', 1, 0, 0, 0),
+                (8, 'Contratos', 0, 0, 0, 0),
+                (8, 'Administracao', 0, 0, 0, 0),
+                (8, 'Formacao', 1, 1, 1, 0),
+                (8, 'Estagios', 0, 0, 0, 0),
+                (8, 'GuiasMarcha', 0, 0, 0, 0),
+                (8, 'Recrutamento', 0, 0, 0, 0),
+                (8, 'Clima', 0, 0, 0, 0),
+                (8, 'AssuntosSociais', 0, 0, 0, 0),
+                (8, 'Reporting', 1, 0, 0, 0),
+                (8, 'Utilizadores', 0, 0, 0, 0),
+                (8, 'Auditoria', 0, 0, 0, 0),
+                (8, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - SUPERVISOR (Perfil 9)
+        -- Cadastro=ConsultaNecessaria, Estagios=Elevado,
+        -- Reporting=Estagios, Resto=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 9)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (9, 'Dashboard', 1, 0, 0, 0),
+                (9, 'Colaboradores', 1, 0, 0, 0),
+                (9, 'Contratos', 0, 0, 0, 0),
+                (9, 'Administracao', 0, 0, 0, 0),
+                (9, 'Formacao', 0, 0, 0, 0),
+                (9, 'Estagios', 1, 1, 1, 0),
+                (9, 'GuiasMarcha', 0, 0, 0, 0),
+                (9, 'Recrutamento', 0, 0, 0, 0),
+                (9, 'Clima', 0, 0, 0, 0),
+                (9, 'AssuntosSociais', 0, 0, 0, 0),
+                (9, 'Reporting', 1, 0, 0, 0),
+                (9, 'Utilizadores', 0, 0, 0, 0),
+                (9, 'Auditoria', 0, 0, 0, 0),
+                (9, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - ESTAGIARIO (Perfil 10)
+        -- Cadastro=Proprio, Estagios=Limitado,
+        -- Reporting=PropriosDados, Resto=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 10)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (10, 'Dashboard', 1, 0, 0, 0),
+                (10, 'Colaboradores', 1, 0, 0, 0),
+                (10, 'Contratos', 0, 0, 0, 0),
+                (10, 'Administracao', 0, 0, 0, 0),
+                (10, 'Formacao', 0, 0, 0, 0),
+                (10, 'Estagios', 1, 1, 0, 0),
+                (10, 'GuiasMarcha', 0, 0, 0, 0),
+                (10, 'Recrutamento', 0, 0, 0, 0),
+                (10, 'Clima', 0, 0, 0, 0),
+                (10, 'AssuntosSociais', 0, 0, 0, 0),
+                (10, 'Reporting', 1, 0, 0, 0),
+                (10, 'Utilizadores', 0, 0, 0, 0),
+                (10, 'Auditoria', 0, 0, 0, 0),
+                (10, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - CANDIDATO (Perfil 11)
+        -- Recrutamento=Proprio, Resto=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 11)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (11, 'Dashboard', 1, 0, 0, 0),
+                (11, 'Colaboradores', 0, 0, 0, 0),
+                (11, 'Contratos', 0, 0, 0, 0),
+                (11, 'Administracao', 0, 0, 0, 0),
+                (11, 'Formacao', 0, 0, 0, 0),
+                (11, 'Estagios', 0, 0, 0, 0),
+                (11, 'GuiasMarcha', 0, 0, 0, 0),
+                (11, 'Recrutamento', 1, 1, 0, 0),
+                (11, 'Clima', 0, 0, 0, 0),
+                (11, 'AssuntosSociais', 0, 0, 0, 0),
+                (11, 'Reporting', 0, 0, 0, 0),
+                (11, 'Utilizadores', 0, 0, 0, 0),
+                (11, 'Auditoria', 0, 0, 0, 0),
+                (11, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - INSTITUICAO DE ENSINO (Perfil 12)
+        -- Estagios=Limitado, Reporting=Estagios, Resto=Nao
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 12)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (12, 'Dashboard', 1, 0, 0, 0),
+                (12, 'Colaboradores', 0, 0, 0, 0),
+                (12, 'Contratos', 0, 0, 0, 0),
+                (12, 'Administracao', 0, 0, 0, 0),
+                (12, 'Formacao', 0, 0, 0, 0),
+                (12, 'Estagios', 1, 1, 0, 0),
+                (12, 'GuiasMarcha', 0, 0, 0, 0),
+                (12, 'Recrutamento', 0, 0, 0, 0),
+                (12, 'Clima', 0, 0, 0, 0),
+                (12, 'AssuntosSociais', 0, 0, 0, 0),
+                (12, 'Reporting', 1, 0, 0, 0),
+                (12, 'Utilizadores', 0, 0, 0, 0),
+                (12, 'Auditoria', 0, 0, 0, 0),
+                (12, 'Configuracoes', 0, 0, 0, 0);
+        END
+
+        -- ═══════════════════════════════════════════════════════════
+        -- PERMISSOES - TI (Perfil 13)
+        -- Total tecnico em todos os modulos
+        -- ═══════════════════════════════════════════════════════════
+        IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 13)
+        BEGIN
+            INSERT INTO permissao (id_perfil, modulo, pode_visualizar, pode_criar, pode_editar, pode_eliminar)
+            VALUES
+                (13, 'Dashboard', 1, 1, 1, 1),
+                (13, 'Colaboradores', 1, 1, 1, 1),
+                (13, 'Contratos', 1, 1, 1, 1),
+                (13, 'Administracao', 1, 1, 1, 1),
+                (13, 'Formacao', 1, 1, 1, 1),
+                (13, 'Estagios', 1, 1, 1, 1),
+                (13, 'GuiasMarcha', 1, 1, 1, 1),
+                (13, 'Recrutamento', 1, 1, 1, 1),
+                (13, 'Clima', 1, 1, 1, 1),
+                (13, 'AssuntosSociais', 1, 1, 1, 1),
+                (13, 'Reporting', 1, 1, 1, 1),
+                (13, 'Utilizadores', 1, 1, 1, 1),
+                (13, 'Auditoria', 1, 1, 1, 1),
+                (13, 'Configuracoes', 1, 1, 1, 1);
         END
 
         -- Utilizador admin

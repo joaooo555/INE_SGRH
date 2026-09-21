@@ -1,9 +1,12 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGRH.Authorization;
 using SGRH.Data;
 using SGRH.Helpers;
 using SGRH.Models;
+using SGRH.Services;
 
 namespace SGRH.Controllers
 {
@@ -12,22 +15,52 @@ namespace SGRH.Controllers
     {
         private readonly AppDbContext _db;
         private readonly IWebHostEnvironment _env;
+        private readonly AutorizacaoService _autorizacao;
 
-        public HomeController(AppDbContext db, IWebHostEnvironment env)
+        public HomeController(AppDbContext db, IWebHostEnvironment env, AutorizacaoService autorizacao)
         {
             _db = db;
             _env = env;
+            _autorizacao = autorizacao;
         }
 
-        public IActionResult Index()
+        public int? ObterIdPerfil()
+        {
+            var claim = User.FindFirst("IdPerfil");
+            if (claim != null && int.TryParse(claim.Value, out var id))
+                return id;
+            return null;
+        }
+
+        private async Task CarregarPermissoesViewBag()
+        {
+            var idPerfil = ObterIdPerfil();
+            if (idPerfil.HasValue)
+            {
+                var permissoes = await _autorizacao.ObterTodasPermissoes(idPerfil.Value);
+                ViewBag.Permissoes = permissoes;
+            }
+            else
+            {
+                ViewBag.Permissoes = new Dictionary<string, Permissao>();
+            }
+        }
+
+        // ── DASHBOARD ─────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Dashboard", Operacao = "Visualizar")]
+        public async Task<IActionResult> Index()
         {
             ViewBag.ActivePage = "Dashboard";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
+        // ── COLABORADORES ─────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Visualizar")]
         public async Task<IActionResult> Colaboradores()
         {
             ViewBag.ActivePage = "Colaboradores";
+            await CarregarPermissoesViewBag();
 
             var colaboradores = await _db.Colaboradores
                 .Include(c => c.UnidadeOrganica)
@@ -48,6 +81,7 @@ namespace SGRH.Controllers
         }
 
         [HttpGet]
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Visualizar")]
         public async Task<IActionResult> PesquisarColaboradores(string termo)
         {
             if (string.IsNullOrWhiteSpace(termo))
@@ -105,20 +139,24 @@ namespace SGRH.Controllers
             return Json(colaboradores);
         }
 
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Visualizar")]
         public async Task<IActionResult> NovoColaborador()
         {
             ViewBag.ActivePage = "Colaboradores";
+            await CarregarPermissoesViewBag();
             await CarregarDadosReferencia();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Criar")]
         public async Task<IActionResult> NovoColaborador(Colaborador colaborador, IFormFile? foto, List<IFormFile>? documentos, string? tipoContrato, decimal? remuneracao, DateOnly? dataInicioContrato, DateOnly? dataFimContrato, string? estadoContrato)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.ActivePage = "Colaboradores";
+                await CarregarPermissoesViewBag();
                 await CarregarDadosReferencia();
                 return View(colaborador);
             }
@@ -200,9 +238,11 @@ namespace SGRH.Controllers
             return RedirectToAction(nameof(Colaboradores));
         }
 
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Visualizar")]
         public async Task<IActionResult> EditarColaborador(int? id)
         {
             ViewBag.ActivePage = "Colaboradores";
+            await CarregarPermissoesViewBag();
 
             if (id == null)
                 return NotFound();
@@ -238,6 +278,7 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Editar")]
         public async Task<IActionResult> EditarColaborador(int id, Colaborador colaborador, IFormFile? foto, List<IFormFile>? documentos, string? tipoContrato, decimal? remuneracao, DateOnly? dataInicioContrato, DateOnly? dataFimContrato, string? estadoContrato)
         {
             if (id != colaborador.IdColaborador)
@@ -246,6 +287,7 @@ namespace SGRH.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.ActivePage = "Colaboradores";
+                await CarregarPermissoesViewBag();
                 ViewBag.Contrato = await _db.Contratos
                     .Include(c => c.TipoContrato)
                     .Where(c => c.IdColaborador == id)
@@ -375,6 +417,7 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Colaboradores", Operacao = "Eliminar")]
         public async Task<IActionResult> EliminarColaborador(int id)
         {
             var colaborador = await _db.Colaboradores.FindAsync(id);
@@ -437,9 +480,12 @@ namespace SGRH.Controllers
             return $"CTR-{DateTime.Now.Year}/{(countAno + 1).ToString("D3")}";
         }
 
+        // ── CONTRATOS ─────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Visualizar")]
         public async Task<IActionResult> Contratos()
         {
             ViewBag.ActivePage = "Contratos";
+            await CarregarPermissoesViewBag();
 
             var contratos = await _db.Contratos
                 .Include(c => c.Colaborador)
@@ -462,9 +508,11 @@ namespace SGRH.Controllers
         }
 
         [HttpGet]
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Visualizar")]
         public async Task<IActionResult> NovoContrato()
         {
             ViewBag.ActivePage = "Contratos";
+            await CarregarPermissoesViewBag();
             ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
             ViewBag.Colaboradores = await _db.Colaboradores
                 .Where(c => c.Estado == "Ativo")
@@ -475,11 +523,13 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Criar")]
         public async Task<IActionResult> NovoContrato(Contrato contrato, string? estadoContrato, List<IFormFile>? documentos)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.ActivePage = "Contratos";
+                await CarregarPermissoesViewBag();
                 ViewBag.TiposContrato = await _db.TiposContrato.ToListAsync();
                 ViewBag.Colaboradores = await _db.Colaboradores
                     .Where(c => c.Estado == "Ativo")
@@ -531,11 +581,13 @@ namespace SGRH.Controllers
         }
 
         [HttpGet]
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Visualizar")]
         public async Task<IActionResult> EditarContrato(int? id)
         {
             if (id == null) return NotFound();
 
             ViewBag.ActivePage = "Contratos";
+            await CarregarPermissoesViewBag();
 
             var contrato = await _db.Contratos
                 .Include(c => c.Colaborador)
@@ -550,6 +602,7 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Editar")]
         public async Task<IActionResult> EditarContrato(Contrato model, string? estadoContrato, List<IFormFile>? documentos)
         {
             var contrato = await _db.Contratos.FindAsync(model.IdContrato);
@@ -602,6 +655,7 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Eliminar")]
         public async Task<IActionResult> EliminarContrato(int id)
         {
             var contrato = await _db.Contratos.FindAsync(id);
@@ -616,6 +670,7 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Contratos", Operacao = "Editar")]
         public async Task<IActionResult> RenovarContrato(int id)
         {
             var contrato = await _db.Contratos.FindAsync(id);
@@ -629,57 +684,201 @@ namespace SGRH.Controllers
             return RedirectToAction(nameof(Contratos));
         }
 
-        public IActionResult Administracao()
+        // ── ADMINISTRACAO ─────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Administracao", Operacao = "Visualizar")]
+        public async Task<IActionResult> Administracao()
         {
             ViewBag.ActivePage = "Administracao";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult Formacao()
+        // ── FORMACAO ──────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Formacao", Operacao = "Visualizar")]
+        public async Task<IActionResult> Formacao()
         {
             ViewBag.ActivePage = "Formacao";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult Estagios()
+        // ── ESTAGIOS ──────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Estagios", Operacao = "Visualizar")]
+        public async Task<IActionResult> Estagios()
         {
             ViewBag.ActivePage = "Estagios";
+            await CarregarPermissoesViewBag();
+            var estagios = await _db.Estagios
+                .Include(s => s.UnidadeOrganica)
+                .Include(s => s.Supervisor)
+                .OrderByDescending(s => s.DataRegisto)
+                .ToListAsync();
+            ViewBag.Estagios = estagios;
+            ViewBag.EstagiosJson = JsonSerializer.Serialize(estagios.Select(s => new
+            {
+                nome = s.NomeEstagiario,
+                initials = Iniciais(s.NomeEstagiario),
+                tipo = ChaveTipo(s.TipoEstagio),
+                tipoLabel = s.TipoEstagio,
+                area = s.UnidadeOrganica?.Nome ?? "—",
+                instituicao = s.InstituicaoEnsino ?? "—",
+                orientador = s.Supervisor?.NomeCompleto ?? "—",
+                inicio = s.DataInicio.ToString("yyyy-MM-dd"),
+                fim = s.DataFim?.ToString("yyyy-MM-dd") ?? "",
+                estado = ChaveEstado(s.Estado),
+                estadoLabel = s.Estado,
+                badgeClass = s.Estado switch
+                {
+                    "Concluido" => "badge-info",
+                    "Em Curso" => "badge-success",
+                    "Pendente" => "badge-warning",
+                    _ => "badge-secondary"
+                },
+                progresso = s.DataFim.HasValue && s.DataInicio < DateOnly.FromDateTime(DateTime.Today)
+                    ? (int)Math.Min(100, Math.Round((DateTime.Today - s.DataInicio.ToDateTime(TimeOnly.MinValue)).TotalDays /
+                        (s.DataFim.Value.ToDateTime(TimeOnly.MinValue) - s.DataInicio.ToDateTime(TimeOnly.MinValue)).TotalDays * 100))
+                    : 0,
+                avaliacao = s.Avaliacoes != null && s.Avaliacoes.Any(),
+                avaliacaoTipo = s.Avaliacoes?.FirstOrDefault()?.Nota.ToString() ?? ""
+            }));
             return View();
         }
 
-        public IActionResult GuiasMarcha()
+        private static string Iniciais(string? nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome)) return "??";
+            var partes = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return partes.Length >= 2
+                ? partes[0][..1] + partes[^1][..1]
+                : partes[0][..1];
+        }
+
+        private static string ChaveTipo(string? tipo)
+        {
+            return tipo?.ToLowerInvariant().Trim().Replace(" ", "-")
+                .Replace("á", "a").Replace("é", "e").Replace("í", "i").Replace("ó", "o").Replace("ú", "u")
+                .Replace("ã", "a").Replace("õ", "o").Replace("â", "a").Replace("ê", "e").Replace("ô", "o")
+                ?? "outro";
+        }
+
+        private static string ChaveEstado(string? estado)
+        {
+            var chave = estado?.ToLowerInvariant().Trim().Replace(" ", "-")
+                .Replace("á", "a").Replace("é", "e").Replace("í", "i").Replace("ó", "o").Replace("ú", "u")
+                .Replace("ã", "a").Replace("õ", "o").Replace("â", "a").Replace("ê", "e").Replace("ô", "o") ?? "";
+            return chave switch
+            {
+                "em-curso" => "em-curso",
+                "concluido" or "concluída" or "concluido" => "concluido",
+                "pendente" or "solicitado" => "pendente",
+                _ => string.IsNullOrEmpty(chave) ? "pendente" : chave
+            };
+        }
+
+        [VerificarPermissao(Modulo = "Estagios", Operacao = "Visualizar")]
+        public async Task<IActionResult> NovoEstagio()
+        {
+            ViewBag.ActivePage = "Estagios";
+            await CarregarPermissoesViewBag();
+            ViewBag.Unidades = await _db.UnidadesOrganicas
+                .Where(u => u.Estado == "Ativa")
+                .OrderBy(u => u.Nome)
+                .ToListAsync();
+            ViewBag.Supervisores = await _db.Colaboradores
+                .Where(c => c.Estado == "Ativo")
+                .OrderBy(c => c.NomeCompleto)
+                .ToListAsync();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Estagios", Operacao = "Criar")]
+        public async Task<IActionResult> NovoEstagio(string? nomeEstagiario, string? email, string? telefone, string? documentoIdentificacao, string? instituicaoEnsino, string? tipoEstagio, int? idUnidadeOrganica, int? idSupervisor, DateTime? dataInicio, DateTime? dataFim, string? planoEstagio)
+        {
+            if (string.IsNullOrWhiteSpace(nomeEstagiario) || string.IsNullOrWhiteSpace(tipoEstagio) || !idUnidadeOrganica.HasValue || !idSupervisor.HasValue || !dataInicio.HasValue)
+            {
+                TempData["Erro"] = "Preencha todos os campos obrigatorios.";
+                return RedirectToAction(nameof(NovoEstagio));
+            }
+
+            var estagio = new Estagio
+            {
+                NomeEstagiario = nomeEstagiario.Trim(),
+                Email = email?.Trim(),
+                Telefone = telefone?.Trim(),
+                DocumentoIdentificacao = documentoIdentificacao?.Trim(),
+                InstituicaoEnsino = instituicaoEnsino?.Trim(),
+                TipoEstagio = tipoEstagio,
+                IdUnidadeOrganica = idUnidadeOrganica.Value,
+                IdSupervisor = idSupervisor.Value,
+                DataInicio = DateOnly.FromDateTime(dataInicio.Value),
+                DataFim = dataFim.HasValue ? DateOnly.FromDateTime(dataFim.Value) : null,
+                PlanoEstagio = planoEstagio?.Trim(),
+                Estado = "Solicitado",
+                DeclaracaoEmitida = false,
+                DataRegisto = DateTime.Now,
+                UtilizadorRegisto = HttpContext.Session.GetInt32("IdUtilizador") ?? 0
+            };
+
+            _db.Estagios.Add(estagio);
+            await _db.SaveChangesAsync();
+
+            TempData["Toast"] = "Estagio cadastrado com sucesso!";
+            return RedirectToAction(nameof(Estagios));
+        }
+
+        // ── GUIAS DE MARCHA ───────────────────────────────────────
+        [VerificarPermissao(Modulo = "GuiasMarcha", Operacao = "Visualizar")]
+        public async Task<IActionResult> GuiasMarcha()
         {
             ViewBag.ActivePage = "GuiasMarcha";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult Recrutamento()
+        // ── RECRUTAMENTO ──────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Recrutamento", Operacao = "Visualizar")]
+        public async Task<IActionResult> Recrutamento()
         {
             ViewBag.ActivePage = "Recrutamento";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult Clima()
+        // ── CLIMA ─────────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Clima", Operacao = "Visualizar")]
+        public async Task<IActionResult> Clima()
         {
             ViewBag.ActivePage = "Clima";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult AssuntosSociais()
+        // ── ASSUNTOS SOCIAIS ──────────────────────────────────────
+        [VerificarPermissao(Modulo = "AssuntosSociais", Operacao = "Visualizar")]
+        public async Task<IActionResult> AssuntosSociais()
         {
             ViewBag.ActivePage = "AssuntosSociais";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult Reporting()
+        // ── REPORTING ─────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Reporting", Operacao = "Visualizar")]
+        public async Task<IActionResult> Reporting()
         {
             ViewBag.ActivePage = "Reporting";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
+        // ── UTILIZADORES ──────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Visualizar")]
         public async Task<IActionResult> Utilizadores()
         {
             ViewBag.ActivePage = "Utilizadores";
+            await CarregarPermissoesViewBag();
             ViewBag.Perfis = await _db.PerfisAcesso.ToListAsync();
             ViewBag.Colaboradores = await _db.Colaboradores
                 .Where(c => c.Estado == "Ativo")
@@ -689,9 +888,11 @@ namespace SGRH.Controllers
             return View();
         }
 
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Criar")]
         public async Task<IActionResult> NovoUtilizador()
         {
             ViewBag.ActivePage = "Utilizadores";
+            await CarregarPermissoesViewBag();
             ViewBag.Perfis = await _db.PerfisAcesso.ToListAsync();
             ViewBag.Colaboradores = await _db.Colaboradores
                 .Where(c => c.Estado == "Ativo")
@@ -702,6 +903,7 @@ namespace SGRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Criar")]
         public async Task<IActionResult> NovoUtilizador(string username, string email, string password, int idPerfil, int? idColaborador, string? permissoesJson)
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -761,6 +963,7 @@ namespace SGRH.Controllers
                         }
 
                         await _db.SaveChangesAsync();
+                        _autorizacao.LimparCache(idPerfil);
                     }
                 }
             }
@@ -770,6 +973,7 @@ namespace SGRH.Controllers
         }
 
         [HttpGet]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Visualizar")]
         public async Task<IActionResult> ObterUtilizadores()
         {
             var utilizadores = await _db.UtilizadoresSistema
@@ -795,6 +999,7 @@ namespace SGRH.Controllers
         }
 
         [HttpGet]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Visualizar")]
         public async Task<IActionResult> ObterPermissoes(int idPerfil)
         {
             var permissoes = await _db.Permissoes
@@ -814,13 +1019,14 @@ namespace SGRH.Controllers
         }
 
         [HttpPost]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Criar")]
         public async Task<IActionResult> CriarUtilizador([FromBody] CriarUtilizadorRequest model)
         {
             if (model == null || string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
                 return Json(new { sucesso = false, mensagem = "Dados incompletos." });
 
             if (await _db.UtilizadoresSistema.AnyAsync(u => u.Username == model.Username))
-                return Json(new { sucesso = false, mensagem = "Username já existe." });
+                return Json(new { sucesso = false, mensagem = "Username ja existe." });
 
             var utilizador = new UtilizadorSistema
             {
@@ -840,12 +1046,13 @@ namespace SGRH.Controllers
         }
 
         [HttpPost]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Editar")]
         public async Task<IActionResult> AtualizarUtilizador([FromBody] AtualizarUtilizadorRequest model)
         {
-            if (model == null) return Json(new { sucesso = false, mensagem = "Dados inválidos." });
+            if (model == null) return Json(new { sucesso = false, mensagem = "Dados invalidos." });
 
             var utilizador = await _db.UtilizadoresSistema.FindAsync(model.Id);
-            if (utilizador == null) return Json(new { sucesso = false, mensagem = "Utilizador não encontrado." });
+            if (utilizador == null) return Json(new { sucesso = false, mensagem = "Utilizador nao encontrado." });
 
             utilizador.Email = model.Email;
             utilizador.IdPerfil = model.IdPerfil;
@@ -854,15 +1061,17 @@ namespace SGRH.Controllers
                 utilizador.PasswordHash = PasswordHelper.Hash(model.Password);
 
             await _db.SaveChangesAsync();
+            _autorizacao.LimparCache(model.IdPerfil);
 
             return Json(new { sucesso = true, mensagem = "Utilizador actualizado com sucesso!" });
         }
 
         [HttpPost]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Eliminar")]
         public async Task<IActionResult> EliminarUtilizador(int id)
         {
             var utilizador = await _db.UtilizadoresSistema.FindAsync(id);
-            if (utilizador == null) return Json(new { sucesso = false, mensagem = "Utilizador não encontrado." });
+            if (utilizador == null) return Json(new { sucesso = false, mensagem = "Utilizador nao encontrado." });
 
             _db.UtilizadoresSistema.Remove(utilizador);
             await _db.SaveChangesAsync();
@@ -871,9 +1080,10 @@ namespace SGRH.Controllers
         }
 
         [HttpPost]
+        [VerificarPermissao(Modulo = "Utilizadores", Operacao = "Editar")]
         public async Task<IActionResult> GuardarPermissoes([FromBody] GuardarPermissoesRequest model)
         {
-            if (model == null) return Json(new { sucesso = false, mensagem = "Dados inválidos." });
+            if (model == null) return Json(new { sucesso = false, mensagem = "Dados invalidos." });
 
             var permissoesExistentes = await _db.Permissoes
                 .Where(p => p.IdPerfil == model.IdPerfil)
@@ -899,8 +1109,9 @@ namespace SGRH.Controllers
             }
 
             await _db.SaveChangesAsync();
+            _autorizacao.LimparCache(model.IdPerfil);
 
-            return Json(new { sucesso = true, mensagem = "Permissões actualizadas com sucesso!" });
+            return Json(new { sucesso = true, mensagem = "Permissoes actualizadas com sucesso!" });
         }
 
         public class CriarUtilizadorRequest
@@ -936,15 +1147,21 @@ namespace SGRH.Controllers
             public bool PodeEliminar { get; set; }
         }
 
-        public IActionResult Auditoria()
+        // ── AUDITORIA ─────────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Auditoria", Operacao = "Visualizar")]
+        public async Task<IActionResult> Auditoria()
         {
             ViewBag.ActivePage = "Auditoria";
+            await CarregarPermissoesViewBag();
             return View();
         }
 
-        public IActionResult Configuracoes()
+        // ── CONFIGURACOES ─────────────────────────────────────────
+        [VerificarPermissao(Modulo = "Configuracoes", Operacao = "Visualizar")]
+        public async Task<IActionResult> Configuracoes()
         {
             ViewBag.ActivePage = "Configuracoes";
+            await CarregarPermissoesViewBag();
             return View();
         }
     }

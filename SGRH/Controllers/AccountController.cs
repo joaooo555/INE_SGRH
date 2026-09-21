@@ -74,6 +74,10 @@ namespace SGRH.Controllers
                             ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                         });
 
+                    var perfilNome = utilizador.PerfilAcesso?.Nome ?? "";
+                    if (perfilNome == "Candidato")
+                        return RedirectToAction("Recrutamento", "Home");
+
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -114,7 +118,7 @@ namespace SGRH.Controllers
                     Username = username,
                     Email = model.Email,
                     PasswordHash = PasswordHelper.Hash(model.Password),
-                    IdPerfil = 4,
+                    IdPerfil = 5,
                     Estado = "Ativo",
                     DataCriacao = DateTime.Now
                 };

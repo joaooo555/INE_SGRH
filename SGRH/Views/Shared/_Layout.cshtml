@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using SGRH.Models
+@{
+    var permissoes = ViewBag.Permissoes as Dictionary<string, Permissao> ?? new Dictionary<string, Permissao>();
+    bool PodeVer(string modulo) => permissoes.TryGetValue(modulo, out var p) && p.PodeVisualizar;
+}
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
@@ -17,27 +22,65 @@
     <aside class="sidebar">
         <div class="sidebar-logo">
             <div style="width:40px;height:40px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1.1rem;">SG</div>
-            <div><h1><span>SG</span>RH</h1><span style="font-size:0.65rem;color:rgba(255,255,255,0.5);font-weight:400;">Gestão de Pessoal</span></div>
+            <div><h1><span>SG</span>RH</h1><span style="font-size:0.65rem;color:rgba(255,255,255,0.5);font-weight:400;">Gestao de Pessoal</span></div>
         </div>
         <nav class="sidebar-nav">
-            <div class="sidebar-section">Principal</div>
-            <a href="@Url.Action("Index", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Dashboard" ? "active" : "")"><i class="fi fi-sr-home"></i> Dashboard</a>
-            <a href="@Url.Action("Colaboradores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Colaboradores" ? "active" : "")"><i class="fi fi-sr-users"></i> Colaboradores</a>
-            <div class="sidebar-section">Gestão</div>
-            <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")"><i class="fi fi-sr-file"></i> Contratos</a>
-            <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")"><i class="fi fi-sr-settings"></i> Administração</a>
-            <a href="@Url.Action("Formacao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Formacao" ? "active" : "")"><i class="fi fi-sr-graduation-cap"></i> Formação</a>
-            <a href="@Url.Action("Estagios", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Estagios" ? "active" : "")"><i class="fi fi-sr-briefcase"></i> Estágios</a>
-            <a href="@Url.Action("GuiasMarcha", "Home")" class="sidebar-item @(ViewBag.ActivePage == "GuiasMarcha" ? "active" : "")"><i class="fi fi-sr-route"></i> Guias de Marcha</a>
-            <div class="sidebar-section">Pessoal</div>
-            <a href="@Url.Action("Recrutamento", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Recrutamento" ? "active" : "")"><i class="fi fi-sr-search"></i> Recrutamento</a>
-            <a href="@Url.Action("Clima", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Clima" ? "active" : "")"><i class="fi fi-sr-chart-simple"></i> Clima Org.</a>
-            <a href="@Url.Action("AssuntosSociais", "Home")" class="sidebar-item @(ViewBag.ActivePage == "AssuntosSociais" ? "active" : "")"><i class="fi fi-sr-heart"></i> Assuntos Sociais</a>
-            <div class="sidebar-section">Sistema</div>
-            <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")"><i class="fi fi-sr-chart-mixed"></i> Reporting</a>
-            <a href="@Url.Action("Utilizadores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")"><i class="fi fi-sr-user-gear"></i> Utilizadores</a>
-            <a href="@Url.Action("Auditoria", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")"><i class="fi fi-sr-shield-check"></i> Auditoria</a>
-            <a href="@Url.Action("Configuracoes", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Configuracoes" ? "active" : "")"><i class="fi fi-sr-gears"></i> Configurações</a>
+            @if (PodeVer("Dashboard"))
+            {
+                <a href="@Url.Action("Index", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Dashboard" ? "active" : "")"><i class="fi fi-sr-home"></i> Dashboard</a>
+            }
+            @if (PodeVer("Colaboradores"))
+            {
+                <a href="@Url.Action("Colaboradores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Colaboradores" ? "active" : "")"><i class="fi fi-sr-users"></i> Colaboradores</a>
+            }
+            @if (PodeVer("Contratos"))
+            {
+                <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")"><i class="fi fi-sr-file"></i> Contratos</a>
+            }
+            @if (PodeVer("Administracao"))
+            {
+                <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")"><i class="fi fi-sr-settings"></i> Administracao</a>
+            }
+            @if (PodeVer("Formacao"))
+            {
+                <a href="@Url.Action("Formacao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Formacao" ? "active" : "")"><i class="fi fi-sr-graduation-cap"></i> Formacao</a>
+            }
+            @if (PodeVer("Estagios"))
+            {
+                <a href="@Url.Action("Estagios", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Estagios" ? "active" : "")"><i class="fi fi-sr-briefcase"></i> Estagios</a>
+            }
+            @if (PodeVer("GuiasMarcha"))
+            {
+                <a href="@Url.Action("GuiasMarcha", "Home")" class="sidebar-item @(ViewBag.ActivePage == "GuiasMarcha" ? "active" : "")"><i class="fi fi-sr-route"></i> Guias de Marcha</a>
+            }
+            @if (PodeVer("Recrutamento"))
+            {
+                <a href="@Url.Action("Recrutamento", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Recrutamento" ? "active" : "")"><i class="fi fi-sr-search"></i> Recrutamento</a>
+            }
+            @if (PodeVer("Clima"))
+            {
+                <a href="@Url.Action("Clima", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Clima" ? "active" : "")"><i class="fi fi-sr-chart-simple"></i> Clima Org.</a>
+            }
+            @if (PodeVer("AssuntosSociais"))
+            {
+                <a href="@Url.Action("AssuntosSociais", "Home")" class="sidebar-item @(ViewBag.ActivePage == "AssuntosSociais" ? "active" : "")"><i class="fi fi-sr-heart"></i> Assuntos Sociais</a>
+            }
+            @if (PodeVer("Reporting"))
+            {
+                <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")"><i class="fi fi-sr-chart-mixed"></i> Reporting</a>
+            }
+            @if (PodeVer("Utilizadores"))
+            {
+                <a href="@Url.Action("Utilizadores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")"><i class="fi fi-sr-user-gear"></i> Utilizadores</a>
+            }
+            @if (PodeVer("Auditoria"))
+            {
+                <a href="@Url.Action("Auditoria", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")"><i class="fi fi-sr-shield-check"></i> Auditoria</a>
+            }
+            @if (PodeVer("Configuracoes"))
+            {
+                <a href="@Url.Action("Configuracoes", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Configuracoes" ? "active" : "")"><i class="fi fi-sr-gears"></i> Configuracoes</a>
+            }
         </nav>
     </aside>
 
