@@ -39,6 +39,11 @@ namespace SGRH.Controllers
                 .OrderBy(c => c.NomeCompleto)
                 .ToListAsync();
 
+            ViewBag.UnidadesOrganicas = await _db.UnidadesOrganicas
+                .Where(u => u.Estado == "Ativa")
+                .OrderBy(u => u.Nome)
+                .ToListAsync();
+
             return View(colaboradores);
         }
 
@@ -380,6 +385,38 @@ namespace SGRH.Controllers
             await _db.SaveChangesAsync();
 
             TempData["Toast"] = "Colaborador desativado com sucesso!";
+            return RedirectToAction(nameof(Colaboradores));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistarCarreira(int idColaborador, string tipo, string tipoMovimento, DateOnly data, int? novaCategoria, int? novaFuncao, string? despacho, decimal? novaRemuneracao, string? observacoes)
+        {
+            var colaborador = await _db.Colaboradores.FindAsync(idColaborador);
+            if (colaborador == null) return NotFound();
+
+            var historico = new HistoricoColaborador
+            {
+                IdColaborador = idColaborador,
+                DataEvento = data,
+                TipoEvento = tipoMovimento,
+                Descricao = (!string.IsNullOrEmpty(despacho) ? despacho + " — " : "") + (observacoes ?? ""),
+                Referencia = despacho,
+                IdUnidadeOrganica = colaborador.IdUnidadeOrganica,
+                IdCategoria = novaCategoria,
+                IdCarreira = colaborador.IdCarreira,
+                IdFuncao = novaFuncao
+            };
+            _db.HistoricosColaborador.Add(historico);
+
+            if (novaCategoria.HasValue)
+                colaborador.IdCategoria = novaCategoria.Value;
+            if (novaFuncao.HasValue)
+                colaborador.IdFuncao = novaFuncao.Value;
+
+            await _db.SaveChangesAsync();
+
+            TempData["Toast"] = (tipo == "progressao" ? "Progressão" : "Regressão") + " registada com sucesso!";
             return RedirectToAction(nameof(Colaboradores));
         }
 

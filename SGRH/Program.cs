@@ -47,7 +47,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.ExecuteSqlRaw(@"
-        -- Perfis de acesso
+        -- Perfis de acesso (ID = explícito, precisa de IDENTITY_INSERT ON)
+        SET IDENTITY_INSERT perfil_acesso ON;
+
         IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 1)
             INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
             VALUES (1, 'Administrador', 'Acesso total ao sistema', 3);
@@ -60,6 +62,8 @@ using (var scope = app.Services.CreateScope())
         IF NOT EXISTS (SELECT 1 FROM perfil_acesso WHERE id_perfil = 4)
             INSERT INTO perfil_acesso (id_perfil, nome, descricao, nivel_confidencialidade)
             VALUES (4, 'FAE', 'Formacao e apoio social', 1);
+
+        SET IDENTITY_INSERT perfil_acesso OFF;
 
         -- Permissoes Administrador (Perfil 1)
         IF NOT EXISTS (SELECT 1 FROM permissao WHERE id_perfil = 1)
@@ -133,7 +137,9 @@ using (var scope = app.Services.CreateScope())
         -- Utilizador admin
         IF NOT EXISTS (SELECT 1 FROM utilizador_sistema WHERE username = 'admin')
             INSERT INTO utilizador_sistema (username, password_hash, email, id_perfil, estado, data_criacao)
-            VALUES ('admin', '$2a$11$JdswbheNL78iL7PJGH0M8.RgQkTPCW42qME0SsxwRnbGE0iJszucS', 'admin@ine.gov.mz', 1, 'Ativo', '2025-01-01');
+            VALUES ('admin', '$2b$12$uPpCL5PrcrMtPxiW3oflXutIQg6aC4lcOzKuXKHF29rOaN57fvnfy', 'admin@ine.gov.mz', 1, 'Ativo', '2025-01-01');
+        ELSE
+            UPDATE utilizador_sistema SET password_hash = '$2b$12$uPpCL5PrcrMtPxiW3oflXutIQg6aC4lcOzKuXKHF29rOaN57fvnfy' WHERE username = 'admin';
     ");
 }
 
