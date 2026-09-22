@@ -62,6 +62,12 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}/{id?}")
     .WithStaticAssets();
 
+// Fallback: URLs só com o controller (ex.: /Admin → Admin/Index)
+app.MapControllerRoute(
+    name: "controllerIndex",
+    pattern: "{controller}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
 // ── Seed de dados de acesso ────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
