@@ -1,13 +1,30 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SGRH.Data;
 using SGRH.Models;
+using SGRH.Services;
 using System.Security.Claims;
 
 namespace SGRH.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly AppDbContext _db;
+        private readonly IPasswordHasher _hasher;
+        private readonly IAuditoriaService _auditoria;
+
+        public AccountController(AppDbContext db, IPasswordHasher hasher, IAuditoriaService auditoria)
+        {
+            _db = db;
+            _hasher = hasher;
+            _auditoria = auditoria;
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -16,41 +33,90 @@ namespace SGRH.Controllers
             return View();
         }
 
+        /// <summary>
+        /// RF01 — Autenticação de Utilizadores: login através de credenciais individuais.
+        /// Fluxo da secção 12.1: autenticação → validação das credenciais → identificação
+        /// do perfil e permissões → acesso ao painel correspondente ao perfil.
+        /// </summary>
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var utilizador = await _db.UtilizadoresSistema
+                .Include(u => u.PerfilAcesso)
+                .FirstOrDefaultAsync(u =>
+                    u.Username.ToLower() == model.Username.ToLower() ||
+                    u.Email.ToLower() == model.Username.ToLower());
+
+            // Credenciais inválidas — mensagem genérica, sem revelar qual campo falhou.
+            if (utilizador == null || !_hasher.Verificar(model.Password, utilizador.PasswordHash))
             {
-                var claims = new List<Claim>
+                if (utilizador != null)
                 {
-                    new Claim(ClaimTypes.Name, model.Username),
-                    new Claim(ClaimTypes.Email, model.Username),
-                    new Claim("FullName", model.Username),
-                    new Claim("Role", "Administrador")
-                };
-
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-
-                HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    principal,
-                    new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
-                    });
-
-                return RedirectToAction("Index", "Home");
+                    await _auditoria.RegistarAsync(utilizador.IdUtilizador, "utilizador_sistema",
+                        "LOGIN_FALHOU", null, new { motivo = "credenciais_invalidas" }, utilizador.IdColaborador);
+                }
+                ModelState.AddModelError(string.Empty, "Credenciais inválidas.");
+                return View(model);
             }
 
-            return View(model);
+            // Contas desactivadas ou bloqueadas não autenticam (RF02 — estados da conta).
+            if (utilizador.Estado == "Bloqueado")
+            {
+                await _auditoria.RegistarAsync(utilizador.IdUtilizador, "utilizador_sistema",
+                    "LOGIN_FALHOU", null, new { motivo = "conta_bloqueada" }, utilizador.IdColaborador);
+                ModelState.AddModelError(string.Empty, "A conta está bloqueada. Contacte o Administrador do Sistema.");
+                return View(model);
+            }
+
+            if (utilizador.Estado == "Inativo")
+            {
+                await _auditoria.RegistarAsync(utilizador.IdUtilizador, "utilizador_sistema",
+                    "LOGIN_FALHOU", null, new { motivo = "conta_inactiva" }, utilizador.IdColaborador);
+                ModelState.AddModelError(string.Empty, "A conta está inactiva. Contacte o Administrador do Sistema.");
+                return View(model);
+            }
+
+            // Claims: identidade + perfil — base do controlo de acesso por perfil (RNF-2 / RT05).
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, utilizador.Username),
+                new Claim(ClaimTypes.Email, utilizador.Email),
+                new Claim("IdUtilizador", utilizador.IdUtilizador.ToString()),
+                new Claim("FullName", utilizador.Colaborador?.NomeCompleto ?? utilizador.Username),
+                new Claim(ClaimTypes.Role, utilizador.PerfilAcesso.Nome)
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                });
+
+            utilizador.UltimoAcesso = DateTime.Now;
+            await _db.SaveChangesAsync();
+
+            await _auditoria.RegistarAsync(utilizador.IdUtilizador, "utilizador_sistema",
+                "LOGIN", null, new { perfil = utilizador.PerfilAcesso.Nome }, utilizador.IdColaborador);
+
+            return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -60,6 +126,7 @@ namespace SGRH.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public IActionResult Register(RegisterViewModel model)
         {
@@ -68,7 +135,7 @@ namespace SGRH.Controllers
 
             if (ModelState.IsValid)
             {
-                TempData["Success"] = "Conta criada com sucesso! Pode fazer login.";
+                TempData["Success"] = "As contas são criadas pelo Administrador do Sistema. Contacte-o para obter acesso.";
                 return RedirectToAction("Login");
             }
 
@@ -77,7 +144,13 @@ namespace SGRH.Controllers
 
         public async Task<IActionResult> Logout()
         {
+            var idUtilizador = int.TryParse(User.FindFirstValue("IdUtilizador"), out var id) ? id : (int?)null;
+
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (idUtilizador.HasValue)
+                await _auditoria.RegistarAsync(idUtilizador, "utilizador_sistema", "LOGOUT", null, null);
+
             return RedirectToAction("Login");
         }
     }

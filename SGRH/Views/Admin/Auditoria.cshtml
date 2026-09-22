@@ -1,0 +1,108 @@
+@model List<LogAuditoria>
+@{
+    ViewData["Title"] = "Auditoria do Sistema";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Auditoria e Logs</h1>
+        <p class="page-subtitle">Consultar os logs e registos de auditoria — RT08</p>
+    </div>
+    <a class="btn btn-outline" href="@Url.Action("ExportarAuditoria", "Admin", new { de = ViewBag.FiltroDe, ate = ViewBag.FiltroAte })"><i class="fi fi-sr-download"></i> Exportar Log</a>
+</div>
+
+<!-- Filtros -->
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-body">
+        <form method="get" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Data Início</label>
+                <input class="form-input" type="date" name="de" value="@ViewBag.FiltroDe">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Data Fim</label>
+                <input class="form-input" type="date" name="ate" value="@ViewBag.FiltroAte">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Utilizador</label>
+                <select class="form-select" name="utilizador">
+                    <option value="">Todos</option>
+                    @if (ViewBag.Utilizadores is SelectList utils)
+                    {
+                        foreach (var item in utils)
+                        {
+                            <option value="@item.Value" selected="@(ViewBag.FiltroUtilizador?.ToString() == item.Value)">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Operação</label>
+                <select class="form-select" name="operacao">
+                    @{
+                        var ops = new[] { "Todas", "LOGIN", "LOGIN_FALHOU", "LOGOUT", "CRIACAO", "ALTERACAO", "ELIMINACAO", "EXPORTACAO" };
+                        foreach (var o in ops)
+                        {
+                            <option value="@o" selected="@(ViewBag.FiltroOperacao == o)">@o</option>
+                        }
+                    }
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="fi fi-sr-filter"></i> Filtrar</button>
+            <a class="btn btn-outline" href="@Url.Action("Auditoria", "Admin")"><i class="fi fi-sr-cross-small"></i> Limpar</a>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Logs -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="fi fi-sr-shield-check" style="color:var(--info);marg-right:0.5rem;"></i> Registos de Auditoria</span>
+        <span style="font-size:0.8rem;color:var(--text-muted);">@ViewBag.Total registo(s) — últimos 500 apresentados</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Utilizador</th>
+                        <th>Operação</th>
+                        <th>Tabela</th>
+                        <th>IP</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Sem registos para os filtros aplicados.</td></tr>
+                    }
+                    @foreach (var l in Model)
+                    {
+                        var clsOp = l.Operacao switch
+                        {
+                            "CRIACAO" => "badge-success",
+                            "ALTERACAO" => "badge-warning",
+                            "ELIMINACAO" => "badge-danger",
+                            "LOGIN" => "badge-info",
+                            "LOGIN_FALHOU" => "badge-danger",
+                            "EXPORTACAO" => "badge-gray",
+                            _ => "badge-gray"
+                        };
+                        var detalhes = l.DadosPosteriores ?? l.DadosAnteriores ?? "—";
+                        <tr>
+                            <td style="white-space:nowrap;">@l.DataHora.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                            <td>@(l.UtilizadorSistema?.Username ?? "—")</td>
+                            <td><span class="badge @clsOp">@l.Operacao</span></td>
+                            <td>@l.TabelaAfetada</td>
+                            <td>@(l.IpAddress ?? "—")</td>
+                            <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="@detalhes">@detalhes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

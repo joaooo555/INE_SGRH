@@ -1,0 +1,249 @@
+@model List<UtilizadorSistema>
+@{
+    ViewData["Title"] = "Gestão de Utilizadores";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gestão de Utilizadores</h1>
+        <p class="page-subtitle">Criar, editar, activar, desactivar e bloquear contas — RF02</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modalNovoUtilizador')"><i class="fi fi-sr-plus"></i> Novo Utilizador</button>
+</div>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["Sucesso"]</div>
+}
+@if (TempData["Erro"] != null)
+{
+    <div class="alert alert-danger">@TempData["Erro"]</div>
+}
+
+
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-body">
+        <form method="get" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-group" style="margin:0;flex:1;min-width:220px;">
+                <label class="form-label">Pesquisar</label>
+                <input class="form-input" type="text" name="termo" value="@ViewBag.Termo" placeholder="Username, email ou colaborador...">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label">Estado</label>
+                <select class="form-select" name="estado">
+                    @{
+                        var estados = new[] { "Todos", "Ativo", "Inativo", "Bloqueado" };
+                        foreach (var e in estados)
+                        {
+                            <option value="@e" selected="@(ViewBag.EstadoFiltro == e)">@e</option>
+                        }
+                    }
+                </select>
+            </div>
+            <button class="btn btn-primary" type="submit"><i class="fi fi-sr-filter"></i> Filtrar</button>
+            <a class="btn btn-outline" href="@Url.Action("Utilizadores", "Admin")"><i class="fi fi-sr-cross-small"></i> Limpar</a>
+        </form>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="fi fi-sr-users" style="color:var(--info);margin-right:0.5rem;"></i> Contas de Utilizador (@Model.Count)</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Utilizador</th>
+                        <th>Perfil</th>
+                        <th>Colaborador Vinculado</th>
+                        <th>Último Acesso</th>
+                        <th>Estado</th>
+                        <th style="text-align:right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhuma conta encontrada.</td></tr>
+                    }
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="table-user">
+                                    <div class="table-avatar">@u.Username[..2].ToUpper()</div>
+                                    <div class="table-user-info">
+                                        <div class="name">@u.Username</div>
+                                        <div class="sub">@u.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="chip">@u.PerfilAcesso.Nome</span></td>
+                            <td>@(u.Colaborador?.NomeCompleto ?? "—")</td>
+                            <td style="font-size:0.8rem;">@(u.UltimoAcesso?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                            <td>
+                                @{
+                                    var cls = u.Estado switch
+                                    {
+                                        "Ativo" => "badge-success",
+                                        "Bloqueado" => "badge-danger",
+                                        _ => "badge-gray"
+                                    };
+                                }
+                                <span class="badge @cls">@u.Estado</span>
+                            </td>
+                            <td style="text-align:right;white-space:nowrap;">
+                                <button class="btn btn-sm btn-outline" onclick='abrirEditar(@System.Text.Json.JsonSerializer.Serialize(new { id = u.IdUtilizador, username = u.Username, email = u.Email, idPerfil = u.IdPerfil, idColab = u.IdColaborador, estado = u.Estado }))' title="Editar"><i class="fi fi-sr-pencil"></i></button>
+                                @if (u.Estado == "Ativo")
+                                {
+                                    <form method="post" asp-controller="Admin" asp-action="AlterarEstado" style="display:inline;" onsubmit="return confirm('Desactivar a conta @u.Username?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@u.IdUtilizador" />
+                                        <input type="hidden" name="estado" value="Inativo" />
+                                        <button class="btn btn-sm btn-outline" title="Desactivar"><i class="fi fi-sr-user-xmark"></i></button>
+                                    </form>
+                                    <form method="post" asp-controller="Admin" asp-action="AlterarEstado" style="display:inline;" onsubmit="return confirm('Bloquear a conta @u.Username?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@u.IdUtilizador" />
+                                        <input type="hidden" name="estado" value="Bloqueado" />
+                                        <button class="btn btn-sm btn-outline" title="Bloquear" style="color:var(--warning);"><i class="fi fi-sr-ban"></i></button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-controller="Admin" asp-action="AlterarEstado" style="display:inline;" onsubmit="return confirm('Activar a conta @u.Username?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@u.IdUtilizador" />
+                                        <input type="hidden" name="estado" value="Ativo" />
+                                        <button class="btn btn-sm btn-outline" title="Activar" style="color:var(--success);"><i class="fi fi-sr-check"></i></button>
+                                    </form>
+                                }
+                                <form method="post" asp-controller="Admin" asp-action="EliminarUtilizador" style="display:inline;" onsubmit="return confirm('Eliminar a conta @u.Username? Se tiver histórico de auditoria será apenas desactivada.');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@u.IdUtilizador" />
+                                    <button class="btn btn-sm btn-outline" title="Eliminar" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="modalNovoUtilizador">
+    <div class="modal">
+        <div class="modal-header"><h2 class="modal-title">Novo Utilizador</h2><button class="modal-close" onclick="closeModal('modalNovoUtilizador')">&times;</button></div>
+        <form method="post" asp-controller="Admin" asp-action="CriarUtilizador">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Nome de Utilizador *</label><input class="form-input" name="username" required placeholder="Ex: joaquim.chissano"></div>
+                    <div class="form-group"><label class="form-label">Email *</label><input class="form-input" type="email" name="email" required placeholder="email@sgrh.gov.mz"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Perfil de Acesso *</label>
+                        <select class="form-select" name="idPerfil" required>
+                            <option value="">Seleccionar...</option>
+                            @if (ViewBag.Perfis is SelectList perfisNovo)
+                            {
+                                foreach (var item in perfisNovo)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Colaborador Vinculado</label>
+                        <select class="form-select" name="idColaborador">
+                            <option value="">— Sem vinculação —</option>
+                            @if (ViewBag.Colaboradores is SelectList colabs)
+                            {
+                                foreach (var item in colabs)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Senha Inicial *</label><input class="form-input" type="text" name="senha" required minlength="8" value="SGRH2026!">
+                    <small style="color:var(--text-muted);">Armazenada com hash PBKDF2 (RT07). Recomenda-se a alteração no primeiro acesso.</small>
+                </div>
+                <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;margin-top:0.5rem;">
+                    <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> Cada utilizador deve possuir uma conta individual, associada a um perfil com permissões específicas (Regras de segurança — secção 16).</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modalNovoUtilizador')">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Criar Utilizador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="modalEditarUtilizador">
+    <div class="modal">
+        <div class="modal-header"><h2 class="modal-title">Editar Utilizador</h2><button class="modal-close" onclick="closeModal('modalEditarUtilizador')">&times;</button></div>
+        <form method="post" asp-controller="Admin" asp-action="EditarUtilizador">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Nome de Utilizador</label><input class="form-input" id="editUsername" type="text" readonly style="background:var(--bg-body);"></div>
+                    <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" name="email" id="editEmail" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Perfil de Acesso</label>
+                        <select class="form-select" name="idPerfil" id="editPerfil" required>
+                            @if (ViewBag.Perfis is SelectList perfisEdit)
+                            {
+                                foreach (var item in perfisEdit)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Colaborador Vinculado</label>
+                        <select class="form-select" name="idColaborador" id="editColab">
+                            <option value="">— Sem vinculação —</option>
+                            @if (ViewBag.Colaboradores is SelectList colabsEdit)
+                            {
+                                foreach (var item in colabsEdit)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Nova Senha (deixar vazio para manter)</label><input class="form-input" type="password" name="novaSenha"></div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="id" id="editId" />
+                <button type="button" class="btn btn-outline" onclick="closeModal('modalEditarUtilizador')">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function abrirEditar(u) {
+    document.getElementById('editId').value = u.id;
+    document.getElementById('editUsername').value = u.username;
+    document.getElementById('editEmail').value = u.email;
+    document.getElementById('editPerfil').value = u.idPerfil;
+    document.getElementById('editColab').value = u.idColab || '';
+    openModal('modalEditarUtilizador');
+}
+</script>
+}

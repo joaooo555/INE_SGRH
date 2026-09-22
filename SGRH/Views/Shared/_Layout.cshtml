@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
@@ -35,8 +36,9 @@
             <a href="@Url.Action("AssuntosSociais", "Home")" class="sidebar-item @(ViewBag.ActivePage == "AssuntosSociais" ? "active" : "")"><i class="fi fi-sr-heart"></i> Assuntos Sociais</a>
             <div class="sidebar-section">Sistema</div>
             <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")"><i class="fi fi-sr-chart-mixed"></i> Reporting</a>
-            <a href="@Url.Action("Utilizadores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")"><i class="fi fi-sr-user-gear"></i> Utilizadores</a>
-            <a href="@Url.Action("Auditoria", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")"><i class="fi fi-sr-shield-check"></i> Auditoria</a>
+            <a href="@Url.Action("Index", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "AdminSistema" ? "active" : "")"><i class="fi fi-sr-settings-sliders"></i> Admin do Sistema</a>
+            <a href="@Url.Action("Utilizadores", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")"><i class="fi fi-sr-user-gear"></i> Utilizadores</a>
+            <a href="@Url.Action("Auditoria", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")"><i class="fi fi-sr-shield-check"></i> Auditoria</a>
             <a href="@Url.Action("Configuracoes", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Configuracoes" ? "active" : "")"><i class="fi fi-sr-gears"></i> Configurações</a>
         </nav>
     </aside>
@@ -50,7 +52,12 @@
             <div class="topbar-right">
                 <button class="topbar-icon"><i class="fi fi-sr-bell"></i><span class="badge">5</span></button>
                 <a href="@Url.Action("Logout", "Account")" class="topbar-icon" title="Sair" style="text-decoration:none;color:var(--text-secondary);cursor:pointer;"><i class="fi fi-sr-sign-out-alt"></i></a>
-                <div class="topbar-user"><div class="topbar-avatar">JC</div><div class="topbar-user-info"><span class="topbar-user-name">Joaquim Chissano</span><span class="topbar-user-role">Director Geral</span></div></div>
+                @{
+                    var nomeUtil = User.FindFirstValue("FullName") ?? "Utilizador";
+                    var iniciais = nomeUtil.Length >= 2 ? nomeUtil.Substring(0, 2).ToUpper() : nomeUtil.ToUpper();
+                    var perfilUtil = User.FindFirstValue(ClaimTypes.Role) ?? "—";
+                }
+                <div class="topbar-user"><div class="topbar-avatar">@iniciais</div><div class="topbar-user-info"><span class="topbar-user-name">@nomeUtil</span><span class="topbar-user-role">@perfilUtil</span></div></div>
             </div>
         </header>
 
