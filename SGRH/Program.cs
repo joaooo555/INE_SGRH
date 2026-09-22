@@ -45,6 +45,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Ficheiros estáticos servidos antes da autorização — sem isto, a FallbackPolicy
+// redireciona o CSS/JS (ex.: /css/styles.css) para o login e a página quebra.
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();
