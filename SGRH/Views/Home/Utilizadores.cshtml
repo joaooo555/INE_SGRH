@@ -1,5 +1,7 @@
 @{
     ViewData["Title"] = "Utilizadores";
+    var perfis = ViewBag.Perfis as List<SGRH.Models.PerfilAcesso> ?? [];
+    var colaboradores = ViewBag.Colaboradores as dynamic;
 }
 
 <div class="page-header">
@@ -7,24 +9,24 @@
         <h1 class="page-title">Gestão de Utilizadores</h1>
         <p class="page-subtitle">Perfis de acesso e controlo de permissões</p>
     </div>
-    <button class="btn btn-primary" id="btnNovoUtil"><i class="fi fi-sr-plus"></i> Novo Utilizador</button>
+    <a href="@Url.Action("NovoUtilizador", "Home")" class="btn btn-primary"><i class="fi fi-sr-plus"></i> Novo Utilizador</a>
 </div>
 
 <!-- KPIs -->
 <div class="stats-grid" style="margin-bottom:1.5rem;">
-    <div class="stat-card"><div class="stat-info"><h3>Total Utilizadores</h3><div class="stat-value">12</div></div><div class="stat-icon blue"><i class="fi fi-sr-users"></i></div></div>
-    <div class="stat-card"><div class="stat-info"><h3>Activos</h3><div class="stat-value" style="color:var(--success);">10</div></div><div class="stat-icon green"><i class="fi fi-sr-check-circle"></i></div></div>
-    <div class="stat-card"><div class="stat-info"><h3>Inactivos</h3><div class="stat-value" style="color:var(--danger);">2</div></div><div class="stat-icon red"><i class="fi fi-sr-user-xmark"></i></div></div>
-    <div class="stat-card"><div class="stat-info"><h3>Sessões Activas</h3><div class="stat-value">6</div></div><div class="stat-icon amber"><i class="fi fi-sr-desktop-wallpaper"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Total Utilizadores</h3><div class="stat-value" id="kpiTotal">0</div></div><div class="stat-icon blue"><i class="fi fi-sr-users"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Activos</h3><div class="stat-value" id="kpiActivos" style="color:var(--success);">0</div></div><div class="stat-icon green"><i class="fi fi-sr-check-circle"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Inactivos</h3><div class="stat-value" id="kpiInactivos" style="color:var(--danger);">0</div></div><div class="stat-icon red"><i class="fi fi-sr-user-xmark"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Perfis</h3><div class="stat-value" id="kpiPerfis">0</div></div><div class="stat-icon amber"><i class="fi fi-sr-user-shield"></i></div></div>
 </div>
 
 <!-- Tabs -->
 <div class="tabs" id="tabsUtil">
     <button class="tab-item active" data-tab="todos">Todos</button>
-    <button class="tab-item" data-tab="admin">Administradores</button>
-    <button class="tab-item" data-tab="rh">RH</button>
-    <button class="tab-item" data-tab="gestor">Gestores</button>
-    <button class="tab-item" data-tab="fae">FAEs</button>
+    @foreach (var p in perfis)
+    {
+        <button class="tab-item" data-tab="@p.Nome">@p.Nome</button>
+    }
 </div>
 
 <!-- Tabela -->
@@ -32,51 +34,9 @@
     <div class="card-body" style="padding:0;">
         <div class="table-container">
             <table>
-                <thead><tr><th>Utilizador</th><th>Perfil</th><th>Colaborador Vinculado</th><th>Último Acesso</th><th>Estado</th><th>Sessão</th><th style="text-align:right;">Ações</th></tr></thead>
+                <thead><tr><th>Utilizador</th><th>Perfil</th><th>Colaborador Vinculado</th><th>Último Acesso</th><th>Estado</th><th style="text-align:right;">Ações</th></tr></thead>
                 <tbody id="tabelaUtilizadores"></tbody>
             </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Novo Utilizador -->
-<div class="modal-overlay" id="modalNovoUtilizador">
-    <div class="modal">
-        <div class="modal-header"><h2 class="modal-title">Novo Utilizador</h2><button class="modal-close" id="closeNovoUtil">&times;</button></div>
-        <div class="modal-body">
-            <div class="form-group"><label class="form-label">Nome de Utilizador *</label><input class="form-input" type="text" placeholder="Ex: joaquim.chissano"></div>
-            <div class="form-row">
-                <div class="form-group"><label class="form-label">Email *</label><input class="form-input" type="email" placeholder="email@sgrh.gov.mz"></div>
-                <div class="form-group"><label class="form-label">Colaborador Vinculado *</label><select class="form-select" id="utilColaborador"><option>Seleccionar...</option></select></div>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label class="form-label">Perfil de Acesso *</label><select class="form-select"><option>Seleccionar...</option><option>Administrador</option><option>RH</option><option>Gestor</option><option>FAE</option></select></div>
-                <div class="form-group"><label class="form-label">Senha Temporária *</label><input class="form-input" type="password" value="SGRH2026!"></div>
-            </div>
-            <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;margin-top:0.5rem;">
-                <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> O utilizador receberá um email com as credenciais de acesso e deverá alterar a senha no primeiro login.</p>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="cancelNovoUtil">Cancelar</button>
-            <button class="btn btn-primary" id="criarUtil">Criar Utilizador</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Permissões -->
-<div class="modal-overlay" id="modalPermissoes">
-    <div class="modal" style="max-width:600px;">
-        <div class="modal-header"><h2 class="modal-title">Permissões - <span id="permNome"></span></h2><button class="modal-close" id="closePermissoes">&times;</button></div>
-        <div class="modal-body" id="permBody">
-            <div class="settings-section">
-                <h3>Módulos com Acesso</h3>
-                <div id="permModulos"></div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="cancelPermissoes">Cancelar</button>
-            <button class="btn btn-primary" id="guardarPermissoes">Guardar</button>
         </div>
     </div>
 </div>
@@ -86,15 +46,24 @@
     <div class="modal">
         <div class="modal-header"><h2 class="modal-title">Editar Utilizador</h2><button class="modal-close" id="closeEditarUtil">&times;</button></div>
         <div class="modal-body">
+            <input type="hidden" id="editUtilId">
             <div class="form-row">
                 <div class="form-group"><label class="form-label">Nome de Utilizador</label><input class="form-input" type="text" id="editUtilUsername" readonly style="background:var(--bg-body);"></div>
                 <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="editUtilEmail"></div>
             </div>
             <div class="form-row">
-                <div class="form-group"><label class="form-label">Perfil de Acesso</label><select class="form-select" id="editUtilPerfil"><option>Administrador</option><option>RH</option><option>Gestor</option><option>FAE</option></select></div>
-                <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="editUtilEstado"><option>Activo</option><option>Inactivo</option></select></div>
+                <div class="form-group">
+                    <label class="form-label">Perfil de Acesso</label>
+                    <select class="form-select" id="editUtilPerfil">
+                        @foreach (var p in perfis)
+                        {
+                            <option value="@p.IdPerfil">@p.Nome</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group"><label class="form-label">Estado</label><select class="form-select" id="editUtilEstado"><option value="Ativo">Activo</option><option value="Inativo">Inactivo</option></select></div>
             </div>
-            <div class="form-group"><label class="form-label">Nova Senha (deixar vazio para manter)</label><input class="form-input" type="password" placeholder="••••••••"></div>
+            <div class="form-group"><label class="form-label">Nova Senha (deixar vazio para manter)</label><input class="form-input" type="password" id="editUtilPassword" placeholder="••••••••"></div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" id="cancelEditarUtil">Cancelar</button>
@@ -111,6 +80,7 @@
             <button class="modal-close" id="closeDeleteUtil">&times;</button>
         </div>
         <div class="modal-body">
+            <input type="hidden" id="deleteUtilId">
             <div style="display:flex;gap:1rem;align-items:center;">
                 <div style="width:48px;height:48px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;"><i class="fi fi-sr-trash" style="color:var(--danger);font-size:1.25rem;"></i></div>
                 <div><p style="font-weight:600;">Eliminar utilizador?</p><p style="font-size:0.8rem;color:var(--text-muted);" id="deleteUtilMsg">O utilizador perderá acesso imediatamente.</p></div>
@@ -125,127 +95,169 @@
 
 @section Scripts {
 <script>
-var utilizadores = [
-    { id: 1, username: 'joaquim.chissano', email: 'joaquim.chissano@sgrh.gov.mz', colaborador: 'Joaquim Alberto Chissano', perfil: 'Administrador', estado: 'Activo', ultimoAcesso: '2026-06-30 09:15', sessao: true },
-    { id: 2, username: 'ana.fernandes', email: 'ana.fernandes@sgrh.gov.mz', colaborador: 'Ana Maria Fernandes', perfil: 'RH', estado: 'Activo', ultimoAcesso: '2026-06-30 08:30', sessao: true },
-    { id: 3, username: 'pedro.cossa', email: 'pedro.cossa@sgrh.gov.mz', colaborador: 'Pedro Henrique Cossa', perfil: 'RH', estado: 'Activo', ultimoAcesso: '2026-06-30 08:45', sessao: true },
-    { id: 4, username: 'carlos.machava', email: 'carlos.machava@sgrh.gov.mz', colaborador: 'Carlos Alberto Machava', perfil: 'Gestor', estado: 'Activo', ultimoAcesso: '2026-06-29 17:20', sessao: false },
-    { id: 5, username: 'wilson.nhaca', email: 'wilson.nhaca@sgrh.gov.mz', colaborador: 'Wilson António Nhaca', perfil: 'Gestor', estado: 'Activo', ultimoAcesso: '2026-06-30 07:50', sessao: true },
-    { id: 6, username: 'fatima.tembe', email: 'fatima.tembe@sgrh.gov.mz', colaborador: 'Fátima Zacarias Tembe', perfil: 'Gestor', estado: 'Activo', ultimoAcesso: '2026-06-28 16:00', sessao: false },
-    { id: 7, username: 'tomas.dlamini', email: 'tomas.dlamini@sgrh.gov.mz', colaborador: 'Tomás Ngwenya Dlamini', perfil: 'FAE', estado: 'Activo', ultimoAcesso: '2026-06-30 08:00', sessao: true },
-    { id: 8, username: 'vanessa.matusse', email: 'vanessa.matusse@sgrh.gov.mz', colaborador: 'Vanessa Lourenço Matusse', perfil: 'FAE', estado: 'Activo', ultimoAcesso: '2026-06-27 14:30', sessao: false },
-    { id: 9, username: 'rosa.banze', email: 'rosa.banze@sgrh.gov.mz', colaborador: 'Rosa Amélia Banze', perfil: 'FAE', estado: 'Activo', ultimoAcesso: '2026-06-30 09:00', sessao: true },
-    { id: 10, username: 'jose.sitoe', email: 'jose.sitoe@sgrh.gov.mz', colaborador: 'José Manuel Sitoe', perfil: 'FAE', estado: 'Activo', ultimoAcesso: '2026-06-29 11:45', sessao: false },
-    { id: 11, username: 'mariana.mondlane', email: 'mariana.mondlane@sgrh.gov.mz', colaborador: 'Mariana Inácio Mondlane', perfil: 'FAE', estado: 'Inactivo', ultimoAcesso: '2026-05-15 10:20', sessao: false },
-    { id: 12, username: 'helio.chichava', email: 'helio.chichava@sgrh.gov.mz', colaborador: 'Hélio Biliti Chichava', perfil: 'Administrador', estado: 'Inactivo', ultimoAcesso: '2026-04-01 08:00', sessao: false }
-];
+var perfilBadgeClass = { 'Administrador': 'admin', 'Gestor RH': 'rh', 'Director': 'gestor', 'Utilizador': 'fae' };
+var utilizadores = [];
+var filtroUtilTab = 'todos';
 
-var permissoesPorPerfil = {
-    'Administrador': ['Dashboard','Colaboradores','Contratos','Administração','Formação','Estágios','Guias de Marcha','Recrutamento','Clima Org.','Assuntos Sociais','Reporting','Utilizadores','Auditoria','Configurações'],
-    'RH': ['Dashboard','Colaboradores','Contratos','Administração','Formação','Estágios','Guias de Marcha','Recrutamento','Clima Org.','Assuntos Sociais','Reporting'],
-    'Gestor': ['Dashboard','Colaboradores','Contratos','Formação','Guias de Marcha','Reporting'],
-    'FAE': ['Dashboard','Formação','Assuntos Sociais']
-};
+function formatarData(dt) {
+    if (!dt) return '—';
+    var d = new Date(dt);
+    var dia = String(d.getDate()).padStart(2,'0');
+    var mes = String(d.getMonth()+1).padStart(2,'0');
+    var ano = d.getFullYear();
+    var hora = String(d.getHours()).padStart(2,'0');
+    var min = String(d.getMinutes()).padStart(2,'0');
+    return dia+'/'+mes+'/'+ano+' '+hora+':'+min;
+}
 
-var perfilBadgeClass = { 'Administrador': 'admin', 'RH': 'rh', 'Gestor': 'gestor', 'FAE': 'fae' };
+function getBadgeEstado(e) {
+    return e === 'Ativo' ? 'badge-success' : 'badge-danger';
+}
 
-$(document).ready(function() {
-    function renderizarTabela(dados) {
-        var $tbody = $('#tabelaUtilizadores');
-        $tbody.empty();
-        $.each(dados, function(i, u) {
-            var initials = u.username.charAt(0).toUpperCase() + (u.username.split('.')[1] ? u.username.split('.')[1].charAt(0).toUpperCase() : '');
-            $tbody.append(
-                '<tr><td><div class="table-user"><div class="table-avatar">' + initials + '</div><div class="table-user-info"><div class="name">' + u.username + '</div><div class="sub">' + u.email + '</div></div></div></td>' +
-                '<td><span class="role-badge ' + (perfilBadgeClass[u.perfil]||'') + '"><i class="fi fi-sr-user-shield"></i> ' + u.perfil + '</span></td>' +
-                '<td>' + u.colaborador + '</td>' +
-                '<td style="font-size:0.8rem;">' + u.ultimoAcesso + '</td>' +
-                '<td><span class="badge ' + getBadgeEstado(u.estado) + '">' + u.estado + '</span></td>' +
-                '<td>' + (u.sessao ? '<span class="badge badge-success"><i class="fi fi-sr-circle" style="font-size:0.5rem;margin-right:0.25rem;"></i>Activa</span>' : '<span class="badge badge-gray">Inactiva</span>') + '</td>' +
-                '<td style="text-align:right;">' +
-                '<button class="btn btn-sm btn-outline" data-perm="' + u.id + '" title="Permissões"><i class="fi fi-sr-key"></i></button> ' +
-                '<button class="btn btn-sm btn-outline" data-edit-util="' + u.id + '" title="Editar"><i class="fi fi-sr-pencil"></i></button> ' +
-                '<button class="btn btn-sm btn-outline" data-delete-util="' + u.id + '" title="Eliminar" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button> ' +
-                '<button class="btn btn-sm btn-outline" data-toggle-sessao="' + u.id + '" title="Sessão"><i class="fi fi-sr-power"></i></button>' +
-                '</td></tr>'
-            );
+function renderizarTabela(dados) {
+    var $tbody = $('#tabelaUtilizadores');
+    $tbody.empty();
+    if (!dados || dados.length === 0) {
+        $tbody.append('<tr><td colspan="6"><div class="empty-state"><h3>Nenhum utilizador encontrado</h3><p>Não existe nenhum utilizador para a pesquisa efectuada.</p></div></td></tr>');
+        return;
+    }
+    $.each(dados, function(i, u) {
+        var initials = u.username.charAt(0).toUpperCase() + (u.username.split('.')[1] ? u.username.split('.')[1].charAt(0).toUpperCase() : '');
+        $tbody.append(
+            '<tr><td><div class="table-user"><div class="table-avatar">' + initials + '</div><div class="table-user-info"><div class="name">' + u.username + '</div><div class="sub">' + u.email + '</div></div></div></td>' +
+            '<td><span class="role-badge ' + (perfilBadgeClass[u.perfil]||'') + '"><i class="fi fi-sr-user-shield"></i> ' + u.perfil + '</span></td>' +
+            '<td>' + (u.colaborador || '—') + '</td>' +
+            '<td style="font-size:0.8rem;">' + formatarData(u.ultimoAcesso) + '</td>' +
+            '<td><span class="badge ' + getBadgeEstado(u.estado) + '">' + u.estado + '</span></td>' +
+            '<td style="text-align:right;">' +
+            '<button class="btn btn-sm btn-outline" data-edit-util="' + u.id + '" title="Editar"><i class="fi fi-sr-pencil"></i></button> ' +
+            '<button class="btn btn-sm btn-outline" data-delete-util="' + u.id + '" title="Eliminar" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>' +
+            '</td></tr>'
+        );
+    });
+}
+
+function aplicarFiltros() {
+    var termo = $('#pesquisarGeral').val().toLowerCase().trim();
+    var dados = utilizadores;
+
+    if (filtroUtilTab !== 'todos') {
+        dados = dados.filter(function(u){ return u.perfil === filtroUtilTab; });
+    }
+
+    if (termo) {
+        dados = dados.filter(function(u) {
+            return (u.username && u.username.toLowerCase().indexOf(termo) !== -1)
+                || (u.email && u.email.toLowerCase().indexOf(termo) !== -1)
+                || (u.colaborador && u.colaborador.toLowerCase().indexOf(termo) !== -1)
+                || (u.perfil && u.perfil.toLowerCase().indexOf(termo) !== -1);
         });
     }
-    renderizarTabela(utilizadores);
+
+    renderizarTabela(dados);
+}
+
+function carregarUtilizadores() {
+    $.get('/Home/ObterUtilizadores', function(data) {
+        utilizadores = data;
+        $('#kpiTotal').text(data.length);
+        $('#kpiActivos').text(data.filter(function(u){ return u.estado === 'Ativo'; }).length);
+        $('#kpiInactivos').text(data.filter(function(u){ return u.estado !== 'Ativo'; }).length);
+        $('#kpiPerfis').text([...new Set(data.map(function(u){ return u.perfil; }))].length);
+        aplicarFiltros();
+    });
+}
+
+$(document).ready(function() {
+    carregarUtilizadores();
+
+    // Populate colaborador select
+    $.get('/Home/Utilizadores', function(html) {
+        var $page = $(html);
+        var colaboradoresData = [];
+        $('#novoColaborador').find('option').not(':first').remove();
+    });
+
+    // Carregar colaboradores via JSON
+    $.ajax({
+        url: '/Home/Utilizadores',
+        type: 'GET',
+        success: function() {}
+    });
 
     // Tabs
     $('#tabsUtil .tab-item').on('click', function() {
         $('#tabsUtil .tab-item').removeClass('active');
         $(this).addClass('active');
-        var filtro = $(this).data('tab');
-        var dados = utilizadores;
-        if (filtro === 'admin') dados = utilizadores.filter(function(u){ return u.perfil === 'Administrador'; });
-        if (filtro === 'rh') dados = utilizadores.filter(function(u){ return u.perfil === 'RH'; });
-        if (filtro === 'gestor') dados = utilizadores.filter(function(u){ return u.perfil === 'Gestor'; });
-        if (filtro === 'fae') dados = utilizadores.filter(function(u){ return u.perfil === 'FAE'; });
-        renderizarTabela(dados);
+        filtroUtilTab = $(this).data('tab');
+        aplicarFiltros();
     });
 
-    // Populate colaborador select
-    $.each(colaboradores, function(i, c) {
-        $('#utilColaborador').append('<option value="' + c.nome + '">' + c.nome + '</option>');
-    });
-
-    // Permissões
-    $(document).on('click', '[data-perm]', function() {
-        var id = parseInt($(this).data('perm'));
-        var u = utilizadores.find(function(usr){ return usr.id === id; });
-        if (!u) return;
-        $('#permNome').text(u.username);
-        var modulos = permissoesPorPerfil[u.perfil] || [];
-        var todosModulos = ['Dashboard','Colaboradores','Contratos','Administração','Formação','Estágios','Guias de Marcha','Recrutamento','Clima Org.','Assuntos Sociais','Reporting','Utilizadores','Auditoria','Configurações'];
-        var html = '';
-        $.each(todosModulos, function(i, m) {
-            html += '<div class="settings-row"><div class="settings-label"><h4>' + m + '</h4></div>' +
-                '<label class="toggle-switch"><input type="checkbox" ' + (modulos.indexOf(m) !== -1 ? 'checked' : '') + '><span class="toggle-slider"></span></label></div>';
-        });
-        $('#permModulos').html(html);
-        openModal('modalPermissoes');
-    });
+    // Pesquisa instantânea via topbar
+    $('#pesquisarGeral').on('input', aplicarFiltros);
 
     // Editar
     $(document).on('click', '[data-edit-util]', function() {
         var id = parseInt($(this).data('edit-util'));
         var u = utilizadores.find(function(usr){ return usr.id === id; });
         if (!u) return;
+        $('#editUtilId').val(u.id);
         $('#editUtilUsername').val(u.username);
         $('#editUtilEmail').val(u.email);
-        $('#editUtilPerfil').val(u.perfil);
+        $('#editUtilPerfil').val(u.idPerfil);
         $('#editUtilEstado').val(u.estado);
+        $('#editUtilPassword').val('');
         openModal('modalEditarUtil');
     });
+
+    $('#guardarEditarUtil').on('click', function() {
+        var dados = {
+            id: parseInt($('#editUtilId').val()),
+            email: $('#editUtilEmail').val(),
+            idPerfil: parseInt($('#editUtilPerfil').val()),
+            estado: $('#editUtilEstado').val(),
+            password: $('#editUtilPassword').val() || null
+        };
+        $.ajax({
+            url: '/Home/AtualizarUtilizador',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(dados),
+            success: function(resp) {
+                if (resp.sucesso) {
+                    closeModal('modalEditarUtil');
+                    carregarUtilizadores();
+                }
+                showToast(resp.mensagem, resp.sucesso ? 'success' : 'error');
+            }
+        });
+    });
+    $('#closeEditarUtil, #cancelEditarUtil').on('click', function() { closeModal('modalEditarUtil'); });
 
     // Eliminar
     $(document).on('click', '[data-delete-util]', function() {
         var id = parseInt($(this).data('delete-util'));
         var u = utilizadores.find(function(usr){ return usr.id === id; });
         if (!u) return;
+        $('#deleteUtilId').val(u.id);
         $('#deleteUtilMsg').text('Eliminar o utilizador ' + u.username + '? O utilizador perderá acesso imediatamente.');
         openModal('modalDeleteUtil');
     });
 
-    // Toggle sessão
-    $(document).on('click', '[data-toggle-sessao]', function() {
-        var id = parseInt($(this).data('toggle-sessao'));
-        var u = utilizadores.find(function(usr){ return usr.id === id; });
-        showToast(u && u.sessao ? 'Sessão terminada' : 'Sem sessão activa', u && u.sessao ? 'warning' : 'info');
+    $('#confirmDeleteUtil').on('click', function() {
+        var id = parseInt($('#deleteUtilId').val());
+        $.ajax({
+            url: '/Home/EliminarUtilizador',
+            type: 'POST',
+            data: { id: id },
+            success: function(resp) {
+                closeModal('modalDeleteUtil');
+                carregarUtilizadores();
+                showToast(resp.mensagem, resp.sucesso ? 'success' : 'error');
+            }
+        });
     });
-
-    // Buttons
-    $('#btnNovoUtil').on('click', function() { openModal('modalNovoUtilizador'); });
-    $('#closeNovoUtil, #cancelNovoUtil').on('click', function() { closeModal('modalNovoUtilizador'); });
-    $('#criarUtil').on('click', function() { closeModal('modalNovoUtilizador'); showToast('Utilizador criado com sucesso!', 'success'); });
-    $('#closePermissoes, #cancelPermissoes').on('click', function() { closeModal('modalPermissoes'); });
-    $('#guardarPermissoes').on('click', function() { closeModal('modalPermissoes'); showToast('Permissões actualizadas!', 'success'); });
-    $('#closeEditarUtil, #cancelEditarUtil').on('click', function() { closeModal('modalEditarUtil'); });
-    $('#guardarEditarUtil').on('click', function() { closeModal('modalEditarUtil'); showToast('Utilizador actualizado!', 'success'); });
     $('#closeDeleteUtil, #cancelDeleteUtil').on('click', function() { closeModal('modalDeleteUtil'); });
-    $('#confirmDeleteUtil').on('click', function() { closeModal('modalDeleteUtil'); showToast('Utilizador eliminado!', 'danger'); });
 });
 </script>
 }

@@ -24,7 +24,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form id="formEditarColab" method="post" action="/Home/EditarColaborador" enctype="multipart/form-data">
+        <form id="formEditarColab" method="post" action="/Home/EditarColaborador/@Model.IdColaborador" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <input type="hidden" name="IdColaborador" value="@Model.IdColaborador">
 
@@ -129,22 +129,26 @@
 
             <!-- Dados Profissionais -->
             <div class="form-section" id="secDadosProfissionais" style="display:none;">
-                <div class="form-row">
+<div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Unidade Orgânica <span style="color:var(--danger);">*</span></label>
                         <select class="form-select" name="IdUnidadeOrganica" required>
                             <option value="">Selecionar...</option>
-                            @foreach (var u in unidades)
-                            {
-                                if (Model.IdUnidadeOrganica == u.IdUnidadeOrganica)
-                                {
-                                    <option value="@u.IdUnidadeOrganica" selected>@u.Nome</option>
-                                }
-                                else
-                                {
-                                    <option value="@u.IdUnidadeOrganica">@u.Nome</option>
-                                }
-                            }
+                            <optgroup label="Presidência">
+                                @if (Model.IdUnidadeOrganica == 1) { <option value="1" selected>Presidência</option> } else { <option value="1">Presidência</option> }
+                                @if (Model.IdUnidadeOrganica == 2) { <option value="2" selected>Presidente do INE</option> } else { <option value="2">Presidente do INE</option> }
+                                @if (Model.IdUnidadeOrganica == 3) { <option value="3" selected>Vice-Presidentes</option> } else { <option value="3">Vice-Presidentes</option> }
+                                @if (Model.IdUnidadeOrganica == 4) { <option value="4" selected>Conselho Consultivo</option> } else { <option value="4">Conselho Consultivo</option> }
+                                @if (Model.IdUnidadeOrganica == 5) { <option value="5" selected>Conselho Técnico de Coordenação Metodológica</option> } else { <option value="5">Conselho Técnico de Coordenação Metodológica</option> }
+                            </optgroup>
+                            <optgroup label="Direcções">
+                                @if (Model.IdUnidadeOrganica == 6) { <option value="6" selected>Direcção de Integração Coordenação e Relações Externas</option> } else { <option value="6">Direcção de Integração Coordenação e Relações Externas</option> }
+                                @if (Model.IdUnidadeOrganica == 7) { <option value="7" selected>Direcção das Contas Nacionais e Indicadores Globais</option> } else { <option value="7">Direcção das Contas Nacionais e Indicadores Globais</option> }
+                                @if (Model.IdUnidadeOrganica == 8) { <option value="8" selected>Direcção de Estatística Sectorial e de Empresas</option> } else { <option value="8">Direcção de Estatística Sectorial e de Empresas</option> }
+                                @if (Model.IdUnidadeOrganica == 9) { <option value="9" selected>Direcção de Censos e Inquéritos</option> } else { <option value="9">Direcção de Censos e Inquéritos</option> }
+                                @if (Model.IdUnidadeOrganica == 10) { <option value="10" selected>Direcção de Estatística Demográficas, Vitais e Sociais</option> } else { <option value="10">Direcção de Estatística Demográficas, Vitais e Sociais</option> }
+                                @if (Model.IdUnidadeOrganica == 11) { <option value="11" selected>Direcção de Administração e Recursos Humanos</option> } else { <option value="11">Direcção de Administração e Recursos Humanos</option> }
+                            </optgroup>
                         </select>
                     </div>
                     <div class="form-group">
@@ -320,7 +324,7 @@
 
             <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
                 <a href="/Home/Colaboradores" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Guardar Alterações</button>
+                <button type="submit" class="btn btn-primary" formnovalidate><i class="fi fi-sr-check"></i> Guardar Alterações</button>
             </div>
         </form>
     </div>

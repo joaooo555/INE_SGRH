@@ -1137,6 +1137,11 @@ tbody tr:hover {
     transform: translateX(20px);
 }
 
+#permTabela .perm-vis:checked + .toggle-slider { background: var(--info); }
+#permTabela .perm-criar:checked + .toggle-slider { background: var(--success); }
+#permTabela .perm-editar:checked + .toggle-slider { background: var(--warning); }
+#permTabela .perm-eliminar:checked + .toggle-slider { background: var(--danger); }
+
 .role-badge {
     display: inline-flex;
     align-items: center;

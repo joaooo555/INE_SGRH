@@ -25,8 +25,8 @@
             <a href="@Url.Action("Index", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Dashboard" ? "active" : "")"><i class="fi fi-sr-home"></i> Dashboard</a>
             <a href="@Url.Action("Colaboradores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Colaboradores" ? "active" : "")"><i class="fi fi-sr-users"></i> Colaboradores</a>
             <div class="sidebar-section">Gestão</div>
-            <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")"><i class="fi fi-sr-file"></i> Contratos <span class="sidebar-badge">2</span></a>
-            <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")"><i class="fi fi-sr-settings"></i> Administração <span class="sidebar-badge">3</span></a>
+            <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")"><i class="fi fi-sr-file"></i> Contratos</a>
+            <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")"><i class="fi fi-sr-settings"></i> Administração</a>
             <a href="@Url.Action("Formacao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Formacao" ? "active" : "")"><i class="fi fi-sr-graduation-cap"></i> Formação</a>
             <a href="@Url.Action("Estagios", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Estagios" ? "active" : "")"><i class="fi fi-sr-briefcase"></i> Estágios</a>
             <a href="@Url.Action("GuiasMarcha", "Home")" class="sidebar-item @(ViewBag.ActivePage == "GuiasMarcha" ? "active" : "")"><i class="fi fi-sr-route"></i> Guias de Marcha</a>
@@ -47,17 +47,12 @@
         <header class="topbar">
             <div class="topbar-left">
                 <button class="topbar-toggle"><i class="fi fi-sr-menu-burger"></i></button>
-                <div class="topbar-search"><i class="fi fi-sr-search"></i><input type="text" placeholder="Pesquisar..."></div>
+                <div class="topbar-search"><i class="fi fi-sr-search"></i><input type="text" id="pesquisarGeral" placeholder="Pesquisar..." autocomplete="off"></div>
             </div>
             <div class="topbar-right">
                 <button class="topbar-icon"><i class="fi fi-sr-bell"></i><span class="badge">5</span></button>
                 <a href="@Url.Action("Logout", "Account")" class="topbar-icon" title="Sair" style="text-decoration:none;color:var(--text-secondary);cursor:pointer;"><i class="fi fi-sr-sign-out-alt"></i></a>
-                @{
-                    var nomeUtil = User.FindFirstValue("FullName") ?? "Utilizador";
-                    var iniciais = nomeUtil.Length >= 2 ? nomeUtil.Substring(0, 2).ToUpper() : nomeUtil.ToUpper();
-                    var perfilUtil = User.FindFirstValue(ClaimTypes.Role) ?? "—";
-                }
-                <div class="topbar-user"><div class="topbar-avatar">@iniciais</div><div class="topbar-user-info"><span class="topbar-user-name">@nomeUtil</span><span class="topbar-user-role">@perfilUtil</span></div></div>
+                <div class="topbar-user"><div class="topbar-avatar">@(User.Identity?.Name?.Length >= 2 ? User.Identity.Name.Substring(0,2).ToUpper() : "UU")</div><div class="topbar-user-info"><span class="topbar-user-name">@(User.FindFirst("ColaboradorNome")?.Value ?? User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Utilizador")</span><span class="topbar-user-role">@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Sem perfil")</span></div></div>
             </div>
         </header>
 

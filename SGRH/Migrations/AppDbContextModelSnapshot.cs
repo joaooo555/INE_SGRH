@@ -82,7 +82,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdPlano")
                         .HasDatabaseName("idx_accao_plano");
 
-                    b.ToTable("accao_formacao");
+                    b.ToTable("accao_formacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.AccaoFormador", b =>
@@ -99,7 +99,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("IdFormador");
 
-                    b.ToTable("accao_formador");
+                    b.ToTable("accao_formador", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.ActividadeEstagio", b =>
@@ -139,7 +139,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdEstagio")
                         .HasDatabaseName("idx_actest_estag");
 
-                    b.ToTable("actividade_estagio");
+                    b.ToTable("actividade_estagio", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.ActoAdministrativo", b =>
@@ -188,7 +188,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("UtilizadorRegisto");
 
-                    b.ToTable("acto_administrativo");
+                    b.ToTable("acto_administrativo", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.AnuncioRecrutamento", b =>
@@ -251,7 +251,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("IdUnidadeOrganica");
 
-                    b.ToTable("anuncio_recrutamento", t =>
+                    b.ToTable("anuncio_recrutamento", null, t =>
                         {
                             t.HasCheckConstraint("CK_anuncio_datas", "[data_limite] >= [data_publicacao]");
                         });
@@ -299,7 +299,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdPedido")
                         .HasDatabaseName("idx_aprov_pedido");
 
-                    b.ToTable("aprovacao_pedido");
+                    b.ToTable("aprovacao_pedido", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.AvaliacaoEstagio", b =>
@@ -350,7 +350,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdEstagio")
                         .HasDatabaseName("idx_avales_estag");
 
-                    b.ToTable("avaliacao_estagio");
+                    b.ToTable("avaliacao_estagio", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.AvaliacaoFormacao", b =>
@@ -391,7 +391,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdInscricao")
                         .IsUnique();
 
-                    b.ToTable("avaliacao_formacao");
+                    b.ToTable("avaliacao_formacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Candidato", b =>
@@ -450,7 +450,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("IdNivelAcademico");
 
-                    b.ToTable("candidato");
+                    b.ToTable("candidato", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Candidatura", b =>
@@ -501,7 +501,7 @@ namespace SGRH.Migrations
                         .IsUnique()
                         .HasDatabaseName("UQ_candidatura");
 
-                    b.ToTable("candidatura");
+                    b.ToTable("candidatura", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Carreira", b =>
@@ -536,7 +536,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdCarreira");
 
-                    b.ToTable("carreira");
+                    b.ToTable("carreira", (string)null);
 
                     b.HasData(
                         new
@@ -633,7 +633,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdColaborador")
                         .HasDatabaseName("idx_caso_colab");
 
-                    b.ToTable("caso_apoio_social");
+                    b.ToTable("caso_apoio_social", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Categoria", b =>
@@ -662,7 +662,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdCategoria");
 
-                    b.ToTable("categoria");
+                    b.ToTable("categoria", (string)null);
 
                     b.HasData(
                         new
@@ -930,7 +930,7 @@ namespace SGRH.Migrations
                     b.HasIndex("Nuit")
                         .HasDatabaseName("idx_colab_nuit");
 
-                    b.ToTable("colaborador");
+                    b.ToTable("colaborador", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.ComunicacaoCandidato", b =>
@@ -978,7 +978,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdCandidatura")
                         .HasDatabaseName("idx_comunic_candidatura");
 
-                    b.ToTable("comunicacao_candidato");
+                    b.ToTable("comunicacao_candidato", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Contrato", b =>
@@ -1062,7 +1062,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("RenovacaoAnterior");
 
-                    b.ToTable("contrato", t =>
+                    b.ToTable("contrato", null, t =>
                         {
                             t.HasCheckConstraint("CK_contrato_datas", "[data_fim] IS NULL OR [data_fim] >= [data_inicio]");
                         });
@@ -1118,7 +1118,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("UtilizadorUpload");
 
-                    b.ToTable("documento");
+                    b.ToTable("documento", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.EstadoCivil", b =>
@@ -1138,7 +1138,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdEstadoCivil");
 
-                    b.ToTable("estado_civil");
+                    b.ToTable("estado_civil", (string)null);
 
                     b.HasData(
                         new
@@ -1255,7 +1255,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdUnidadeOrganica")
                         .HasDatabaseName("idx_estag_unidade");
 
-                    b.ToTable("estagio");
+                    b.ToTable("estagio", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Exportacao", b =>
@@ -1301,7 +1301,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdUtilizador")
                         .HasDatabaseName("idx_export_util");
 
-                    b.ToTable("exportacao");
+                    b.ToTable("exportacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.FaseProcesso", b =>
@@ -1353,7 +1353,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdCandidatura")
                         .HasDatabaseName("idx_fase_candidatura");
 
-                    b.ToTable("fase_processo");
+                    b.ToTable("fase_processo", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.FormaIngresso", b =>
@@ -1373,7 +1373,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdFormaIngresso");
 
-                    b.ToTable("forma_ingresso");
+                    b.ToTable("forma_ingresso", (string)null);
 
                     b.HasData(
                         new
@@ -1445,7 +1445,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdFormador");
 
-                    b.ToTable("formador");
+                    b.ToTable("formador", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Funcao", b =>
@@ -1474,7 +1474,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdFuncao");
 
-                    b.ToTable("funcao");
+                    b.ToTable("funcao", (string)null);
 
                     b.HasData(
                         new
@@ -1656,7 +1656,7 @@ namespace SGRH.Migrations
                     b.HasIndex("DataPartida", "DataChegada")
                         .HasDatabaseName("idx_gm_datas");
 
-                    b.ToTable("guia_marcha");
+                    b.ToTable("guia_marcha", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.HistoricoColaborador", b =>
@@ -1720,7 +1720,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("IdUnidadeOrganica");
 
-                    b.ToTable("historico_colaborador");
+                    b.ToTable("historico_colaborador", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.IndicadorCalculado", b =>
@@ -1763,7 +1763,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdIndicador");
 
-                    b.ToTable("indicador_calculado");
+                    b.ToTable("indicador_calculado", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.InqueritoClima", b =>
@@ -1815,7 +1815,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdInquerito");
 
-                    b.ToTable("inquerito_clima");
+                    b.ToTable("inquerito_clima", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.InscricaoFormacao", b =>
@@ -1857,7 +1857,7 @@ namespace SGRH.Migrations
                         .IsUnique()
                         .HasDatabaseName("UQ_inscricao");
 
-                    b.ToTable("inscricao_formacao");
+                    b.ToTable("inscricao_formacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.LogAuditoria", b =>
@@ -1918,7 +1918,7 @@ namespace SGRH.Migrations
                     b.HasIndex("TabelaAfetada")
                         .HasDatabaseName("idx_audit_tabela");
 
-                    b.ToTable("log_auditoria");
+                    b.ToTable("log_auditoria", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.NivelAcademico", b =>
@@ -1938,7 +1938,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdNivelAcademico");
 
-                    b.ToTable("nivel_academico");
+                    b.ToTable("nivel_academico", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.NotaAcompanhamento", b =>
@@ -1972,7 +1972,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdCaso")
                         .HasDatabaseName("idx_nota_caso");
 
-                    b.ToTable("nota_acompanhamento");
+                    b.ToTable("nota_acompanhamento", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.OpcaoResposta", b =>
@@ -2003,7 +2003,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdPergunta")
                         .HasDatabaseName("idx_opcao_pergunta");
 
-                    b.ToTable("opcao_resposta");
+                    b.ToTable("opcao_resposta", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.PedidoAprovacao", b =>
@@ -2045,7 +2045,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("IdTipoPedido");
 
-                    b.ToTable("pedido_aprovacao");
+                    b.ToTable("pedido_aprovacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.PerfilAcesso", b =>
@@ -2074,7 +2074,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdPerfil");
 
-                    b.ToTable("perfil_acesso");
+                    b.ToTable("perfil_acesso", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.PerguntaInquerito", b =>
@@ -2114,7 +2114,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdInquerito")
                         .HasDatabaseName("idx_perg_inq");
 
-                    b.ToTable("pergunta_inquerito");
+                    b.ToTable("pergunta_inquerito", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.Permissao", b =>
@@ -2161,7 +2161,7 @@ namespace SGRH.Migrations
                         .IsUnique()
                         .HasDatabaseName("UQ_permissao");
 
-                    b.ToTable("permissao");
+                    b.ToTable("permissao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.PlanoFormacao", b =>
@@ -2207,7 +2207,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdPlano");
 
-                    b.ToTable("plano_formacao");
+                    b.ToTable("plano_formacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.ProjectoOperacao", b =>
@@ -2245,7 +2245,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdProjecto");
 
-                    b.ToTable("projecto_operacao");
+                    b.ToTable("projecto_operacao", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.RegistoAusencia", b =>
@@ -2305,7 +2305,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("IdTipoAusencia");
 
-                    b.ToTable("registo_ausencia", t =>
+                    b.ToTable("registo_ausencia", null, t =>
                         {
                             t.HasCheckConstraint("CK_ausencia_datas", "[data_fim] >= [data_inicio]");
                         });
@@ -2352,7 +2352,7 @@ namespace SGRH.Migrations
 
                     b.HasIndex("InqueritoClimaIdInquerito");
 
-                    b.ToTable("resposta_inquerito");
+                    b.ToTable("resposta_inquerito", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.TipoActo", b =>
@@ -2372,7 +2372,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdTipoActo");
 
-                    b.ToTable("tipo_acto");
+                    b.ToTable("tipo_acto", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.TipoAusencia", b =>
@@ -2401,7 +2401,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdTipoAusencia");
 
-                    b.ToTable("tipo_ausencia");
+                    b.ToTable("tipo_ausencia", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.TipoContrato", b =>
@@ -2430,7 +2430,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdTipoContrato");
 
-                    b.ToTable("tipo_contrato");
+                    b.ToTable("tipo_contrato", (string)null);
 
                     b.HasData(
                         new
@@ -2492,7 +2492,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdTipoDocumento");
 
-                    b.ToTable("tipo_documento");
+                    b.ToTable("tipo_documento", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.TipoPedido", b =>
@@ -2512,7 +2512,7 @@ namespace SGRH.Migrations
 
                     b.HasKey("IdTipoPedido");
 
-                    b.ToTable("tipo_pedido");
+                    b.ToTable("tipo_pedido", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.UnidadeOrganica", b =>
@@ -2558,7 +2558,7 @@ namespace SGRH.Migrations
                     b.HasIndex("IdUnidadePai")
                         .HasDatabaseName("idx_uo_pai");
 
-                    b.ToTable("unidade_organica");
+                    b.ToTable("unidade_organica", (string)null);
 
                     b.HasData(
                         new
@@ -2795,7 +2795,7 @@ namespace SGRH.Migrations
                         .IsUnique()
                         .HasDatabaseName("idx_util_username");
 
-                    b.ToTable("utilizador_sistema");
+                    b.ToTable("utilizador_sistema", (string)null);
                 });
 
             modelBuilder.Entity("SGRH.Models.AccaoFormacao", b =>

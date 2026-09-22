@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SGRH.Data;
+using SGRH.Helpers;
 using SGRH.Models;
 using SGRH.Services;
 using System.Security.Claims;
@@ -51,6 +52,7 @@ namespace SGRH.Controllers
 
             var utilizador = await _db.UtilizadoresSistema
                 .Include(u => u.PerfilAcesso)
+                .Include(u => u.Colaborador)
                 .FirstOrDefaultAsync(u =>
                     u.Username.ToLower() == model.Username.ToLower() ||
                     u.Email.ToLower() == model.Username.ToLower());
@@ -84,15 +86,28 @@ namespace SGRH.Controllers
                 return View(model);
             }
 
+            // Migração automática: hashes legados (PBKDF2) são re-hash em BCrypt no primeiro login bem-sucedido.
+            if (!PasswordHelper.EhHashBcrypt(utilizador.PasswordHash))
+            {
+                utilizador.PasswordHash = PasswordHelper.Hash(model.Password);
+            }
+
             // Claims: identidade + perfil — base do controlo de acesso por perfil (RNF-2 / RT05).
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, utilizador.Username),
                 new Claim(ClaimTypes.Email, utilizador.Email),
                 new Claim("IdUtilizador", utilizador.IdUtilizador.ToString()),
+                new Claim("IdPerfil", utilizador.IdPerfil.ToString()),
                 new Claim("FullName", utilizador.Colaborador?.NomeCompleto ?? utilizador.Username),
-                new Claim(ClaimTypes.Role, utilizador.PerfilAcesso.Nome)
+                new Claim("PerfilNome", utilizador.PerfilAcesso?.Nome ?? "Utilizador"),
+                new Claim(ClaimTypes.Role, utilizador.PerfilAcesso?.Nome ?? "Utilizador")
             };
+
+            if (utilizador.Colaborador != null)
+            {
+                claims.Add(new Claim("ColaboradorNome", utilizador.Colaborador.NomeCompleto));
+            }
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
@@ -110,7 +125,7 @@ namespace SGRH.Controllers
             await _db.SaveChangesAsync();
 
             await _auditoria.RegistarAsync(utilizador.IdUtilizador, "utilizador_sistema",
-                "LOGIN", null, new { perfil = utilizador.PerfilAcesso.Nome }, utilizador.IdColaborador);
+                "LOGIN", null, new { perfil = utilizador.PerfilAcesso?.Nome }, utilizador.IdColaborador);
 
             return RedirectToAction("Index", "Home");
         }
@@ -128,14 +143,36 @@ namespace SGRH.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
                 return RedirectToAction("Index", "Home");
 
             if (ModelState.IsValid)
             {
-                TempData["Success"] = "As contas são criadas pelo Administrador do Sistema. Contacte-o para obter acesso.";
+                var usernameBase = model.Email.Split('@')[0].Replace(" ", "");
+                var username = usernameBase;
+                var sufixo = 1;
+                while (await _db.UtilizadoresSistema.AnyAsync(u => u.Username == username))
+                {
+                    username = usernameBase + sufixo;
+                    sufixo++;
+                }
+
+                var utilizador = new UtilizadorSistema
+                {
+                    Username = username,
+                    Email = model.Email,
+                    PasswordHash = PasswordHelper.Hash(model.Password),
+                    IdPerfil = 4,
+                    Estado = "Ativo",
+                    DataCriacao = DateTime.Now
+                };
+
+                _db.UtilizadoresSistema.Add(utilizador);
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Conta criada com sucesso! Pode fazer login.";
                 return RedirectToAction("Login");
             }
 

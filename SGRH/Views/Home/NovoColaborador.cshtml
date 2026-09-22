@@ -243,9 +243,13 @@
                 </div>
             </div>
 
-            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
+            <div style="display:flex;gap:0.75rem;justify-content:space-between;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
                 <a href="/Home/Colaboradores" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Registar Colaborador</button>
+                <div style="display:flex;gap:0.75rem;">
+                    <button type="button" class="btn btn-outline btnAnterior" style="display:none;" onclick="navegarAba('anterior')"><i class="fi fi-sr-arrow-left"></i> Anterior</button>
+                    <button type="button" class="btn btn-primary btnProximo" onclick="navegarAba('proximo')">Próximo <i class="fi fi-sr-arrow-right"></i></button>
+                    <button type="submit" class="btn btn-primary btnRegistar" style="display:none;"><i class="fi fi-sr-check"></i> Registar Colaborador</button>
+                </div>
             </div>
         </form>
     </div>
@@ -306,15 +310,47 @@ function adicionarDocumentos(input) {
     }
 }
 
+var abasForm = ['dadosPessoais', 'dadosProfissionais', 'docsContrato'];
+var abaAtual = 0;
+
+function trocarAba(index) {
+    if (index < 0 || index >= abasForm.length) return;
+    abaAtual = index;
+    var tab = abasForm[index];
+
+    $('#formTabs .tab-item').removeClass('active');
+    $('#formTabs .tab-item[data-formtab="' + tab + '"]').addClass('active');
+    $('.form-section').hide();
+    if (tab === 'dadosPessoais') $('#secDadosPessoais').show();
+    else if (tab === 'dadosProfissionais') $('#secDadosProfissionais').show();
+    else if (tab === 'docsContrato') $('#secDocsContrato').show();
+
+    if (abaAtual === 0) {
+        $('.btnAnterior').hide();
+        $('.btnProximo').show();
+        $('.btnRegistar').hide();
+    } else if (abaAtual === abasForm.length - 1) {
+        $('.btnAnterior').show();
+        $('.btnProximo').hide();
+        $('.btnRegistar').show();
+    } else {
+        $('.btnAnterior').show();
+        $('.btnProximo').show();
+        $('.btnRegistar').hide();
+    }
+}
+
+function navegarAba(direcao) {
+    if (direcao === 'proximo') trocarAba(abaAtual + 1);
+    else trocarAba(abaAtual - 1);
+}
+
 $(document).ready(function() {
+    trocarAba(0);
+
     $('#formTabs .tab-item').on('click', function() {
-        $('#formTabs .tab-item').removeClass('active');
-        $(this).addClass('active');
-        var tab = $(this).data('formtab');
-        $('.form-section').hide();
-        if (tab === 'dadosPessoais') $('#secDadosPessoais').show();
-        else if (tab === 'dadosProfissionais') $('#secDadosProfissionais').show();
-        else if (tab === 'docsContrato') $('#secDocsContrato').show();
+        var index = abasForm.indexOf($(this).data('formtab'));
+        trocarAba(index);
     });
 
     var dropArea = document.getElementById('areaUpload');

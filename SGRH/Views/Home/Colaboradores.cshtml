@@ -1,6 +1,7 @@
 @model IEnumerable<SGRH.Models.Colaborador>
 @{
     ViewData["Title"] = "Colaboradores";
+    var unidades = ViewBag.UnidadesOrganicas as IEnumerable<SGRH.Models.UnidadeOrganica> ?? new List<SGRH.Models.UnidadeOrganica>();
 }
 
 <div class="page-header">
@@ -9,7 +10,7 @@
         <p class="page-subtitle">Gestão do processo individual dos funcionários</p>
     </div>
     <div style="display:flex;gap:0.5rem;">
-        <button class="btn btn-outline" onclick="exportarExcel()"><i class="fi fi-sr-file-excel"></i> Exportar Excel</button>
+        <button class="btn btn-outline" id="btnExportarExcel"><i class="fi fi-sr-file-excel"></i> Exportar Excel</button>
         <a href="/Home/NovoColaborador" class="btn btn-primary"><i class="fi fi-sr-plus"></i> Novo Colaborador</a>
     </div>
 </div>
@@ -24,15 +25,34 @@
 }
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="flex-wrap:wrap;gap:1rem;align-items:center;">
         <div class="tabs" id="tabsColab" style="border-bottom:none;margin-bottom:0;">
             <button class="tab-item active" data-tab="todos">Todos</button>
             <button class="tab-item" data-tab="ativos">Ativos</button>
             <button class="tab-item" data-tab="inativos">Inativos</button>
         </div>
-        <div class="topbar-search" style="width:auto;">
-            <i class="fi fi-sr-search"></i>
-            <input type="text" id="pesquisarColab" placeholder="Pesquisar colaborador..." style="width:220px;">
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+            <select class="form-select" id="filtroUnidadeOrganica" style="width:280px;">
+                <option value="">Todas as Unidades Orgânicas</option>
+                @foreach (var u in unidades)
+                {
+                    <option value="@u.Nome">@u.Nome</option>
+                }
+            </select>
+            <select class="form-select" id="filtroOrdemNome" style="width:180px;">
+                <option value="">Ordenar por Nome</option>
+                <option value="az">A - Z</option>
+                <option value="za">Z - A</option>
+            </select>
+            <select class="form-select" id="filtroTempoServico" style="width:180px;">
+                <option value="">Tempo de Serviço</option>
+                <option value="maior">Mais Tempo</option>
+                <option value="menor">Menos Tempo</option>
+            </select>
+            <div class="topbar-search" style="width:auto;">
+                <i class="fi fi-sr-search"></i>
+                <input type="text" id="pesquisarColab" placeholder="Pesquisar colaborador..." style="width:220px;">
+            </div>
         </div>
     </div>
     <div class="table-container">
@@ -284,43 +304,60 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('modalConfirmarDelete')">Cancelar</button>
-            <form id="formDelete" style="display:inline;">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" id="deleteColabId">
-                <button type="button" class="btn btn-danger" onclick="confirmarDesativacao()">Desativar</button>
-            </form>
+            <button type="button" class="btn btn-danger" onclick="submeterDesativacao()"><i class="fi fi-sr-check"></i> Desativar</button>
         </div>
     </div>
 </div>
 
+<!-- Formulario oculto para desativacao (fora do modal) -->
+<form id="formDelete" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
 @section Scripts {
 <script>
+function exportarExcel() {
+    var rows = $('#corpoTabela tr[data-estado]');
+    if (rows.length === 0) {
+        showToast('Não há dados para exportar.', 'warning');
+        return;
+    }
+    var csv = 'Nome;NUIT;Unidade Organica;Categoria;Funcao;Estado;Idade;Tempo Servico\n';
+    rows.each(function() {
+        var $row = $(this);
+        var nome = ($row.data('nome') || '').replace(/;/g, ' ');
+        var nuit = ($row.data('nuit') || '').replace(/;/g, ' ');
+        var unidade = ($row.data('unidade') || '').replace(/;/g, ' ');
+        var categoria = ($row.data('categoria') || '').replace(/;/g, ' ');
+        var funcao = ($row.data('funcao') || '').replace(/;/g, ' ');
+        var estado = ($row.data('estado') || '').replace(/;/g, ' ');
+        var idade = $row.find('td').eq(6).text().trim().replace(' anos', '');
+        var tempoServico = $row.find('td').eq(7).text().trim().replace(' anos', '');
+        csv += nome + ';' + nuit + ';' + unidade + ';' + categoria + ';' + funcao + ';' + estado + ';' + idade + ';' + tempoServico + '\n';
+    });
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'colaboradores_' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 3000);
+}
+
+var deleteId = 0;
 function confirmarDelete(id, nome) {
-    $('#deleteColabId').val(id);
+    deleteId = id;
     $('#nomeColabDelete').text(nome);
     openModal('modalConfirmarDelete');
 }
 
-function confirmarDesativacao() {
+function submeterDesativacao() {
+    closeModal('modalConfirmarDelete');
     var form = document.getElementById('formDelete');
-    var formData = new FormData(form);
-    
-    fetch('/Home/EliminarColaborador', {
-        method: 'POST',
-        body: formData
-    })
-    .then(function(response) {
-        if (response.ok) {
-            closeModal('modalConfirmarDelete');
-            showToast('Colaborador desativado com sucesso!');
-            setTimeout(function() { location.reload(); }, 1000);
-        } else {
-            showToast('Erro ao desativar colaborador.', 'danger');
-        }
-    })
-    .catch(function() {
-        showToast('Erro de conexão.', 'danger');
-    });
+    form.action = '/Home/EliminarColaborador/' + deleteId;
+    form.submit();
 }
 
 function verFicha($row) {
@@ -358,7 +395,7 @@ function verFicha($row) {
         fotoHtml +
         '<div><h3 style="font-size:1.1rem;font-weight:700;">' + nome + '</h3>' +
         '<p style="font-size:0.85rem;color:var(--text-secondary);">' + funcao + ' — ' + unidade + '</p>' +
-        '<span class="badge badge-success">' + (estadoCivil || 'Ativo') + '</span></div></div>' +
+        '<span class="badge ' + ($row.data('estado') === 'Ativo' ? 'badge-success' : 'badge-danger') + '">' + ($row.data('estado') || 'Ativo') + '</span></div></div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;font-size:0.85rem;">' +
         '<div><strong>NUIT:</strong> ' + (nuit || '-') + '</div>' +
         '<div><strong>Sexo:</strong> ' + sexo + '</div>' +
@@ -440,10 +477,15 @@ function trocarTipoCarreira(tipo) {
 }
 
 function salvarCarreira() {
+    var idColab = $('#carreiraColabId').val();
     var nome = $('#carreiraNomeColab').text();
     var tipo = $('#carreiraTipo').val();
     var tipoMovimento = $('#carreiraTipoMovimento').val();
     var data = $('#carreiraData').val();
+    var novaCategoria = $('#carreiraNovaCategoria').val();
+    var novaFuncao = $('#carreiraNovaFuncao').val();
+    var despacho = $('#carreiraDespacho').val();
+    var novaRemuneracao = $('#carreiraNovaRemuneracao').val();
     var obs = $('#carreiraObs').val();
 
     if (!data) {
@@ -456,9 +498,33 @@ function salvarCarreira() {
         return;
     }
 
-    closeModal('modalCarreira');
-    var msg = tipo === 'progressao' ? 'Progressão' : 'Regressão';
-    showToast(msg + ' de "' + nome + '" registada com sucesso!');
+    var token = $('input[name="__RequestVerificationToken"]').first().val();
+
+    $.ajax({
+        url: '/Home/RegistarCarreira',
+        type: 'POST',
+        data: {
+            __RequestVerificationToken: token,
+            idColaborador: idColab,
+            tipo: tipo,
+            tipoMovimento: tipoMovimento,
+            data: data,
+            novaCategoria: novaCategoria || '',
+            novaFuncao: novaFuncao || '',
+            despacho: despacho || '',
+            novaRemuneracao: novaRemuneracao || '',
+            observacoes: obs || ''
+        },
+        success: function(response) {
+            closeModal('modalCarreira');
+            var msg = tipo === 'progressao' ? 'Progressão' : 'Regressão';
+            showToast(msg + ' de "' + nome + '" registada com sucesso!');
+            setTimeout(function() { location.reload(); }, 1500);
+        },
+        error: function() {
+            showToast('Erro ao registar carreira. Tente novamente.', 'danger');
+        }
+    });
 }
 
 function gerarFicha() {
@@ -546,25 +612,79 @@ function renderizarTabela(colaboradores) {
 
 var searchTimer = null;
 
+function aplicarFiltros() {
+    var $rows = $('#corpoTabela tr[data-estado]');
+    var unidadeOrganica = $('#filtroUnidadeOrganica').val();
+    var ordemNome = $('#filtroOrdemNome').val();
+    var tempoServico = $('#filtroTempoServico').val();
+    var termo = $('#pesquisarColab').val().trim().toLowerCase();
+    var tabAtiva = $('#tabsColab .tab-item.active').data('tab');
+
+    $rows.each(function() {
+        var $row = $(this);
+        var mostrar = true;
+
+        if (tabAtiva === 'ativos' && $row.data('estado') !== 'Ativo') mostrar = false;
+        if (tabAtiva === 'inativos' && $row.data('estado') !== 'Inativo') mostrar = false;
+
+        if (unidadeOrganica && $row.data('unidade') !== unidadeOrganica) mostrar = false;
+
+        if (termo) {
+            var nome = ($row.data('nome') || '').toLowerCase();
+            var nuit = ($row.data('nuit') || '').toLowerCase();
+            var email = ($row.data('email') || '').toLowerCase();
+            var unidade = ($row.data('unidade') || '').toLowerCase();
+            var funcao = ($row.data('funcao') || '').toLowerCase();
+            var categoria = ($row.data('categoria') || '').toLowerCase();
+            
+            if (!nome.includes(termo) && !nuit.includes(termo) && !email.includes(termo) && 
+                !unidade.includes(termo) && !funcao.includes(termo) && !categoria.includes(termo)) {
+                mostrar = false;
+            }
+        }
+
+        $row.toggle(mostrar);
+    });
+
+    var $visiveis = $rows.filter(':visible');
+    
+    if (ordemNome) {
+        $visiveis.sort(function(a, b) {
+            var nomeA = ($(a).data('nome') || '').toLowerCase();
+            var nomeB = ($(b).data('nome') || '').toLowerCase();
+            return ordemNome === 'az' ? nomeA.localeCompare(nomeB) : nomeB.localeCompare(nomeA);
+        });
+    }
+    
+    if (tempoServico) {
+        $visiveis.sort(function(a, b) {
+            var tempoA = parseInt($(a).find('td').eq(7).text().replace(' anos', '')) || 0;
+            var tempoB = parseInt($(b).find('td').eq(7).text().replace(' anos', '')) || 0;
+            return tempoServico === 'maior' ? tempoB - tempoA : tempoA - tempoB;
+        });
+    }
+
+    $('#corpoTabela').append($visiveis);
+}
+
 $(document).ready(function() {
     var flash = '@(TempData["Toast"])';
     if (flash) {
         showToast(flash);
     }
 
+    $('#btnExportarExcel').on('click', function() {
+        exportarExcel();
+    });
+
     $('#tabsColab .tab-item').on('click', function() {
         $('#tabsColab .tab-item').removeClass('active');
         $(this).addClass('active');
-        var tab = $(this).data('tab');
-        var $rows = $('#corpoTabela tr[data-estado]');
+        aplicarFiltros();
+    });
 
-        if (tab === 'todos') {
-            $rows.show();
-        } else if (tab === 'ativos') {
-            $rows.hide().filter('[data-estado="Ativo"]').show();
-        } else if (tab === 'inativos') {
-            $rows.hide().filter('[data-estado="Inativo"]').show();
-        }
+    $('#filtroUnidadeOrganica, #filtroOrdemNome, #filtroTempoServico').on('change', function() {
+        aplicarFiltros();
     });
 
     $('#pesquisarColab').on('input', function() {
@@ -573,7 +693,7 @@ $(document).ready(function() {
         if (searchTimer) clearTimeout(searchTimer);
         
         if (termo === '') {
-            location.reload();
+            aplicarFiltros();
             return;
         }
         
@@ -586,6 +706,7 @@ $(document).ready(function() {
                 data: { termo: termo },
                 success: function(data) {
                     renderizarTabela(data);
+                    aplicarFiltros();
                 },
                 error: function() {
                     showToast('Erro ao pesquisar colaboradores.', 'danger');

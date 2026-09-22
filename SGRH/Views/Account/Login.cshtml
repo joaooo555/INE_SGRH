@@ -26,6 +26,8 @@
 <form asp-action="Login" asp-controller="Account" method="post" class="auth-form">
     @Html.AntiForgeryToken()
 
+    <div asp-validation-summary="All" class="auth-validation" style="color:#e74c3c;margin-bottom:12px;"></div>
+
     <div class="auth-input-group">
         <label asp-for="Username">Utilizador</label>
         <div class="auth-input-wrapper">

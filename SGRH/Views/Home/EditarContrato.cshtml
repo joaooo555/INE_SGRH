@@ -1,0 +1,179 @@
+@model SGRH.Models.Contrato
+@{
+    ViewData["Title"] = "Editar Contrato";
+    ViewBag.ActivePage = "Contratos";
+    var tiposContrato = (IEnumerable<SGRH.Models.TipoContrato>)ViewBag.TiposContrato;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Editar Contrato</h1>
+        <p class="page-subtitle">Contrato nº @Model.NumeroContrato — @Model.Colaborador?.NomeCompleto</p>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+        <a href="@Url.Action("Contratos")" class="btn btn-outline"><i class="fi fi-sr-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="EditarContrato" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="IdContrato">
+            <input type="hidden" asp-for="IdColaborador">
+
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border-color);">Dados do Contrato</h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Colaborador</label>
+                    <input type="text" class="form-input" value="@Model.Colaborador?.NomeCompleto" readonly style="background:var(--bg-secondary);">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nº Contrato</label>
+                    <input type="text" class="form-input" value="@Model.NumeroContrato" readonly style="background:var(--bg-secondary);">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Contrato <span style="color:var(--danger);">*</span></label>
+                    <select class="form-select" asp-for="IdTipoContrato" required>
+                        <option value="">Selecionar tipo...</option>
+                        @foreach (var tc in tiposContrato)
+                        {
+                            @if (Model.IdTipoContrato == tc.IdTipoContrato)
+                            {
+                                <option value="@tc.IdTipoContrato" selected>@tc.Nome</option>
+                            }
+                            else
+                            {
+                                <option value="@tc.IdTipoContrato">@tc.Nome</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" name="estadoContrato">
+                        @if (Model.Estado == "Vigente") { <option value="Vigente" selected>Vigente</option> } else { <option value="Vigente">Vigente</option> }
+                        @if (Model.Estado == "Expirado") { <option value="Expirado" selected>Expirado</option> } else { <option value="Expirado">Expirado</option> }
+                        @if (Model.Estado == "Rescindido") { <option value="Rescindido" selected>Rescindido</option> } else { <option value="Rescindido">Rescindido</option> }
+                        @if (Model.Estado == "Rascunho") { <option value="Rascunho" selected>Rascunho</option> } else { <option value="Rascunho">Rascunho</option> }
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Data de Início <span style="color:var(--danger);">*</span></label>
+                    <input type="date" class="form-input" asp-for="DataInicio" value="@Model.DataInicio.ToString("yyyy-MM-dd")" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data de Fim</label>
+                    <input type="date" class="form-input" asp-for="DataFim" value="@(Model.DataFim.HasValue ? Model.DataFim.Value.ToString("yyyy-MM-dd") : "")">
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">Deixe vazio para contratos por tempo indeterminado.</p>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Remuneração (MZN)</label>
+                    <input type="number" class="form-input" asp-for="Remuneracao" placeholder="Ex: 45000" step="0.01" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Objecto</label>
+                <textarea class="form-textarea" asp-for="Objecto" rows="3" placeholder="Descrição do objecto do contrato..." style="resize:vertical;"></textarea>
+            </div>
+
+            <h3 style="font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border-color);">Documentos</h3>
+            <div class="form-group">
+                <label class="form-label" for="docsEditarContrato" style="cursor:pointer;">Anexar Documentos</label>
+                <input type="file" id="docsEditarContrato" name="documentos" multiple accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword" style="display:none;" onchange="adicionarDocumentosEditar(this)">
+                <div id="areaUploadEditar" style="border:2px dashed var(--border-color);border-radius:8px;padding:2rem;text-align:center;background:var(--bg-secondary);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'" onclick="document.getElementById('docsEditarContrato').click()">
+                    <i class="fi fi-sr-cloud-upload" style="font-size:2rem;color:var(--primary);margin-bottom:0.5rem;display:block;"></i>
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;font-weight:500;">Arraste ficheiros ou clique para selecionar</p>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin:0.25rem 0 0;">Apenas ficheiros PDF ou Word (.docx, .doc). Máx 10MB por ficheiro.</p>
+                </div>
+                <div id="listaDocumentosEditar" style="margin-top:1rem;"></div>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-color);">
+                <a href="@Url.Action("Contratos")" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Guardar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function processarFicheirosEditar(files) {
+    var extensoesPermitidas = ['.pdf', '.docx', '.doc'];
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (extensoesPermitidas.indexOf(ext) === -1) {
+            showToast('Formato não suportado no ficheiro "' + file.name + '".', 'warning');
+            continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('O ficheiro "' + file.name + '" excede o limite de 10MB.', 'warning');
+            continue;
+        }
+        var icon = 'fi fi-sr-document';
+        if (ext === '.pdf') icon = 'fi fi-sr-file-pdf';
+        else if (ext === '.docx' || ext === '.doc') icon = 'fi fi-sr-file-word';
+
+        var tamanho = file.size < 1024 * 1024
+            ? (file.size / 1024).toFixed(1) + ' KB'
+            : (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+
+        var item = '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;margin-bottom:0.5rem;">' +
+            '<i class="' + icon + '" style="font-size:1.3rem;color:var(--primary);"></i>' +
+            '<div style="flex:1;min-width:0;">' +
+                '<div style="font-size:0.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + file.name + '">' + file.name + '</div>' +
+                '<div style="font-size:0.75rem;color:var(--text-muted);">' + tamanho + '</div>' +
+            '</div>' +
+        '</div>';
+        $('#listaDocumentosEditar').append(item);
+    }
+}
+
+function adicionarDocumentosEditar(input) {
+    if (input.files && input.files.length > 0) {
+        processarFicheirosEditar(input.files);
+    }
+}
+
+$(document).ready(function() {
+    var dropArea = document.getElementById('areaUploadEditar');
+    if (dropArea) {
+        ['dragenter', 'dragover'].forEach(function(eventName) {
+            dropArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropArea.style.borderColor = 'var(--primary)';
+                dropArea.style.background = 'var(--bg-hover)';
+            }, false);
+        });
+        ['dragleave', 'drop'].forEach(function(eventName) {
+            dropArea.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropArea.style.borderColor = 'var(--border-color)';
+                dropArea.style.background = 'var(--bg-secondary)';
+            }, false);
+        });
+        dropArea.addEventListener('drop', function(e) {
+            var dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                processarFicheirosEditar(dt.files);
+            }
+        }, false);
+    }
+});
+</script>
+}

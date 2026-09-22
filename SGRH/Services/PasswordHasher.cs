@@ -29,6 +29,10 @@ namespace SGRH.Services
             if (string.IsNullOrWhiteSpace(hashArmazenado))
                 return false;
 
+            // Hashes BCrypt (formato novo) são delegadas ao PasswordHelper.
+            if (SGRH.Helpers.PasswordHelper.EhHashBcrypt(hashArmazenado))
+                return SGRH.Helpers.PasswordHelper.Verificar(senha, hashArmazenado);
+
             var partes = hashArmazenado.Split('.');
             if (partes.Length != 3 || !int.TryParse(partes[0], out var iteracoes))
                 return false;
