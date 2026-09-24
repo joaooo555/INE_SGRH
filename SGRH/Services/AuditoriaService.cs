@@ -43,7 +43,7 @@ namespace SGRH.Services
                     DadosAnteriores = dadosAnteriores == null ? null : JsonSerializer.Serialize(dadosAnteriores),
                     DadosPosteriores = dadosPosteriores == null ? null : JsonSerializer.Serialize(dadosPosteriores),
                     DataHora = DateTime.Now,
-                    IpAddress = ip.Length > 45 ? ip[..45] : ip
+                    IpAddress = ip == null ? null : ip.Length > 45 ? ip[..45] : ip
                 });
                 await _db.SaveChangesAsync();
             }
