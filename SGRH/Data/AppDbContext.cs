@@ -7,7 +7,7 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    // ── Domínio / Paramétrico ──────────────────────────────────────
+
     public DbSet<EstadoCivil> EstadosCivis { get; set; }
     public DbSet<FormaIngresso> FormasIngresso { get; set; }
     public DbSet<NivelAcademico> NiveisAcademicos { get; set; }
@@ -17,34 +17,34 @@ public class AppDbContext : DbContext
     public DbSet<TipoContrato> TiposContrato { get; set; }
     public DbSet<TipoAusencia> TiposAusencia { get; set; }
 
-    // ── Organização ────────────────────────────────────────────────
+
     public DbSet<UnidadeOrganica> UnidadesOrganicas { get; set; }
     public DbSet<Categoria> Categorias { get; set; }
     public DbSet<Carreira> Carreiras { get; set; }
     public DbSet<Funcao> Funcoes { get; set; }
 
-    // ── Cadastro ───────────────────────────────────────────────────
+
     public DbSet<Colaborador> Colaboradores { get; set; }
     public DbSet<ActoAdministrativo> ActosAdministrativos { get; set; }
     public DbSet<Documento> Documentos { get; set; }
     public DbSet<HistoricoColaborador> HistoricosColaborador { get; set; }
 
-    // ── Recrutamento ───────────────────────────────────────────────
+
     public DbSet<AnuncioRecrutamento> AnunciosRecrutamento { get; set; }
     public DbSet<Candidato> Candidatos { get; set; }
     public DbSet<Candidatura> Candidaturas { get; set; }
     public DbSet<FaseProcesso> FasesProcesso { get; set; }
     public DbSet<ComunicacaoCandidato> ComunicacoesCandidato { get; set; }
 
-    // ── Contratos ──────────────────────────────────────────────────
+
     public DbSet<Contrato> Contratos { get; set; }
 
-    // ── Administração ──────────────────────────────────────────────
+
     public DbSet<RegistoAusencia> RegistosAusencia { get; set; }
     public DbSet<PedidoAprovacao> PedidosAprovacao { get; set; }
     public DbSet<AprovacaoPedido> AprovacoesPedido { get; set; }
 
-    // ── Formação ───────────────────────────────────────────────────
+
     public DbSet<PlanoFormacao> PlanosFormacao { get; set; }
     public DbSet<AccaoFormacao> AccoesFormacao { get; set; }
     public DbSet<Formador> Formadores { get; set; }
@@ -52,31 +52,31 @@ public class AppDbContext : DbContext
     public DbSet<InscricaoFormacao> InscricoesFormacao { get; set; }
     public DbSet<AvaliacaoFormacao> AvaliacoesFormacao { get; set; }
 
-    // ── Estágios ───────────────────────────────────────────────────
+
     public DbSet<Estagio> Estagios { get; set; }
     public DbSet<AvaliacaoEstagio> AvaliacoesEstagio { get; set; }
     public DbSet<ActividadeEstagio> ActividadesEstagio { get; set; }
 
-    // ── Guias de Marcha ────────────────────────────────────────────
+
     public DbSet<ProjectoOperacao> ProjectosOperacao { get; set; }
     public DbSet<GuiaMarcha> GuiasMarcha { get; set; }
 
-    // ── Assuntos Sociais ───────────────────────────────────────────
+
     public DbSet<CasoApoioSocial> CasosApoioSocial { get; set; }
     public DbSet<NotaAcompanhamento> NotasAcompanhamento { get; set; }
 
-    // ── Clima Organizacional ───────────────────────────────────────
+
     public DbSet<InqueritoClima> InqueritosClima { get; set; }
     public DbSet<PerguntaInquerito> PerguntasInquerito { get; set; }
     public DbSet<OpcaoResposta> OpcoesResposta { get; set; }
     public DbSet<RespostaInquerito> RespostasInquerito { get; set; }
 
-    // ── Acessos e Segurança ────────────────────────────────────────
+
     public DbSet<PerfilAcesso> PerfisAcesso { get; set; }
     public DbSet<Permissao> Permissoes { get; set; }
     public DbSet<UtilizadorSistema> UtilizadoresSistema { get; set; }
 
-    // ── Auditoria e Reporting ──────────────────────────────────────
+
     public DbSet<LogAuditoria> LogsAuditoria { get; set; }
     public DbSet<IndicadorCalculado> IndicadoresCalculados { get; set; }
     public DbSet<Exportacao> Exportacoes { get; set; }
@@ -85,7 +85,7 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // ── UNIDADE ORGÂNICA — auto-referência ─────────────────────
+
         modelBuilder.Entity<UnidadeOrganica>()
             .HasOne(u => u.UnidadePai)
             .WithMany(u => u.SubUnidades)
@@ -100,7 +100,7 @@ public class AppDbContext : DbContext
             .Property(u => u.Estado)
             .HasDefaultValue("Ativa");
 
-        // ── COLABORADOR ────────────────────────────────────────────
+
         modelBuilder.Entity<Colaborador>()
             .HasIndex(c => c.Nuit).HasDatabaseName("idx_colab_nuit");
         modelBuilder.Entity<Colaborador>()
@@ -115,7 +115,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Colaborador>()
             .Property(c => c.DataRegisto).HasDefaultValueSql("GETDATE()");
 
-        // Evitar ciclos de delete em cascata — colaborador tem múltiplas FKs
+
         modelBuilder.Entity<Colaborador>()
             .HasMany(c => c.GuiasMarcha)
             .WithOne(g => g.Funcionario)
@@ -140,7 +140,7 @@ public class AppDbContext : DbContext
             .HasForeignKey(a => a.IdAprovador)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── ACTO ADMINISTRATIVO ────────────────────────────────────
+
         modelBuilder.Entity<ActoAdministrativo>()
             .HasIndex(a => a.IdColaborador).HasDatabaseName("idx_acto_colab");
 
@@ -150,7 +150,7 @@ public class AppDbContext : DbContext
             .HasForeignKey(a => a.UtilizadorRegisto)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── DOCUMENTO ──────────────────────────────────────────────
+
         modelBuilder.Entity<Documento>()
             .HasIndex(d => d.IdColaborador).HasDatabaseName("idx_doc_colab");
 
@@ -160,17 +160,17 @@ public class AppDbContext : DbContext
             .HasForeignKey(d => d.UtilizadorUpload)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── HISTORICO COLABORADOR ──────────────────────────────────
+
         modelBuilder.Entity<HistoricoColaborador>()
             .HasIndex(h => h.IdColaborador).HasDatabaseName("idx_hist_colab");
 
-        // ── ANÚNCIO RECRUTAMENTO ───────────────────────────────────
+
         modelBuilder.Entity<AnuncioRecrutamento>()
             .Property(a => a.Estado).HasDefaultValue("Aberto");
         modelBuilder.Entity<AnuncioRecrutamento>()
             .ToTable(t => t.HasCheckConstraint("CK_anuncio_datas", "[data_limite] >= [data_publicacao]"));
 
-        // ── CANDIDATURA ────────────────────────────────────────────
+
         modelBuilder.Entity<Candidatura>()
             .HasIndex(c => new { c.IdCandidato, c.IdAnuncio })
             .IsUnique()
@@ -185,15 +185,15 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Candidatura>()
             .Property(c => c.Estado).HasDefaultValue("Submetida");
 
-        // ── FASE PROCESSO ──────────────────────────────────────────
+
         modelBuilder.Entity<FaseProcesso>()
             .HasIndex(f => f.IdCandidatura).HasDatabaseName("idx_fase_candidatura");
 
-        // ── COMUNICAÇÃO CANDIDATO ──────────────────────────────────
+
         modelBuilder.Entity<ComunicacaoCandidato>()
             .HasIndex(c => c.IdCandidatura).HasDatabaseName("idx_comunic_candidatura");
 
-        // ── CONTRATO ───────────────────────────────────────────────
+
         modelBuilder.Entity<Contrato>()
             .HasIndex(c => c.IdColaborador).HasDatabaseName("idx_ctr_colab");
         modelBuilder.Entity<Contrato>()
@@ -211,7 +211,7 @@ public class AppDbContext : DbContext
             .HasForeignKey(c => c.RenovacaoAnterior)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── REGISTO AUSÊNCIA ───────────────────────────────────────
+
         modelBuilder.Entity<RegistoAusencia>()
             .HasIndex(r => r.IdColaborador).HasDatabaseName("idx_aus_colab");
         modelBuilder.Entity<RegistoAusencia>()
@@ -219,23 +219,23 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<RegistoAusencia>()
             .ToTable(t => t.HasCheckConstraint("CK_ausencia_datas", "[data_fim] >= [data_inicio]"));
 
-        // ── PEDIDO APROVAÇÃO ───────────────────────────────────────
+
         modelBuilder.Entity<PedidoAprovacao>()
             .HasIndex(p => p.IdColaboradorSolicitante).HasDatabaseName("idx_ped_solicitante");
 
-        // ── APROVAÇÃO PEDIDO ───────────────────────────────────────
+
         modelBuilder.Entity<AprovacaoPedido>()
             .HasIndex(a => a.IdPedido).HasDatabaseName("idx_aprov_pedido");
 
-        // ── ACÇÃO FORMAÇÃO ─────────────────────────────────────────
+
         modelBuilder.Entity<AccaoFormacao>()
             .HasIndex(a => a.IdPlano).HasDatabaseName("idx_accao_plano");
 
-        // ── ACÇÃO FORMADOR — chave composta ────────────────────────
+
         modelBuilder.Entity<AccaoFormador>()
             .HasKey(af => new { af.IdAccao, af.IdFormador });
 
-        // ── INSCRIÇÃO FORMAÇÃO ─────────────────────────────────────
+
         modelBuilder.Entity<InscricaoFormacao>()
             .HasIndex(i => new { i.IdAccao, i.IdColaborador })
             .IsUnique()
@@ -246,31 +246,31 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<InscricaoFormacao>()
             .HasIndex(i => i.IdColaborador).HasDatabaseName("idx_insc_colab");
 
-        // ── AVALIAÇÃO FORMAÇÃO ─────────────────────────────────────
+
         modelBuilder.Entity<AvaliacaoFormacao>()
             .HasOne(a => a.InscricaoFormacao)
             .WithOne(i => i.AvaliacaoFormacao)
             .HasForeignKey<AvaliacaoFormacao>(a => a.IdInscricao)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── HISTÓRICO FORMAÇÃO (Tabela removida - 3FN) ─────────────
 
 
-        // ── ESTÁGIO ────────────────────────────────────────────────
+
+
         modelBuilder.Entity<Estagio>()
             .HasIndex(e => e.IdUnidadeOrganica).HasDatabaseName("idx_estag_unidade");
         modelBuilder.Entity<Estagio>()
             .HasIndex(e => e.IdSupervisor).HasDatabaseName("idx_estag_supervisor");
 
-        // ── AVALIAÇÃO ESTÁGIO ──────────────────────────────────────
+
         modelBuilder.Entity<AvaliacaoEstagio>()
             .HasIndex(a => a.IdEstagio).HasDatabaseName("idx_avales_estag");
 
-        // ── ACTIVIDADE ESTÁGIO ─────────────────────────────────────
+
         modelBuilder.Entity<ActividadeEstagio>()
             .HasIndex(a => a.IdEstagio).HasDatabaseName("idx_actest_estag");
 
-        // ── GUIA DE MARCHA ─────────────────────────────────────────
+
         modelBuilder.Entity<GuiaMarcha>()
             .HasIndex(g => g.IdFuncionario).HasDatabaseName("idx_gm_func");
         modelBuilder.Entity<GuiaMarcha>()
@@ -278,33 +278,33 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<GuiaMarcha>()
             .HasIndex(g => new { g.DataPartida, g.DataChegada }).HasDatabaseName("idx_gm_datas");
 
-        // ── CASO APOIO SOCIAL ──────────────────────────────────────
+
         modelBuilder.Entity<CasoApoioSocial>()
             .HasIndex(c => c.IdColaborador).HasDatabaseName("idx_caso_colab");
         modelBuilder.Entity<CasoApoioSocial>()
             .HasIndex(c => c.Estado).HasDatabaseName("idx_caso_estado");
 
-        // ── NOTA ACOMPANHAMENTO ────────────────────────────────────
+
         modelBuilder.Entity<NotaAcompanhamento>()
             .HasIndex(n => n.IdCaso).HasDatabaseName("idx_nota_caso");
 
-        // ── INQUÉRITO CLIMA ────────────────────────────────────────
+
         modelBuilder.Entity<InqueritoClima>()
             .Property(i => i.Estado).HasDefaultValue("Rascunho");
 
-        // ── PERGUNTA INQUÉRITO ─────────────────────────────────────
+
         modelBuilder.Entity<PerguntaInquerito>()
             .HasIndex(p => p.IdInquerito).HasDatabaseName("idx_perg_inq");
 
-        // ── OPÇÃO RESPOSTA ─────────────────────────────────────────
+
         modelBuilder.Entity<OpcaoResposta>()
             .HasIndex(o => o.IdPergunta).HasDatabaseName("idx_opcao_pergunta");
 
-        // ── RESPOSTA INQUÉRITO ─────────────────────────────────────
+
         modelBuilder.Entity<RespostaInquerito>()
             .HasIndex(r => r.IdPergunta).HasDatabaseName("idx_resp_perg");
 
-        // ── PERMISSÃO — índice composto único ──────────────────────
+
         modelBuilder.Entity<Permissao>()
             .HasIndex(p => new { p.IdPerfil, p.Modulo })
             .IsUnique()
@@ -313,7 +313,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Permissao>()
             .HasIndex(p => p.IdPerfil).HasDatabaseName("idx_perm_perfil");
 
-        // ── UTILIZADOR SISTEMA ─────────────────────────────────────
+
         modelBuilder.Entity<UtilizadorSistema>()
             .HasIndex(u => u.Username).IsUnique().HasDatabaseName("idx_util_username");
         modelBuilder.Entity<UtilizadorSistema>()
@@ -327,7 +327,7 @@ public class AppDbContext : DbContext
             .HasForeignKey<UtilizadorSistema>(u => u.IdColaborador)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── LOG AUDITORIA ──────────────────────────────────────────
+
         modelBuilder.Entity<LogAuditoria>()
             .HasIndex(l => l.DataHora).HasDatabaseName("idx_audit_data");
         modelBuilder.Entity<LogAuditoria>()
@@ -345,13 +345,13 @@ public class AppDbContext : DbContext
             .HasForeignKey(l => l.IdUtilizador)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ── EXPORTAÇÃO ─────────────────────────────────────────────
+
         modelBuilder.Entity<Exportacao>()
             .HasIndex(e => e.IdUtilizador).HasDatabaseName("idx_export_util");
 
-        // ── SEED DATA ──────────────────────────────────────────────
 
-        // Estado Civil
+
+
         modelBuilder.Entity<EstadoCivil>().HasData(
             new EstadoCivil { IdEstadoCivil = 1, Nome = "Solteiro(a)" },
             new EstadoCivil { IdEstadoCivil = 2, Nome = "Casado(a)" },
@@ -360,7 +360,7 @@ public class AppDbContext : DbContext
             new EstadoCivil { IdEstadoCivil = 5, Nome = "União de Facto" }
         );
 
-        // Forma de Ingresso
+
         modelBuilder.Entity<FormaIngresso>().HasData(
             new FormaIngresso { IdFormaIngresso = 1, Nome = "Concurso Público" },
             new FormaIngresso { IdFormaIngresso = 2, Nome = "Nomeação" },
@@ -370,7 +370,7 @@ public class AppDbContext : DbContext
             new FormaIngresso { IdFormaIngresso = 6, Nome = "Mobilidade" }
         );
 
-        // Tipo de Contrato
+
         modelBuilder.Entity<TipoContrato>().HasData(
             new TipoContrato { IdTipoContrato = 1, Nome = "Contrato por Tempo Indeterminado", Descricao = "Contrato sem termo final", DuracaoMaximaMeses = null },
             new TipoContrato { IdTipoContrato = 2, Nome = "Contrato a Termo Certo", Descricao = "Contrato com data de fim definida", DuracaoMaximaMeses = 24 },
@@ -380,7 +380,7 @@ public class AppDbContext : DbContext
             new TipoContrato { IdTipoContrato = 6, Nome = "Comissão de Serviço", Descricao = "Comissão temporária de serviço", DuracaoMaximaMeses = 12 }
         );
 
-        // Unidades Orgânicas
+
         modelBuilder.Entity<UnidadeOrganica>().HasData(
             new UnidadeOrganica { IdUnidadeOrganica = 1, Nome = "Presidência do INE", Sigla = "PRES", Tipo = "Departamento", Estado = "Ativa" },
             new UnidadeOrganica { IdUnidadeOrganica = 2, Nome = "Departamento de Apoio ao Director Geral", Sigla = "DADG", Tipo = "Departamento", Estado = "Ativa" },
@@ -405,7 +405,7 @@ public class AppDbContext : DbContext
             new UnidadeOrganica { IdUnidadeOrganica = 21, Nome = "Delegação Provincial - Maputo Cidade", Sigla = "DP-MC", Tipo = "Delegação", Estado = "Ativa" }
         );
 
-        // Categorias
+
         modelBuilder.Entity<Categoria>().HasData(
             new Categoria { IdCategoria = 1, Descricao = "Assessor Principal", Nivel = 1 },
             new Categoria { IdCategoria = 2, Descricao = "Primeiro Assessor", Nivel = 2 },
@@ -431,7 +431,7 @@ public class AppDbContext : DbContext
             new Categoria { IdCategoria = 22, Descricao = "Agente de Serviço", Nivel = 22 }
         );
 
-        // Carreiras
+
         modelBuilder.Entity<Carreira>().HasData(
             new Carreira { IdCarreira = 1, Nome = "Carreira de Direcção e Confiança", Descricao = "Funções de direcção e confiança política" },
             new Carreira { IdCarreira = 2, Nome = "Carreira de Estatística", Descricao = "Funções técnicas de estatística" },
@@ -441,7 +441,7 @@ public class AppDbContext : DbContext
             new Carreira { IdCarreira = 6, Nome = "Regime Especial Não Diferenciado", Descricao = "Regime especial sem diferenciação de carreira" }
         );
 
-        // Funções
+
         modelBuilder.Entity<Funcao>().HasData(
             new Funcao { IdFuncao = 1, Nome = "Director Geral", Descricao = "Responsável máximo pela gestão do INE" },
             new Funcao { IdFuncao = 2, Nome = "Director Geral Adjunto", Descricao = "Adjunto do Director Geral" },

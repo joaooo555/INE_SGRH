@@ -1,0 +1,87 @@
+@model PerfilAcesso
+@using SGRH.Controllers
+@{
+    ViewData["Title"] = $"Permissões — {Model.Nome}";
+    Layout = "_Layout";
+
+    var modulos = AdminController.Modulos;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Permissões — @Model.Nome</h1>
+        <p class="page-subtitle">Associar permissões aos perfis e controlar o acesso aos módulos — RF04</p>
+    </div>
+    <a class="btn btn-outline" href="@Url.Action("Perfis", "Admin")"><i class="fi fi-sr-arrow-left"></i> Voltar aos Perfis</a>
+</div>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["Sucesso"]</div>
+}
+
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-body" style="display:flex;gap:2rem;flex-wrap:wrap;">
+        <div><strong>Perfil:</strong> @Model.Nome</div>
+        <div><strong>Nível de Confidencialidade:</strong> @Model.NivelConfidencialidade</div>
+        <div><strong>Utilizadores Associados:</strong> @Model.Utilizadores.Count</div>
+    </div>
+</div>
+
+<form method="post" asp-controller="Admin" asp-action="GuardarPermissoes">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.IdPerfil" />
+
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><i class="fi fi-sr-key" style="color:var(--info);margin-right:0.5rem;"></i> Matriz de Acesso (perfil × módulo × operação)</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Módulo</th>
+                            <th style="text-align:center;">Acessar</th>
+                            <th style="text-align:center;">Criar</th>
+                            <th style="text-align:center;">Editar</th>
+                            <th style="text-align:center;">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < modulos.Length; i++)
+                        {
+                            var perm = Model.Permissoes.FirstOrDefault(p => p.Modulo == modulos[i]);
+                            <tr>
+                                <td><strong>@modulos[i]</strong></td>
+                                <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="visualizar" @(perm != null ? "checked" : "") onchange="syncOpcoes(this)"></td>
+                                <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="criar" class="opt_@i" @(perm?.PodeCriar == true ? "checked" : "") @(perm == null ? "disabled" : "")></td>
+                                <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="editar" class="opt_@i" @(perm?.PodeEditar == true ? "checked" : "") @(perm == null ? "disabled" : "")></td>
+                                <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="eliminar" class="opt_@i" @(perm?.PodeEliminar == true ? "checked" : "") @(perm == null ? "disabled" : "")></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1rem;">
+        <a class="btn btn-outline" href="@Url.Action("Perfis", "Admin")">Cancelar</a>
+        <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Guardar Permissões</button>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+function syncOpcoes(cb) {
+    // descobre o índice do módulo pelo atributo name (mod_N)
+    var idx = cb.name.split('_')[1];
+    var activo = cb.checked;
+    document.querySelectorAll('.opt_' + idx).forEach(function (el) {
+        el.disabled = !activo;
+        if (!activo) el.checked = false;
+    });
+}
+</script>
+}

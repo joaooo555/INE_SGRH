@@ -7,8 +7,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+// ── Serviços da Administração do Sistema ───────────────────────────
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<SGRH.Services.IPasswordHasher, SGRH.Services.PasswordHasher>();
+builder.Services.AddScoped<SGRH.Services.IAuditoriaService, SGRH.Services.AuditoriaService>();
+
+// ── Base de dados ──────────────────────────────────────────────────
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Autorização global: por defeito, todas as páginas exigem utilizador autenticado
+// (o login e o registo continuam públicos via [AllowAnonymous])
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -38,6 +53,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Ficheiros estáticos servidos antes da autorização — sem isto, a FallbackPolicy
+// redireciona o CSS/JS (ex.: /css/styles.css) para o login e a página quebra.
+app.UseStaticFiles();
+
 app.UseRouting();
 app.UseSession();
 app.UseAuthentication();
@@ -48,6 +68,12 @@ app.MapStaticAssets();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}")
+    .WithStaticAssets();
+
+// Fallback: URLs só com o controller (ex.: /Admin → Admin/Index)
+app.MapControllerRoute(
+    name: "controllerIndex",
+    pattern: "{controller}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 // ── Seed de perfis e permissões ────────────────────────────────────

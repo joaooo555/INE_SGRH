@@ -1,0 +1,142 @@
+@model List<PerfilAcesso>
+@{
+    ViewData["Title"] = "Gestão de Perfis";
+    Layout = "_Layout";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Gestão de Perfis</h1>
+        <p class="page-subtitle">Criar e gerir perfis de utilizadores — RF03</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modalNovoPerfil')"><i class="fi fi-sr-plus"></i> Novo Perfil</button>
+</div>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["Sucesso"]</div>
+}
+@if (TempData["Erro"] != null)
+{
+    <div class="alert alert-danger">@TempData["Erro"]</div>
+}
+
+<div class="stats-grid" style="margin-bottom:1.5rem;">
+    <div class="stat-card"><div class="stat-info"><h3>Perfis Registados</h3><div class="stat-value">@Model.Count</div></div><div class="stat-icon blue"><i class="fi fi-sr-user-shield"></i></div></div>
+    <div class="stat-card"><div class="stat-info"><h3>Perfis com Utilizadores</h3><div class="stat-value" style="color:var(--success);">@Model.Count(p => p.Utilizadores.Count > 0)</div></div><div class="stat-icon green"><i class="fi fi-sr-users"></i></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title"><i class="fi fi-sr-user-shield" style="color:var(--info);margin-right:0.5rem;"></i> Perfis de Acesso</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Descrição</th>
+                        <th>Nível Confidencialidade</th>
+                        <th>Módulos com Acesso</th>
+                        <th>Utilizadores</th>
+                        <th style="text-align:right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhum perfil registado.</td></tr>
+                    }
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td><strong>@p.Nome</strong></td>
+                            <td>@(p.Descricao ?? "—")</td>
+                            <td><span class="badge @(p.NivelConfidencialidade >= 3 ? "badge-danger" : p.NivelConfidencialidade == 2 ? "badge-warning" : "badge-success")">Nível @p.NivelConfidencialidade</span></td>
+                            <td>@p.Permissoes.Count módulo(s)</td>
+                            <td>@p.Utilizadores.Count utilizador(es)</td>
+                            <td style="text-align:right;white-space:nowrap;">
+                                <a class="btn btn-sm btn-outline" href="@Url.Action("Permissoes", "Admin", new { id = p.IdPerfil })" title="Permissões"><i class="fi fi-sr-key"></i></a>
+                                <button class="btn btn-sm btn-outline" onclick='abrirEditarPerfil(@System.Text.Json.JsonSerializer.Serialize(new { id = p.IdPerfil, nome = p.Nome, descricao = p.Descricao, nivel = p.NivelConfidencialidade }))' title="Editar"><i class="fi fi-sr-pencil"></i></button>
+                                <form method="post" asp-controller="Admin" asp-action="EliminarPerfil" style="display:inline;" onsubmit="return confirm('Eliminar o perfil @p.Nome?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.IdPerfil" />
+                                    <button class="btn btn-sm btn-outline" title="Eliminar" style="color:var(--danger);"><i class="fi fi-sr-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Novo Perfil -->
+<div class="modal-overlay" id="modalNovoPerfil">
+    <div class="modal" style="max-width:480px;">
+        <div class="modal-header"><h2 class="modal-title">Novo Perfil</h2><button class="modal-close" onclick="closeModal('modalNovoPerfil')">&times;</button></div>
+        <form method="post" asp-controller="Admin" asp-action="CriarPerfil">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Nome do Perfil *</label><input class="form-input" name="nome" required placeholder="Ex: Gestor de RH"></div>
+                <div class="form-group"><label class="form-label">Descrição</label><input class="form-input" name="descricao" placeholder="Função do perfil na organização"></div>
+                <div class="form-group">
+                    <label class="form-label">Nível de Confidencialidade</label>
+                    <select class="form-select" name="nivelConfidencialidade">
+                        <option value="1">1 — Padrão</option>
+                        <option value="2">2 — Elevado</option>
+                        <option value="3">3 — Confidencial</option>
+                    </select>
+                </div>
+                <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;">
+                    <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> O novo perfil nasce sem acesso a nenhum módulo — as permissões são atribuídas depois (princípio do menor privilégio).</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modalNovoPerfil')">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Criar Perfil</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Editar Perfil -->
+<div class="modal-overlay" id="modalEditarPerfil">
+    <div class="modal" style="max-width:480px;">
+        <div class="modal-header"><h2 class="modal-title">Editar Perfil</h2><button class="modal-close" onclick="closeModal('modalEditarPerfil')">&times;</button></div>
+        <form method="post" asp-controller="Admin" asp-action="EditarPerfil">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-group"><label class="form-label">Nome do Perfil *</label><input class="form-input" name="nome" id="epNome" required></div>
+                <div class="form-group"><label class="form-label">Descrição</label><input class="form-input" name="descricao" id="epDescricao"></div>
+                <div class="form-group">
+                    <label class="form-label">Nível de Confidencialidade</label>
+                    <select class="form-select" name="nivelConfidencialidade" id="epNivel">
+                        <option value="1">1 — Padrão</option>
+                        <option value="2">2 — Elevado</option>
+                        <option value="3">3 — Confidencial</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="id" id="epId" />
+                <button type="button" class="btn btn-outline" onclick="closeModal('modalEditarPerfil')">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function abrirEditarPerfil(p) {
+    document.getElementById('epId').value = p.id;
+    document.getElementById('epNome').value = p.nome;
+    document.getElementById('epDescricao').value = p.descricao || '';
+    document.getElementById('epNivel').value = p.nivel;
+    openModal('modalEditarPerfil');
+}
+</script>
+}
