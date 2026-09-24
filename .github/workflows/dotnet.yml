@@ -1,0 +1,34 @@
+name: .NET Build SGRH
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: SGRH.sln
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET SDK required by the project (net9.0)
+    - name: Install .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore $env:Solution_Name
+
+    - name: Build solution
+      run: dotnet build $env:Solution_Name --configuration Release --no-restore

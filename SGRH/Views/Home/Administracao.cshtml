@@ -24,7 +24,7 @@
     <div class="alert alert-danger">@TempData["Erro"]</div>
 }
 
-<!-- KPIs -->
+
 <div class="stats-grid" style="margin-bottom:1.5rem;">
     <div class="stat-card"><div class="stat-info"><h3>Pedidos Pendentes</h3><div class="stat-value">@Model.PedidosAprovacao.Count(p => p.Estado == "Pendente")</div></div><div class="stat-icon amber"><i class="fi fi-sr-time-fast"></i></div></div>
     <div class="stat-card"><div class="stat-info"><h3>Aprovados</h3><div class="stat-value" style="color:var(--success);">@Model.PedidosAprovacao.Count(p => p.Estado == "Aprovado")</div></div><div class="stat-icon green"><i class="fi fi-sr-check-circle"></i></div></div>
@@ -32,14 +32,14 @@
     <div class="stat-card"><div class="stat-info"><h3>Registos de Ausência</h3><div class="stat-value">@Model.RegistosAusencia.Count</div></div><div class="stat-icon blue"><i class="fi fi-sr-calendar"></i></div></div>
 </div>
 
-<!-- Tabs -->
+
 <div class="tabs" id="tabsAdmin">
     <button class="tab-item active" data-admintab="pedidos">Workflow de Aprovação</button>
     <button class="tab-item" data-admintab="ausencias">Assiduidade / Ausências</button>
     <button class="tab-item" data-admintab="tipos">Tipos</button>
 </div>
 
-<!-- TAB: Workflow de Aprovação -->
+
 <div id="adm-pedidos">
     <div class="card">
         <div class="card-header">
@@ -118,7 +118,6 @@
     </div>
 </div>
 
-<!-- TAB: Ausências -->
 <div id="adm-ausencias" style="display:none;">
     <div class="card">
         <div class="card-header">
@@ -177,7 +176,7 @@
     </div>
 </div>
 
-<!-- TAB: Tipos -->
+
 <div id="adm-tipos" style="display:none;">
     <div class="card">
         <div class="card-header">
@@ -229,7 +228,7 @@
     </div>
 </div>
 
-<!-- Modal: Nova Ausência -->
+
 <div class="modal-overlay" id="modalNovaAusencia">
     <div class="modal">
         <div class="modal-header"><h2 class="modal-title">Registar Ausência</h2><button class="modal-close" onclick="closeModal('modalNovaAusencia')">&times;</button></div>
@@ -271,7 +270,7 @@
     </div>
 </div>
 
-<!-- Modal: Editar Ausência -->
+
 <div class="modal-overlay" id="modalEditarAusencia">
     <div class="modal">
         <div class="modal-header"><h2 class="modal-title">Editar Ausência</h2><button class="modal-close" onclick="closeModal('modalEditarAusencia')">&times;</button></div>
@@ -308,7 +307,7 @@
     </div>
 </div>
 
-<!-- Modal: Novo Pedido -->
+
 <div class="modal-overlay" id="modalNovoPedido">
     <div class="modal">
         <div class="modal-header"><h2 class="modal-title">Novo Pedido de Aprovação</h2><button class="modal-close" onclick="closeModal('modalNovoPedido')">&times;</button></div>
@@ -345,7 +344,7 @@
     </div>
 </div>
 
-<!-- Modal: Decidir Pedido (workflow de parecer e aprovação) -->
+
 <div class="modal-overlay" id="modalDecisao">
     <div class="modal" style="max-width:480px;">
         <div class="modal-header"><h2 class="modal-title">Parecer e Aprovação</h2><button class="modal-close" onclick="closeModal('modalDecisao')">&times;</button></div>
@@ -370,7 +369,7 @@
     </div>
 </div>
 
-<!-- Modal: Novo Tipo de Ausência -->
+
 <div class="modal-overlay" id="modalNovoTipo">
     <div class="modal" style="max-width:440px;">
         <div class="modal-header"><h2 class="modal-title">Novo Tipo de Ausência</h2><button class="modal-close" onclick="closeModal('modalNovoTipo')">&times;</button></div>
@@ -391,7 +390,7 @@
 
 @section Scripts {
 <script>
-// Tabs
+
 $('#tabsAdmin .tab-item').on('click', function() {
     $('#tabsAdmin .tab-item').removeClass('active');
     $(this).addClass('active');

@@ -75,7 +75,7 @@
 @section Scripts {
 <script>
 function syncOpcoes(cb) {
-    // descobre o índice do módulo pelo atributo name (mod_N)
+
     var idx = cb.name.split('_')[1];
     var activo = cb.checked;
     document.querySelectorAll('.opt_' + idx).forEach(function (el) {

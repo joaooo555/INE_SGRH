@@ -2,7 +2,7 @@
 @using System.Security.Claims
 @{
     var permissoes = ViewBag.Permissoes as Dictionary<string, Permissao> ?? new Dictionary<string, Permissao>();
-    bool PodeVer(string modulo) => permissoes.TryGetValue(modulo, out var p) && p.PodeVisualizar;
+    bool PodeVer(string modulo) => !permissoes.Any() || (permissoes.TryGetValue(modulo, out var p) && p.PodeVisualizar);
 }
 <!DOCTYPE html>
 <html lang="pt">

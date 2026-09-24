@@ -150,6 +150,57 @@ using (var scope = app.Services.CreateScope())
 
         SET IDENTITY_INSERT tipo_documento OFF;
 
+        -- Tipos de ausência (dropdown ""Registar Ausência"" fica vazio sem este seed)
+        SET IDENTITY_INSERT tipo_ausencia ON;
+
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 1)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (1, 'Férias', 'Férias anuais do colaborador', 22);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 2)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (2, 'Falta Justificada', 'Falta com justificação aceite', 5);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 3)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (3, 'Falta Injustificada', 'Falta sem justificação', NULL);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 4)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (4, 'Licença Médica', 'Ausência por motivo de saúde', 30);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 5)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (5, 'Licença de Maternidade/Paternidade', 'Licença por nascimento ou adopção', 60);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 6)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (6, 'Licença Sem Vencimento', 'Ausência autorizada sem remuneração', 90);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 7)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (7, 'Luto', 'Falecimento de familiar próximo', 5);
+        IF NOT EXISTS (SELECT 1 FROM tipo_ausencia WHERE id_tipo_ausencia = 8)
+            INSERT INTO tipo_ausencia (id_tipo_ausencia, nome, descricao, dias_maximos)
+            VALUES (8, 'Outro', 'Outro motivo de ausência', NULL);
+
+        SET IDENTITY_INSERT tipo_ausencia OFF;
+
+        -- Tipos de pedido (dropdown ""Novo Pedido"" fica vazio sem este seed)
+        SET IDENTITY_INSERT tipo_pedido ON;
+
+        IF NOT EXISTS (SELECT 1 FROM tipo_pedido WHERE id_tipo_pedido = 1)
+            INSERT INTO tipo_pedido (id_tipo_pedido, nome)
+            VALUES (1, 'Pedido de Férias');
+        IF NOT EXISTS (SELECT 1 FROM tipo_pedido WHERE id_tipo_pedido = 2)
+            INSERT INTO tipo_pedido (id_tipo_pedido, nome)
+            VALUES (2, 'Justificação de Falta');
+        IF NOT EXISTS (SELECT 1 FROM tipo_pedido WHERE id_tipo_pedido = 3)
+            INSERT INTO tipo_pedido (id_tipo_pedido, nome)
+            VALUES (3, 'Alteração de Dados Pessoais');
+        IF NOT EXISTS (SELECT 1 FROM tipo_pedido WHERE id_tipo_pedido = 4)
+            INSERT INTO tipo_pedido (id_tipo_pedido, nome)
+            VALUES (4, 'Requerimento Geral');
+        IF NOT EXISTS (SELECT 1 FROM tipo_pedido WHERE id_tipo_pedido = 5)
+            INSERT INTO tipo_pedido (id_tipo_pedido, nome)
+            VALUES (5, 'Outro');
+
+        SET IDENTITY_INSERT tipo_pedido OFF;
+
         -- ═══════════════════════════════════════════════════════════
         -- PERMISSOES - ADMINISTRADOR (Perfil 1) - Total em tudo
         -- ═══════════════════════════════════════════════════════════
