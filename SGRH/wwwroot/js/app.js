@@ -179,13 +179,24 @@ function showToast(mensagem, tipo) {
 // ---- Sidebar Toggle (jQuery) ----
 $(document).ready(function() {
     $('.topbar-toggle').on('click', function() {
-        $('.sidebar').toggleClass('open');
-        $('.sidebar-overlay').toggleClass('active');
+        if (window.innerWidth > 1024) {
+            $('.sidebar').toggleClass('mini');
+        } else {
+            $('.sidebar').toggleClass('open');
+            $('.sidebar-overlay').toggleClass('active');
+        }
     });
     $('.sidebar-overlay').on('click', function() {
         $('.sidebar').removeClass('open');
         $(this).removeClass('active');
     });
+    function aplicarLayoutResponsivo() {
+        if (window.innerWidth <= 1024) {
+            $('.sidebar').removeClass('mini');
+        }
+    }
+    $(window).on('resize', aplicarLayoutResponsivo);
+    aplicarLayoutResponsivo();
 });
 
 // ---- Modal Helpers (jQuery) ----

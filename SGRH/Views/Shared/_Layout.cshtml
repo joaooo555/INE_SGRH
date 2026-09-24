@@ -26,69 +26,65 @@
             <div><h1><span>SG</span>RH</h1><span style="font-size:0.65rem;color:rgba(255,255,255,0.5);font-weight:400;">Gestao de Pessoal</span></div>
         </div>
         <nav class="sidebar-nav">
-<div class="sidebar-section">Principal</div>
-            @if (PodeVer("Dashboard"))
+@if (PodeVer("Dashboard"))
             {
-                <a href="@Url.Action("Index", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Dashboard" ? "active" : "")"><i class="fi fi-sr-home"></i> Dashboard</a>
+                <a href="@Url.Action("Index", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Dashboard" ? "active" : "")" title="Dashboard"><i class="fi fi-sr-home"></i> <span class="sidebar-label">Dashboard</span></a>
             }
             @if (PodeVer("Colaboradores"))
             {
-                <a href="@Url.Action("Colaboradores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Colaboradores" ? "active" : "")"><i class="fi fi-sr-users"></i> Colaboradores</a>
+                <a href="@Url.Action("Colaboradores", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Colaboradores" ? "active" : "")" title="Colaboradores"><i class="fi fi-sr-users"></i> <span class="sidebar-label">Colaboradores</span></a>
             }
-            <div class="sidebar-section">Gestão</div>
             @if (PodeVer("Contratos"))
             {
-                <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")"><i class="fi fi-sr-file"></i> Contratos</a>
+                <a href="@Url.Action("Contratos", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Contratos" ? "active" : "")" title="Contratos"><i class="fi fi-sr-file"></i> <span class="sidebar-label">Contratos</span></a>
             }
             @if (PodeVer("Administracao"))
             {
-                <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")"><i class="fi fi-sr-settings"></i> Administração</a>
+                <a href="@Url.Action("Administracao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Administracao" ? "active" : "")" title="Administração"><i class="fi fi-sr-settings"></i> <span class="sidebar-label">Administração</span></a>
             }
             @if (PodeVer("Formacao"))
             {
-                <a href="@Url.Action("Formacao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Formacao" ? "active" : "")"><i class="fi fi-sr-graduation-cap"></i> Formação</a>
+                <a href="@Url.Action("Formacao", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Formacao" ? "active" : "")" title="Formação"><i class="fi fi-sr-graduation-cap"></i> <span class="sidebar-label">Formação</span></a>
             }
             @if (PodeVer("Estagios"))
             {
-                <a href="@Url.Action("Estagios", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Estagios" ? "active" : "")"><i class="fi fi-sr-briefcase"></i> Estágios</a>
+                <a href="@Url.Action("Estagios", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Estagios" ? "active" : "")" title="Estágios"><i class="fi fi-sr-briefcase"></i> <span class="sidebar-label">Estágios</span></a>
             }
             @if (PodeVer("GuiasMarcha"))
             {
-                <a href="@Url.Action("GuiasMarcha", "Home")" class="sidebar-item @(ViewBag.ActivePage == "GuiasMarcha" ? "active" : "")"><i class="fi fi-sr-route"></i> Guias de Marcha</a>
+                <a href="@Url.Action("GuiasMarcha", "Home")" class="sidebar-item @(ViewBag.ActivePage == "GuiasMarcha" ? "active" : "")" title="Guias de Marcha"><i class="fi fi-sr-route"></i> <span class="sidebar-label">Guias de Marcha</span></a>
             }
-            <div class="sidebar-section">Pessoal</div>
             @if (PodeVer("Recrutamento"))
             {
-                <a href="@Url.Action("Recrutamento", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Recrutamento" ? "active" : "")"><i class="fi fi-sr-search"></i> Recrutamento</a>
+                <a href="@Url.Action("Recrutamento", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Recrutamento" ? "active" : "")" title="Recrutamento"><i class="fi fi-sr-search"></i> <span class="sidebar-label">Recrutamento</span></a>
             }
             @if (PodeVer("Clima"))
             {
-                <a href="@Url.Action("Clima", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Clima" ? "active" : "")"><i class="fi fi-sr-chart-simple"></i> Clima Org.</a>
+                <a href="@Url.Action("Clima", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Clima" ? "active" : "")" title="Clima Org."><i class="fi fi-sr-chart-simple"></i> <span class="sidebar-label">Clima Org.</span></a>
             }
             @if (PodeVer("AssuntosSociais"))
             {
-                <a href="@Url.Action("AssuntosSociais", "Home")" class="sidebar-item @(ViewBag.ActivePage == "AssuntosSociais" ? "active" : "")"><i class="fi fi-sr-heart"></i> Assuntos Sociais</a>
+                <a href="@Url.Action("AssuntosSociais", "Home")" class="sidebar-item @(ViewBag.ActivePage == "AssuntosSociais" ? "active" : "")" title="Assuntos Sociais"><i class="fi fi-sr-heart"></i> <span class="sidebar-label">Assuntos Sociais</span></a>
             }
-            <div class="sidebar-section">Sistema</div>
             @if (PodeVer("Reporting"))
             {
-                <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")"><i class="fi fi-sr-chart-mixed"></i> Reporting</a>
+                <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")" title="Reporting"><i class="fi fi-sr-chart-mixed"></i> <span class="sidebar-label">Reporting</span></a>
             }
             @if (User.IsInRole("Administrador"))
             {
-                <a href="@Url.Action("Index", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "AdminSistema" ? "active" : "")"><i class="fi fi-sr-settings-sliders"></i> Admin do Sistema</a>
+                <a href="@Url.Action("Index", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "AdminSistema" ? "active" : "")" title="Admin do Sistema"><i class="fi fi-sr-settings-sliders"></i> <span class="sidebar-label">Admin do Sistema</span></a>
             }
             @if (PodeVer("Utilizadores"))
             {
-                <a href="@Url.Action("Utilizadores", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")"><i class="fi fi-sr-user-gear"></i> Utilizadores</a>
+                <a href="@Url.Action("Utilizadores", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")" title="Utilizadores"><i class="fi fi-sr-user-gear"></i> <span class="sidebar-label">Utilizadores</span></a>
             }
             @if (PodeVer("Auditoria"))
             {
-                <a href="@Url.Action("Auditoria", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")"><i class="fi fi-sr-shield-check"></i> Auditoria</a>
+                <a href="@Url.Action("Auditoria", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Auditoria" ? "active" : "")" title="Auditoria"><i class="fi fi-sr-shield-check"></i> <span class="sidebar-label">Auditoria</span></a>
             }
             @if (PodeVer("Configuracoes"))
             {
-                <a href="@Url.Action("Configuracoes", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Configuracoes" ? "active" : "")"><i class="fi fi-sr-gears"></i> Configurações</a>
+                <a href="@Url.Action("Configuracoes", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Configuracoes" ? "active" : "")" title="Configurações"><i class="fi fi-sr-gears"></i> <span class="sidebar-label">Configurações</span></a>
             }
         </nav>
     </aside>

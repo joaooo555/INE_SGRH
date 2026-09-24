@@ -9,7 +9,7 @@
         <h1 class="page-title">Gestão de Utilizadores</h1>
         <p class="page-subtitle">Criar, editar, activar, desactivar e bloquear contas — RF02</p>
     </div>
-    <button class="btn btn-primary" onclick="openModal('modalNovoUtilizador')"><i class="fi fi-sr-plus"></i> Novo Utilizador</button>
+    <a href="@Url.Action("NovoUtilizador", "Admin")" class="btn btn-primary"><i class="fi fi-sr-plus"></i> Novo Utilizador</a>
 </div>
 
 @if (TempData["Sucesso"] != null)
@@ -133,58 +133,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
-
-
-<div class="modal-overlay" id="modalNovoUtilizador">
-    <div class="modal">
-        <div class="modal-header"><h2 class="modal-title">Novo Utilizador</h2><button class="modal-close" onclick="closeModal('modalNovoUtilizador')">&times;</button></div>
-        <form method="post" asp-controller="Admin" asp-action="CriarUtilizador">
-            @Html.AntiForgeryToken()
-            <div class="modal-body">
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">Nome de Utilizador *</label><input class="form-input" name="username" required placeholder="Ex: joaquim.chissano"></div>
-                    <div class="form-group"><label class="form-label">Email *</label><input class="form-input" type="email" name="email" required placeholder="email@sgrh.gov.mz"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">Perfil de Acesso *</label>
-                        <select class="form-select" name="idPerfil" required>
-                            <option value="">Seleccionar...</option>
-                            @if (ViewBag.Perfis is SelectList perfisNovo)
-                            {
-                                foreach (var item in perfisNovo)
-                                {
-                                    <option value="@item.Value">@item.Text</option>
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Colaborador Vinculado</label>
-                        <select class="form-select" name="idColaborador">
-                            <option value="">— Sem vinculação —</option>
-                            @if (ViewBag.Colaboradores is SelectList colabs)
-                            {
-                                foreach (var item in colabs)
-                                {
-                                    <option value="@item.Value">@item.Text</option>
-                                }
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group"><label class="form-label">Senha Inicial *</label><input class="form-input" type="text" name="senha" required minlength="8" value="SGRH2026!">
-                    <small style="color:var(--text-muted);">Armazenada com hash PBKDF2 (RT07). Recomenda-se a alteração no primeiro acesso.</small>
-                </div>
-                <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;margin-top:0.5rem;">
-                    <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> Cada utilizador deve possuir uma conta individual, associada a um perfil com permissões específicas (Regras de segurança — secção 16).</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" onclick="closeModal('modalNovoUtilizador')">Cancelar</button>
-                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Criar Utilizador</button>
-            </div>
-        </form>
     </div>
 </div>
 

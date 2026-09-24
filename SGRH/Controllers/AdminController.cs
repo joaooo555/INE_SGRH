@@ -25,6 +25,7 @@ namespace SGRH.Controllers
         private readonly AppDbContext _db;
         private readonly IPasswordHasher _hasher;
         private readonly IAuditoriaService _auditoria;
+        private readonly AutorizacaoService _autorizacao;
 
         // Módulos do sistema conforme a "Matriz geral de acesso aos módulos" do documento
         public static readonly string[] Modulos =
@@ -41,11 +42,13 @@ namespace SGRH.Controllers
             "Administração do Sistema"
         };
 
-        public AdminController(AppDbContext db, IPasswordHasher hasher, IAuditoriaService auditoria)
+        public AdminController(AppDbContext db, IPasswordHasher hasher, IAuditoriaService auditoria,
+            AutorizacaoService autorizacao)
         {
             _db = db;
             _hasher = hasher;
             _auditoria = auditoria;
+            _autorizacao = autorizacao;
         }
 
         private int? IdUtilizadorActual =>
@@ -117,10 +120,25 @@ namespace SGRH.Controllers
             return View(utilizadores);
         }
 
+        // ────────────────────────────────────────────────────────────
+        // RF02 — NOVO UTILIZADOR (página dedicada de registo)
+        // ────────────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> NovoUtilizador()
+        {
+            ViewBag.ActivePage = "AdminSistema";
+            ViewBag.Perfis = await _db.PerfisAcesso.OrderBy(p => p.Nome).ToListAsync();
+            ViewBag.Colaboradores = await _db.Colaboradores
+                .Where(c => c.Estado == "Ativo")
+                .OrderBy(c => c.NomeCompleto)
+                .ToListAsync();
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CriarUtilizador(string username, string email, int idPerfil,
-            int? idColaborador, string senha)
+            int? idColaborador, string senha, string? permissoesJson)
         {
             username = username?.Trim() ?? "";
             email = email?.Trim() ?? "";
@@ -158,12 +176,74 @@ namespace SGRH.Controllers
             _db.UtilizadoresSistema.Add(utilizador);
             await _db.SaveChangesAsync();
 
+            await AplicarPermissoesPerfilAsync(idPerfil, permissoesJson);
+
             await _auditoria.RegistarAsync(IdUtilizadorActual, "utilizador_sistema", "CRIACAO",
                 null,
                 new { utilizador.IdUtilizador, utilizador.Username, utilizador.Email, utilizador.IdPerfil });
 
             TempData["Sucesso"] = $"Conta «{username}» criada com sucesso.";
             return RedirectToAction(nameof(Utilizadores));
+        }
+
+        /// <summary>Aplica (ou substitui) as permissões configuradas para o perfil na página de registo.</summary>
+        private async Task AplicarPermissoesPerfilAsync(int idPerfil, string? permissoesJson)
+        {
+            if (string.IsNullOrWhiteSpace(permissoesJson))
+                return;
+
+            var permissoes = System.Text.Json.JsonSerializer.Deserialize<List<PermissaoRequest>>(
+                permissoesJson,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (permissoes == null || permissoes.Count == 0)
+                return;
+
+            permissoes = permissoes.Where(p => !string.IsNullOrWhiteSpace(p.Modulo)).ToList();
+            if (permissoes.Count == 0)
+                return;
+
+            var existentes = await _db.Permissoes.Where(p => p.IdPerfil == idPerfil).ToListAsync();
+            if (existentes.Count > 0)
+            {
+                _db.Permissoes.RemoveRange(existentes);
+                await _db.SaveChangesAsync();
+            }
+
+            foreach (var perm in permissoes)
+            {
+                _db.Permissoes.Add(new Permissao
+                {
+                    IdPerfil = idPerfil,
+                    Modulo = perm.Modulo,
+                    PodeVisualizar = perm.PodeVisualizar,
+                    PodeCriar = perm.PodeCriar,
+                    PodeEditar = perm.PodeEditar,
+                    PodeEliminar = perm.PodeEliminar
+                });
+            }
+
+            await _db.SaveChangesAsync();
+            _autorizacao.LimparCache(idPerfil);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObterPermissoes(int idPerfil)
+        {
+            var permissoes = await _db.Permissoes
+                .Where(p => p.IdPerfil == idPerfil)
+                .Select(p => new
+                {
+                    id = p.IdPermissao,
+                    modulo = p.Modulo,
+                    podeVisualizar = p.PodeVisualizar,
+                    podeCriar = p.PodeCriar,
+                    podeEditar = p.PodeEditar,
+                    podeEliminar = p.PodeEliminar
+                })
+                .ToListAsync();
+
+            return Json(permissoes);
         }
 
         [HttpPost]
@@ -504,6 +584,15 @@ namespace SGRH.Controllers
                 null, new { total = logs.Count });
 
             return File(bytes, "text/csv", $"auditoria_sgrh_{DateTime.Now:yyyyMMdd_HHmm}.csv");
+        }
+
+        public class PermissaoRequest
+        {
+            public string Modulo { get; set; } = "";
+            public bool PodeVisualizar { get; set; }
+            public bool PodeCriar { get; set; }
+            public bool PodeEditar { get; set; }
+            public bool PodeEliminar { get; set; }
         }
     }
 

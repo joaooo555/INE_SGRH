@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using SGRH.Authorization;
 using SGRH.Data;
 using SGRH.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<PermissoesViewBagFilter>();
+});
 
 // ── Serviços da Administração do Sistema ───────────────────────────
 builder.Services.AddHttpContextAccessor();

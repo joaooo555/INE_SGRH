@@ -1,0 +1,193 @@
+@using SGRH.Controllers
+@{
+    ViewData["Title"] = "Novo Utilizador";
+    var perfis = ViewBag.Perfis as List<SGRH.Models.PerfilAcesso> ?? [];
+    var colaboradores = ViewBag.Colaboradores as List<SGRH.Models.Colaborador> ?? [];
+    var modulos = AdminController.Modulos;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Novo Utilizador</h1>
+        <p class="page-subtitle">Preencha os dados para criar um novo utilizador no sistema</p>
+    </div>
+    <a href="@Url.Action("Utilizadores", "Admin")" class="btn btn-outline"><i class="fi fi-sr-arrow-left"></i> Voltar</a>
+</div>
+
+@if (TempData["Erro"] != null)
+{
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:0.5rem;padding:0.75rem 1rem;margin-bottom:1rem;color:var(--danger);font-size:0.85rem;">
+        <i class="fi fi-sr-exclamation-triangle" style="margin-right:0.5rem;"></i> @TempData["Erro"]
+    </div>
+}
+
+<div class="card">
+    <div class="card-body" style="padding:2rem;">
+        <form method="post" action="@Url.Action("CriarUtilizador", "Admin")">
+            @Html.AntiForgeryToken()
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-user" style="color:var(--primary);margin-right:0.5rem;"></i> Dados de Acesso</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Nome de Utilizador *</label>
+                        <input class="form-input" type="text" name="username" placeholder="Ex: joaquim.chissano" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input class="form-input" type="email" name="email" placeholder="email@ine.gov.mz" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Senha *</label>
+                        <input class="form-input" type="password" name="senha" value="SGRH2026!" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Perfil de Acesso *</label>
+                        <select class="form-select" name="idPerfil" required>
+                            <option value="">Seleccionar perfil...</option>
+                            @foreach (var p in perfis)
+                            {
+                                <option value="@p.IdPerfil">@p.Nome - @p.Descricao</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-link" style="color:var(--primary);margin-right:0.5rem;"></i> Vínculo com Colaborador</h3>
+                <div class="form-group">
+                    <label class="form-label">Colaborador Vinculado</label>
+                    <select class="form-select" name="idColaborador">
+                        <option value="">Nenhum</option>
+                        @foreach (var c in colaboradores)
+                        {
+                            <option value="@c.IdColaborador">@c.NomeCompleto</option>
+                        }
+                    </select>
+                </div>
+                <div style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;margin-top:0.5rem;">
+                    <p style="font-size:0.75rem;color:var(--text-muted);"><i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> O utilizador receberá as credenciais de acesso. Recomenda-se alterar a senha no primeiro login.</p>
+                </div>
+            </div>
+
+            <div class="settings-section" style="margin-bottom:2rem;">
+                <h3 style="margin-bottom:1rem;"><i class="fi fi-sr-key" style="color:var(--primary);margin-right:0.5rem;"></i> Matriz de Acesso</h3>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;">Defina ou ajuste as permissões do perfil <span id="permPerfilNome" style="font-weight:600;color:var(--primary);">seleccionado</span>. As permissões são aplicadas ao perfil de acesso.</p>
+                <div id="permAviso" style="background:rgba(59,130,246,0.05);border-radius:0.5rem;padding:0.75rem;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">
+                    <i class="fi fi-sr-info" style="color:var(--info);margin-right:0.25rem;"></i> Seleccione um perfil de acesso para configurar as permissões.
+                </div>
+                <div id="permTabelaContainer" class="table-container" style="display:none;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Módulo</th>
+                                <th style="text-align:center;">Acessar</th>
+                                <th style="text-align:center;">Criar</th>
+                                <th style="text-align:center;">Editar</th>
+                                <th style="text-align:center;">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < modulos.Length; i++)
+                            {
+                                <tr>
+                                    <td><strong>@modulos[i]</strong></td>
+                                    <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="visualizar" onchange="syncOpcoes(this)"></td>
+                                    <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="criar" class="opt_@i" disabled></td>
+                                    <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="editar" class="opt_@i" disabled></td>
+                                    <td style="text-align:center;"><input type="checkbox" name="mod_@i" value="eliminar" class="opt_@i" disabled></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <input type="hidden" name="permissoesJson" id="permissoesJson">
+            </div>
+
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;border-top:1px solid var(--border);padding-top:1.5rem;">
+                <a href="@Url.Action("Utilizadores", "Admin")" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="fi fi-sr-check"></i> Criar Utilizador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+var modulos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(AdminController.Modulos));
+
+function syncOpcoes(cb) {
+    var idx = cb.name.split('_')[1];
+    var activo = cb.checked;
+    document.querySelectorAll('.opt_' + idx).forEach(function(el) {
+        el.disabled = !activo;
+        if (!activo) el.checked = false;
+    });
+}
+
+function resetaMatriz() {
+    document.querySelectorAll('#permTabelaContainer input[type="checkbox"]').forEach(function(el) {
+        el.checked = false;
+        if (el.value !== 'visualizar') el.disabled = true;
+    });
+}
+
+function carregarPermissoesPerfil(idPerfil) {
+    if (!idPerfil) {
+        $('#permTabelaContainer').hide();
+        $('#permAviso').show();
+        $('#permPerfilNome').text('seleccionado');
+        resetaMatriz();
+        return;
+    }
+    $('#permPerfilNome').text($('select[name="idPerfil"] option:selected').text().split(' - ')[0]);
+    $.get('/Admin/ObterPermissoes', { idPerfil: idPerfil }, function(data) {
+        resetaMatriz();
+        data.forEach(function(perm) {
+            var idx = modulos.indexOf(perm.modulo);
+            if (idx < 0) return;
+            var ac = document.querySelector('input[name="mod_' + idx + '"][value="visualizar"]');
+            if (ac && perm.podeVisualizar) {
+                ac.checked = true;
+                syncOpcoes(ac);
+            }
+            document.querySelector('input[name="mod_' + idx + '"][value="criar"]').checked = perm.podeCriar;
+            document.querySelector('input[name="mod_' + idx + '"][value="editar"]').checked = perm.podeEditar;
+            document.querySelector('input[name="mod_' + idx + '"][value="eliminar"]').checked = perm.podeEliminar;
+        });
+        $('#permAviso').hide();
+        $('#permTabelaContainer').show();
+    });
+}
+
+function opcaoMarcada(idx, valor) {
+    var el = document.querySelector('input[name="mod_' + idx + '"][value="' + valor + '"]');
+    return !!(el && el.checked);
+}
+
+$(document).ready(function() {
+    $('select[name="idPerfil"]').on('change', function() {
+        carregarPermissoesPerfil(parseInt($(this).val()) || 0);
+    });
+
+    $('form[action="/Admin/CriarUtilizador"]').on('submit', function() {
+        var permissoes = [];
+        modulos.forEach(function(modulo) {
+            var idx = modulos.indexOf(modulo);
+            if (!opcaoMarcada(idx, 'visualizar')) return;
+            permissoes.push({
+                modulo: modulo,
+                podeVisualizar: true,
+                podeCriar: opcaoMarcada(idx, 'criar'),
+                podeEditar: opcaoMarcada(idx, 'editar'),
+                podeEliminar: opcaoMarcada(idx, 'eliminar')
+            });
+        });
+        $('#permissoesJson').val(JSON.stringify(permissoes));
+    });
+});
+</script>
+}
