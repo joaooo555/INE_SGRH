@@ -201,7 +201,7 @@ namespace SGRH.Controllers
                         {
                             IdColaborador = colaborador.IdColaborador,
                             IdTipoDocumento = 1,
-                            Titulo = doc.FileName,
+                            Titulo = TituloSeguro(doc.FileName),
                             Ficheiro = await System.IO.File.ReadAllBytesAsync(filePath),
                             Formato = ext,
                             DataUpload = DateTime.Now
@@ -362,7 +362,7 @@ namespace SGRH.Controllers
                         {
                             IdColaborador = id,
                             IdTipoDocumento = 1,
-                            Titulo = doc.FileName,
+                            Titulo = TituloSeguro(doc.FileName),
                             Ficheiro = await System.IO.File.ReadAllBytesAsync(filePath),
                             Formato = ext,
                             DataUpload = DateTime.Now
@@ -481,6 +481,14 @@ namespace SGRH.Controllers
             return $"CTR-{DateTime.Now.Year}/{(countAno + 1).ToString("D3")}";
         }
 
+        // O título mapeia para nvarchar(150); nomes muito longos rebentariam o SaveChanges
+        // com DbUpdateException por truncagem.
+        private static string TituloSeguro(string nomeFicheiro)
+        {
+            var nome = Path.GetFileName(nomeFicheiro);
+            return nome.Length <= 150 ? nome : nome[..147] + "...";
+        }
+
         // ── CONTRATOS ─────────────────────────────────────────────
         [VerificarPermissao(Modulo = "Contratos", Operacao = "Visualizar")]
         public async Task<IActionResult> Contratos()
@@ -566,7 +574,7 @@ namespace SGRH.Controllers
                         {
                             IdColaborador = contrato.IdColaborador,
                             IdTipoDocumento = 1,
-                            Titulo = doc.FileName,
+                            Titulo = TituloSeguro(doc.FileName),
                             Ficheiro = await System.IO.File.ReadAllBytesAsync(filePath),
                             Formato = ext,
                             DataUpload = DateTime.Now
@@ -639,7 +647,7 @@ namespace SGRH.Controllers
                         {
                             IdColaborador = contrato.IdColaborador,
                             IdTipoDocumento = 1,
-                            Titulo = doc.FileName,
+                            Titulo = TituloSeguro(doc.FileName),
                             Ficheiro = await System.IO.File.ReadAllBytesAsync(filePath),
                             Formato = ext,
                             DataUpload = DateTime.Now

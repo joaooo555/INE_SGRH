@@ -128,6 +128,28 @@ using (var scope = app.Services.CreateScope())
 
         SET IDENTITY_INSERT perfil_acesso OFF;
 
+        -- Tipos de documento (FK obrigatoria em documento; sem este seed, todo o upload
+        -- de documento falha com DbUpdateException por violacao de FK)
+        SET IDENTITY_INSERT tipo_documento ON;
+
+        IF NOT EXISTS (SELECT 1 FROM tipo_documento WHERE id_tipo_documento = 1)
+            INSERT INTO tipo_documento (id_tipo_documento, nome)
+            VALUES (1, 'Documento de Identificação');
+        IF NOT EXISTS (SELECT 1 FROM tipo_documento WHERE id_tipo_documento = 2)
+            INSERT INTO tipo_documento (id_tipo_documento, nome)
+            VALUES (2, 'Contrato');
+        IF NOT EXISTS (SELECT 1 FROM tipo_documento WHERE id_tipo_documento = 3)
+            INSERT INTO tipo_documento (id_tipo_documento, nome)
+            VALUES (3, 'Certificado');
+        IF NOT EXISTS (SELECT 1 FROM tipo_documento WHERE id_tipo_documento = 4)
+            INSERT INTO tipo_documento (id_tipo_documento, nome)
+            VALUES (4, 'Curriculum Vitae');
+        IF NOT EXISTS (SELECT 1 FROM tipo_documento WHERE id_tipo_documento = 5)
+            INSERT INTO tipo_documento (id_tipo_documento, nome)
+            VALUES (5, 'Outro');
+
+        SET IDENTITY_INSERT tipo_documento OFF;
+
         -- ═══════════════════════════════════════════════════════════
         -- PERMISSOES - ADMINISTRADOR (Perfil 1) - Total em tudo
         -- ═══════════════════════════════════════════════════════════
