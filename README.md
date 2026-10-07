@@ -1,6 +1,12 @@
 # SGRH — Sistema de Gestão de Recursos Humanos (INE)
 
-Aplicação ASP.NET Core MVC (net9.0) com Entity Framework Core e SQL Server.
+Aplicação ASP.NET Core MVC (net10.0) com Entity Framework Core e SQL Server.
+
+## Requisitos
+
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (o `global.json` na raiz fixa o SDK em `10.0.100` com `rollForward: latestFeature`, por isso qualquer GA 10.0.x serve);
+- SQL Server (local, LocalDB ou remoto);
+- Para as migrations: `dotnet tool install --global dotnet-ef --version 10.*`.
 
 ## Configuração do ambiente (obrigatório)
 

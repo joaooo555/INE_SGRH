@@ -1,4 +1,5 @@
 @model List<UtilizadorSistema>
+@using SGRH.Models
 @{
     ViewData["Title"] = "Gestão de Utilizadores";
     Layout = "_Layout";
@@ -24,12 +25,11 @@
 
 <div class="card" style="margin-bottom:1.5rem;">
     <div class="card-body">
-        <form method="get" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
-            <div class="form-group" style="margin:0;flex:1;min-width:220px;">
-                <label class="form-label">Pesquisar</label>
-                <input class="form-input" type="text" name="termo" value="@ViewBag.Termo" placeholder="Username, email ou colaborador...">
-            </div>
-            <div class="form-group" style="margin:0;">
+        <form method="get" id="formFiltroUtilizadores" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+            @* A pesquisa passou para a barra global do topo (#pesquisarGeral, no _Layout).
+               Este campo oculto transporta o termo até ao filtro server-side do controller. *@
+            <input type="hidden" id="termoFiltro" name="termo" value="@ViewBag.Termo" />
+            <div class="form-group" style="margin:0;min-width:200px;">
                 <label class="form-label">Estado</label>
                 <select class="form-select" name="estado">
                     @{
@@ -41,8 +41,34 @@
                     }
                 </select>
             </div>
+            <div class="form-group" style="margin:0;min-width:200px;">
+                <label class="form-label">Perfil</label>
+                <select class="form-select" name="idPerfil" id="filtroPerfil">
+                    <option value="">Todos os perfis</option>
+                    @{
+                        var perfisFiltro = ViewBag.PerfisFiltro as List<PerfilAcesso> ?? new List<PerfilAcesso>();
+                        foreach (var p in perfisFiltro)
+                        {
+                            <option value="@p.IdPerfil" selected="@(ViewBag.IdPerfilFiltro != null && p.IdPerfil == ViewBag.IdPerfilFiltro)">@p.Nome</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="margin:0;min-width:200px;">
+                <label class="form-label">Unidade Orgânica</label>
+                <select class="form-select" name="idUnidade" id="filtroUnidade">
+                    <option value="">Todas as unidades</option>
+                    @{
+                        var unidadesFiltro = ViewBag.UnidadesFiltro as List<UnidadeOrganica> ?? new List<UnidadeOrganica>();
+                        foreach (var uo in unidadesFiltro)
+                        {
+                            <option value="@uo.IdUnidadeOrganica" selected="@(ViewBag.IdUnidadeFiltro != null && uo.IdUnidadeOrganica == ViewBag.IdUnidadeFiltro)">@uo.Nome</option>
+                        }
+                    }
+                </select>
+            </div>
             <button class="btn btn-primary" type="submit"><i class="fi fi-sr-filter"></i> Filtrar</button>
-            <a class="btn btn-outline" href="@Url.Action("Utilizadores", "Admin")"><i class="fi fi-sr-cross-small"></i> Limpar</a>
+            <a class="btn btn-outline" id="btnLimparFiltro" href="@Url.Action("Utilizadores", "Admin")"><i class="fi fi-sr-cross-small"></i> Limpar</a>
         </form>
     </div>
 </div>
@@ -193,5 +219,69 @@ function abrirEditar(u) {
     document.getElementById('editColab').value = u.idColab || '';
     openModal('modalEditarUtilizador');
 }
+
+// ── Barra de pesquisa do topo (#pesquisarGeral) → filtro server-side ──
+// A pesquisa deixou de ter um campo próprio nesta página: escreve-se na barra
+// do topo e o valor é transportado no campo oculto "termo" do formulário GET,
+// que o AdminController.Utilizadores(termo, estado) continua a filtrar na BD.
+(function () {
+    var barra = document.getElementById('pesquisarGeral');
+    var termo = document.getElementById('termoFiltro');
+    var form = document.getElementById('formFiltroUtilizadores');
+    if (!barra || !termo || !form) return;
+
+    // Ao entrar na página, a barra reflecte o filtro activo (ou fica vazia).
+    barra.value = termo.value || '';
+
+    // Garante que o hidden leva sempre o que está escrito na barra (ex.: quando
+    // o utilizador escreve e clica em "Filtrar" antes do temporizador disparar).
+    form.addEventListener('submit', function () {
+        termo.value = barra.value;
+    });
+
+    var timer = null;
+    barra.addEventListener('input', function () {
+        if (timer) clearTimeout(timer);
+
+        var valor = barra.value.trim();
+        // Com 1 caractere não vale a pena ir à base de dados.
+        if (valor.length === 1) return;
+
+        timer = setTimeout(function () {
+            termo.value = valor;
+            form.submit();
+        }, 400);
+    });
+
+    // Enter pesquisa imediatamente, sem esperar pelo temporizador.
+    barra.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (timer) clearTimeout(timer);
+        termo.value = barra.value.trim();
+        form.submit();
+    });
+
+    // "Limpar" também esvazia a barra do topo, senão o texto persiste na
+    // página seguinte sem que nenhum filtro o esteja a aplicar.
+    var btnLimpar = document.getElementById('btnLimparFiltro');
+    if (btnLimpar) {
+        btnLimpar.addEventListener('click', function () {
+            barra.value = '';
+            termo.value = '';
+        });
+    }
+
+    // Perfil e Unidade Orgânica filtram sem precisar de carregar em "Filtrar".
+    ['filtroPerfil', 'filtroUnidade'].forEach(function (id) {
+        var sel = document.getElementById(id);
+        if (!sel) return;
+        sel.addEventListener('change', function () {
+            if (timer) clearTimeout(timer);
+            termo.value = barra.value.trim();
+            form.submit();
+        });
+    });
+})();
 </script>
 }

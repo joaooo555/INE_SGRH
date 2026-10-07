@@ -70,10 +70,6 @@
             {
                 <a href="@Url.Action("Reporting", "Home")" class="sidebar-item @(ViewBag.ActivePage == "Reporting" ? "active" : "")" title="Reporting"><i class="fi fi-sr-chart-mixed"></i> <span class="sidebar-label">Reporting</span></a>
             }
-            @if (User.IsInRole("Administrador"))
-            {
-                <a href="@Url.Action("Index", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "AdminSistema" ? "active" : "")" title="Admin do Sistema"><i class="fi fi-sr-settings-sliders"></i> <span class="sidebar-label">Admin do Sistema</span></a>
-            }
             @if (PodeVer("Utilizadores"))
             {
                 <a href="@Url.Action("Utilizadores", "Admin")" class="sidebar-item @(ViewBag.ActivePage == "Utilizadores" ? "active" : "")" title="Utilizadores"><i class="fi fi-sr-user-gear"></i> <span class="sidebar-label">Utilizadores</span></a>

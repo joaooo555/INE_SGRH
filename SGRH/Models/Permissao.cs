@@ -19,6 +19,18 @@ public class Permissao
     [Column("modulo")]
     public string Modulo { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Nível de acesso do perfil ao módulo, tal como definido na matriz de
+    /// acessos (Total, Elevado, Consulta, Próprio, Limitado, Se supervisor,
+    /// Restrito, Aprovação, Solicitação, Participação, Avaliação, Técnico,
+    /// Consulta necessária, Consulta agregada, Próprios dados, Técnico restrito, Não).
+    /// Os quatro booleanos abaixo são derivados deste nível para que a
+    /// autorização existente (AutorizacaoService) continue a funcionar.
+    /// </summary>
+    [MaxLength(40)]
+    [Column("nivel_acesso")]
+    public string? NivelAcesso { get; set; }
+
     [Column("pode_visualizar")]
     public bool PodeVisualizar { get; set; } = true;
 

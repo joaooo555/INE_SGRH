@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +12,9 @@ using System.Text.Json;
 namespace SGRH.Controllers
 {
     /// <summary>
-    /// Módulo "Administração do Sistema" — área exclusiva do Perfil: Administrador do Sistema.
+    /// Gestão de contas do sistema — área exclusiva do Perfil: Administrador do Sistema.
     /// Espelha o documento SGRH_Requisitos_Atualizado.docx:
     ///   RF02 — Gestão de Utilizadores (criar, editar, activar, desactivar e bloquear contas)
-    ///   RF03 — Gestão de Perfis (criar e gerir perfis de utilizadores)
-    ///   RF04 — Gestão de Permissões (associar permissões aos perfis e controlar o acesso aos módulos)
     ///   RT08 — Auditoria / Logs (todas as operações relevantes registadas em logs)
     /// </summary>
     [Authorize(Roles = "Administrador")]
@@ -58,42 +56,11 @@ namespace SGRH.Controllers
             User.FindFirstValue(ClaimTypes.Name) ?? "sistema";
 
         // ────────────────────────────────────────────────────────────
-        // PÁGINA PRINCIPAL — Painel de Administração do Sistema
-        // ────────────────────────────────────────────────────────────
-        public async Task<IActionResult> Index()
-        {
-            ViewBag.ActivePage = "AdminSistema";
-
-            var vm = new AdminDashboardViewModel
-            {
-                TotalUtilizadores = await _db.UtilizadoresSistema.CountAsync(),
-                UtilizadoresActivos = await _db.UtilizadoresSistema.CountAsync(u => u.Estado == "Ativo"),
-                UtilizadoresBloqueados = await _db.UtilizadoresSistema.CountAsync(u => u.Estado == "Bloqueado"),
-                UtilizadoresInactivos = await _db.UtilizadoresSistema.CountAsync(u => u.Estado == "Inativo"),
-                TotalPerfis = await _db.PerfisAcesso.CountAsync(),
-                AcessosHoje = await _db.LogsAuditoria
-                    .Where(l => l.Operacao == "LOGIN" && l.DataHora.Date == DateTime.Today)
-                    .CountAsync(),
-                OperacoesHoje = await _db.LogsAuditoria
-                    .Where(l => l.DataHora.Date == DateTime.Today)
-                    .CountAsync(),
-                UltimosAcessos = await _db.LogsAuditoria
-                    .Include(l => l.UtilizadorSistema)
-                    .Where(l => l.Operacao == "LOGIN")
-                    .OrderByDescending(l => l.DataHora)
-                    .Take(6)
-                    .ToListAsync()
-            };
-
-            return View(vm);
-        }
-
-        // ────────────────────────────────────────────────────────────
         // RF02 — GESTÃO DE UTILIZADORES
         // ────────────────────────────────────────────────────────────
-        public async Task<IActionResult> Utilizadores(string? termo, string? estado)
+        public async Task<IActionResult> Utilizadores(string? termo, string? estado, int? idPerfil, int? idUnidade)
         {
-            ViewBag.ActivePage = "AdminSistema";
+            ViewBag.ActivePage = "Utilizadores";
 
             var query = _db.UtilizadoresSistema
                 .Include(u => u.PerfilAcesso)
@@ -109,8 +76,28 @@ namespace SGRH.Controllers
             if (!string.IsNullOrWhiteSpace(estado) && estado != "Todos")
                 query = query.Where(u => u.Estado == estado);
 
+            if (idPerfil is > 0)
+                query = query.Where(u => u.IdPerfil == idPerfil);
+
+            // Unidade orgânica: só existe através do colaborador associado, por
+            // isso utilizadores sem colaborador não são devolvidos por este filtro.
+            if (idUnidade is > 0)
+                query = query.Where(u =>
+                    u.Colaborador != null && u.Colaborador.IdUnidadeOrganica == idUnidade);
+
             ViewBag.Termo = termo;
             ViewBag.EstadoFiltro = estado ?? "Todos";
+            ViewBag.IdPerfilFiltro = idPerfil;
+            ViewBag.IdUnidadeFiltro = idUnidade;
+            // Listas dos filtros, em tipos concretos (o mesmo padrão de
+            // Views/Home/Colaboradores.cshtml). Os SelectList abaixo continuam
+            // a existir porque o modal de edição os consome.
+            ViewBag.PerfisFiltro = await _db.PerfisAcesso
+                .OrderBy(p => p.IdPerfil)
+                .ToListAsync();
+            ViewBag.UnidadesFiltro = await _db.UnidadesOrganicas
+                .OrderBy(x => x.Nome)
+                .ToListAsync();
             ViewBag.Perfis = new SelectList(await _db.PerfisAcesso.OrderBy(p => p.Nome).ToListAsync(), "IdPerfil", "Nome");
             ViewBag.Colaboradores = new SelectList(
                 await _db.Colaboradores.OrderBy(c => c.NomeCompleto).ToListAsync(),
@@ -126,7 +113,7 @@ namespace SGRH.Controllers
         [HttpGet]
         public async Task<IActionResult> NovoUtilizador()
         {
-            ViewBag.ActivePage = "AdminSistema";
+            ViewBag.ActivePage = "Utilizadores";
             ViewBag.Perfis = await _db.PerfisAcesso.OrderBy(p => p.Nome).ToListAsync();
             ViewBag.Colaboradores = await _db.Colaboradores
                 .Where(c => c.Estado == "Ativo")
@@ -351,185 +338,11 @@ namespace SGRH.Controllers
         }
 
         // ────────────────────────────────────────────────────────────
-        // RF03 — GESTÃO DE PERFIS
-        // ────────────────────────────────────────────────────────────
-        public async Task<IActionResult> Perfis()
-        {
-            ViewBag.ActivePage = "AdminSistema";
-
-            var perfis = await _db.PerfisAcesso
-                .Include(p => p.Permissoes)
-                .Include(p => p.Utilizadores)
-                .OrderBy(p => p.IdPerfil)
-                .ToListAsync();
-
-            return View(perfis);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CriarPerfil(string nome, string? descricao, int nivelConfidencialidade)
-        {
-            if (string.IsNullOrWhiteSpace(nome))
-            {
-                TempData["Erro"] = "O nome do perfil é obrigatório.";
-                return RedirectToAction(nameof(Perfis));
-            }
-
-            if (await _db.PerfisAcesso.AnyAsync(p => p.Nome == nome.Trim()))
-            {
-                TempData["Erro"] = $"Já existe um perfil com o nome «{nome}».";
-                return RedirectToAction(nameof(Perfis));
-            }
-
-            var perfil = new PerfilAcesso
-            {
-                Nome = nome.Trim(),
-                Descricao = descricao,
-                NivelConfidencialidade = nivelConfidencialidade
-            };
-
-            _db.PerfisAcesso.Add(perfil);
-            await _db.SaveChangesAsync();
-
-            // Por defeito, o novo perfil não tem acesso a nenhum módulo (princípio do menor privilégio).
-            await _auditoria.RegistarAsync(IdUtilizadorActual, "perfil_acesso", "CRIACAO",
-                null,
-                new { perfil.IdPerfil, perfil.Nome, perfil.NivelConfidencialidade });
-
-            TempData["Sucesso"] = $"Perfil «{perfil.Nome}» criado. Associe agora as permissões aos módulos.";
-            return RedirectToAction(nameof(Perfis));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditarPerfil(int id, string nome, string? descricao, int nivelConfidencialidade)
-        {
-            var perfil = await _db.PerfisAcesso.FindAsync(id);
-            if (perfil == null)
-                return NotFound();
-
-            var antes = new { perfil.Nome, perfil.Descricao, perfil.NivelConfidencialidade };
-
-            perfil.Nome = nome.Trim();
-            perfil.Descricao = descricao;
-            perfil.NivelConfidencialidade = nivelConfidencialidade;
-
-            await _db.SaveChangesAsync();
-
-            await _auditoria.RegistarAsync(IdUtilizadorActual, "perfil_acesso", "ALTERACAO",
-                antes,
-                new { perfil.Nome, perfil.Descricao, perfil.NivelConfidencialidade });
-
-            TempData["Sucesso"] = $"Perfil «{perfil.Nome}» actualizado.";
-            return RedirectToAction(nameof(Perfis));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EliminarPerfil(int id)
-        {
-            var perfil = await _db.PerfisAcesso
-                .Include(p => p.Utilizadores)
-                .FirstOrDefaultAsync(p => p.IdPerfil == id);
-
-            if (perfil == null)
-                return NotFound();
-
-            if (perfil.Utilizadores.Count > 0)
-            {
-                TempData["Erro"] = $"O perfil «{perfil.Nome}» tem {perfil.Utilizadores.Count} utilizador(es) associado(s). Reassocie-os antes de eliminar.";
-                return RedirectToAction(nameof(Perfis));
-            }
-
-            var permissoes = _db.Permissoes.Where(p => p.IdPerfil == id);
-            _db.Permissoes.RemoveRange(permissoes);
-
-            _db.PerfisAcesso.Remove(perfil);
-            await _db.SaveChangesAsync();
-
-            await _auditoria.RegistarAsync(IdUtilizadorActual, "perfil_acesso", "ELIMINACAO",
-                new { perfil.IdPerfil, perfil.Nome }, null);
-
-            TempData["Sucesso"] = $"Perfil «{perfil.Nome}» eliminado.";
-            return RedirectToAction(nameof(Perfis));
-        }
-
-        // ────────────────────────────────────────────────────────────
-        // RF04 — GESTÃO DE PERMISSÕES (perfil × módulo × operação)
-        // ────────────────────────────────────────────────────────────
-        public async Task<IActionResult> Permissoes(int id)
-        {
-            ViewBag.ActivePage = "AdminSistema";
-
-            var perfil = await _db.PerfisAcesso
-                .Include(p => p.Permissoes)
-                .FirstOrDefaultAsync(p => p.IdPerfil == id);
-
-            if (perfil == null)
-                return NotFound();
-
-            return View(perfil);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GuardarPermissoes(int id, IFormCollection form)
-        {
-            var perfil = await _db.PerfisAcesso
-                .Include(p => p.Permissoes)
-                .FirstOrDefaultAsync(p => p.IdPerfil == id);
-
-            if (perfil == null)
-                return NotFound();
-
-            var antes = perfil.Permissoes
-                .Select(p => new { p.Modulo, p.PodeVisualizar, p.PodeCriar, p.PodeEditar, p.PodeEliminar })
-                .ToList();
-
-            _db.Permissoes.RemoveRange(perfil.Permissoes);
-
-            for (var i = 0; i < Modulos.Length; i++)
-            {
-                var modulo = Modulos[i];
-                var key = $"mod_{i}";
-                if (!form.ContainsKey(key))
-                    continue; // sem acesso ao módulo — princípio do menor privilégio
-
-                var opcoes = form[key].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => s.Trim()).ToHashSet();
-
-                _db.Permissoes.Add(new Permissao
-                {
-                    IdPerfil = id,
-                    Modulo = modulo,
-                    PodeVisualizar = true, // aceder ao módulo implica visualizar
-                    PodeCriar = opcoes.Contains("criar"),
-                    PodeEditar = opcoes.Contains("editar"),
-                    PodeEliminar = opcoes.Contains("eliminar")
-                });
-            }
-
-            await _db.SaveChangesAsync();
-
-            var depois = await _db.Permissoes
-                .Where(p => p.IdPerfil == id)
-                .Select(p => new { p.Modulo, p.PodeVisualizar, p.PodeCriar, p.PodeEditar, p.PodeEliminar })
-                .ToListAsync();
-
-            await _auditoria.RegistarAsync(IdUtilizadorActual, "permissao", "ALTERACAO",
-                antes, depois);
-
-            TempData["Sucesso"] = $"Permissões do perfil «{perfil.Nome}» actualizadas.";
-            return RedirectToAction(nameof(Permissoes), new { id });
-        }
-
-        // ────────────────────────────────────────────────────────────
         // RT08 — AUDITORIA: consulta dos logs e registos de auditoria
         // ────────────────────────────────────────────────────────────
         public async Task<IActionResult> Auditoria(DateTime? de, DateTime? ate, int? utilizador, string? operacao)
         {
-            ViewBag.ActivePage = "AdminSistema";
+            ViewBag.ActivePage = "Auditoria";
 
             var query = _db.LogsAuditoria
                 .Include(l => l.UtilizadorSistema)
